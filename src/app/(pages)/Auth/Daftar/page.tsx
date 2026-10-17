@@ -1,9 +1,6 @@
 "use client";
-import { useRandomId } from "@/app/hooks/getRandomId";
-import { supabase } from "@/lib/supabase/data";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import FormAuth from "@/layout/formAuth/content";
 import FloatingLabel from "@/components/global/floatingLabel/content";
 import {
   AtSign,
@@ -17,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import FormAuth from "@/src/layout/formAuth/content";
+import { generateRandomId } from "@/src/lib/utils/getRandomId";
 
 const inputRegisterSchema = z
   .object({
@@ -61,51 +60,53 @@ export default function RegisterAccount() {
       email: data.email,
       password: data.password,
       role: "pelajar",
-      idStudent: useRandomId(7, "STD"),
+      idStudent: generateRandomId(7, "STD"),
       typeAccount: "default",
     };
-    try {
-      const { data: existingAccount, error: checkError } = await supabase
-        .from("account-student")
-        .select("email")
-        .eq("email", data.email)
-        .limit(1);
 
-      if (checkError) {
-        toast("Gagal ❌", {
-          description: "Terjadi kesalahan saat mengecek email",
-        });
-        return;
-      }
+    console.log(dataRegister);
+    // try {
+    //   const { data: existingAccount, error: checkError } = await supabase
+    //     .from("account-student")
+    //     .select("email")
+    //     .eq("email", data.email)
+    //     .limit(1);
 
-      if (existingAccount.length > 0) {
-        toast("Gagal ❌", {
-          description: "Email sudah terdaftar. Gunakan email yang berbeda.",
-        });
-        return;
-      }
+    //   if (checkError) {
+    //     toast("Gagal ❌", {
+    //       description: "Terjadi kesalahan saat mengecek email",
+    //     });
+    //     return;
+    //   }
 
-      const { error: insertError } = await supabase
-        .from("account-student")
-        .insert(dataRegister);
+    //   if (existingAccount.length > 0) {
+    //     toast("Gagal ❌", {
+    //       description: "Email sudah terdaftar. Gunakan email yang berbeda.",
+    //     });
+    //     return;
+    //   }
 
-      if (insertError) {
-        toast("Gagal ❌", {
-          description: "Gagal membuat akun",
-        });
-        return;
-      }
+    //   const { error: insertError } = await supabase
+    //     .from("account-student")
+    //     .insert(dataRegister);
 
-      push("/Auth/Login");
+    //   if (insertError) {
+    //     toast("Gagal ❌", {
+    //       description: "Gagal membuat akun",
+    //     });
+    //     return;
+    //   }
 
-      toast("Berhasil ✅", {
-        description: "Berhasil membuat akun. Silakan login.",
-      });
-    } catch (err) {
-      toast("Gagal ❌", {
-        description: "Error fetch api",
-      });
-    }
+    //   push("/Auth/Login");
+
+    //   toast("Berhasil ✅", {
+    //     description: "Berhasil membuat akun. Silakan login.",
+    //   });
+    // } catch (err) {
+    //   toast("Gagal ❌", {
+    //     description: "Error fetch api",
+    //   });
+    // }
   }
 
   return (

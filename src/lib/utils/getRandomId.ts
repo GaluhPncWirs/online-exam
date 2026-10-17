@@ -1,4 +1,4 @@
-export function useRandomId(len: number = 7, typeId: string) {
+export function generateRandomId(len: number = 7, typeId: string) {
   const alphabetLowerCase = "abcdefghijklmnopqrstuvwxyz";
   const alphabetUpperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const num = "0123456789";

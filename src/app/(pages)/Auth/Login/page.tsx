@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import FormAuth from "@/layout/formAuth/content";
+import FormAuth from "@/src/layout/formAuth/content";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AtSign, Book, GraduationCap, KeyRound, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
@@ -43,37 +43,39 @@ export default function LoginAccount() {
       valueTypeAccount: data.typeAccount,
     };
 
-    try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    console.log(payload);
 
-      const dataLogin = await response.json();
+    // try {
+    //   const response = await fetch("/api/login", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(payload),
+    //   });
 
-      if (!dataLogin.success) {
-        toast("Gagal ❌", {
-          description: dataLogin.message,
-        });
-      }
+    //   const dataLogin = await response.json();
 
-      if (dataLogin.tipe === "siswa") {
-        push("/Student/Dashboard");
-        toast("Berhasil ✅", {
-          description: dataLogin.message,
-        });
-      } else {
-        push("/Teacher/dashboard");
-        toast("Berhasil ✅", {
-          description: dataLogin.message,
-        });
-      }
-    } catch (err) {
-      toast("Gagal ❌", {
-        description: "Error fetch api",
-      });
-    }
+    //   if (!dataLogin.success) {
+    //     toast("Gagal ❌", {
+    //       description: dataLogin.message,
+    //     });
+    //   }
+
+    //   if (dataLogin.tipe === "siswa") {
+    //     push("/Student/Dashboard");
+    //     toast("Berhasil ✅", {
+    //       description: dataLogin.message,
+    //     });
+    //   } else {
+    //     push("/Teacher/dashboard");
+    //     toast("Berhasil ✅", {
+    //       description: dataLogin.message,
+    //     });
+    //   }
+    // } catch (err) {
+    //   toast("Gagal ❌", {
+    //     description: "Error fetch api",
+    //   });
+    // }
   }
 
   return (

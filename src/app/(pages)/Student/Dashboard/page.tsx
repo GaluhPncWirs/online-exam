@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/hover-card";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/data";
 import {
   Table,
   TableBody,
@@ -15,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useConvertDate } from "../../../hooks/getConvertDate";
 import {
   Dialog,
   DialogClose,
@@ -30,14 +28,14 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "@/components/local/forDasboard/content";
 import { toast } from "sonner";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
-import MainContent from "@/layout/mainContent/content";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import { useDataExams } from "@/hooks/getScheduleExam";
+import MainContent from "@/src/layout/mainContent/content";
+import { getExamStatus } from "@/src/lib/utils/statusExam";
+import { convertDate } from "@/src/lib/utils/date";
 // import { getExamStatus } from "@/lib/utils/statusExam";
-import { getUpComingExam } from "@/app/hooks/getUpComingExam";
-import { useDataExams } from "@/app/hooks/getScheduleExam";
-import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
@@ -303,7 +301,7 @@ export default function DashboardStudent() {
                         }))
                       }
                     >
-                      <DialogTrigger asChild>
+                      <DialogTrigger>
                         <Button
                           className="w-full rounded-xl bg-amber-500 px-6 font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 sm:w-auto"
                           onClick={() => setConfirm(5)}
@@ -332,7 +330,7 @@ export default function DashboardStudent() {
                         </DialogHeader>
 
                         <DialogFooter className="mt-4 gap-2">
-                          <DialogClose asChild>
+                          <DialogClose>
                             <Button variant="outline" className="rounded-xl">
                               Batal
                             </Button>
@@ -463,7 +461,7 @@ export default function DashboardStudent() {
                                     }))
                                   }
                                 >
-                                  <DialogTrigger asChild>
+                                  <DialogTrigger>
                                     <button
                                       className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                                       onClick={() => setConfirm(5)}
@@ -481,14 +479,14 @@ export default function DashboardStudent() {
                                       <DialogDescription className="pt-2">
                                         Yakin ingin masuk ke ujian{" "}
                                         <span className="font-bold text-slate-900">
-                                          "{data.exams.nama_ujian}"
+                                          &quot;{data.exams.nama_ujian}&quot;
                                         </span>
                                         ?
                                       </DialogDescription>
                                     </DialogHeader>
 
                                     <DialogFooter className="mt-4 gap-2">
-                                      <DialogClose asChild>
+                                      <DialogClose>
                                         <Button
                                           variant="outline"
                                           className="rounded-xl"
@@ -606,16 +604,13 @@ export default function DashboardStudent() {
 
                               <TableCell className="text-sm text-slate-500">
                                 {item.created_at_historyExams
-                                  ? useConvertDate(
-                                      item.created_at_historyExams,
-                                      {
-                                        minute: "numeric",
-                                        hour: "numeric",
-                                        day: "numeric",
-                                        month: "long",
-                                        year: "numeric",
-                                      },
-                                    )
+                                  ? convertDate(item.created_at_historyExams, {
+                                      minute: "numeric",
+                                      hour: "numeric",
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    })
                                   : "-"}
                               </TableCell>
 
@@ -642,8 +637,8 @@ export default function DashboardStudent() {
                               </TableCell>
 
                               <TableCell>
-                                <HoverCard openDelay={200} closeDelay={200}>
-                                  <HoverCardTrigger asChild>
+                                <HoverCard>
+                                  <HoverCardTrigger>
                                     <Link
                                       href={`/Student/Dashboard/ResultExam/${item.idExams}`}
                                       className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
@@ -662,16 +657,13 @@ export default function DashboardStudent() {
 
                               <TableCell className="text-sm text-slate-500">
                                 {item.created_at_historyExams
-                                  ? useConvertDate(
-                                      item.created_at_historyExams,
-                                      {
-                                        minute: "numeric",
-                                        hour: "numeric",
-                                        day: "numeric",
-                                        month: "long",
-                                        year: "numeric",
-                                      },
-                                    )
+                                  ? convertDate(item.created_at_historyExams, {
+                                      minute: "numeric",
+                                      hour: "numeric",
+                                      day: "numeric",
+                                      month: "long",
+                                      year: "numeric",
+                                    })
                                   : "-"}
                               </TableCell>
 

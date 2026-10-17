@@ -3,9 +3,9 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import MainContent from "@/layout/mainContent/content";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
+import MainContent from "@/src/layout/mainContent/content";
 
 export default function ResultExamComponent() {
   const params = useParams();
