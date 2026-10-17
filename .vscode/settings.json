@@ -1,6 +1,7 @@
 {
     "conventionalCommits.scopes": [
         "sedang memperbaiki konfigurasi proses migrasi ke repository yang baru",
-        "selesai untuk memperbaiki semua path import yang ada di frontend"
+        "selesai untuk memperbaiki semua path import yang ada di frontend",
+        "menambahkan package lagi yang dibutuhkan karena terlewat"
     ]
 }
