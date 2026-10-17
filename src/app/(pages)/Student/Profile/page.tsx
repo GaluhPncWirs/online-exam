@@ -9,8 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/data";
-import { useConvertDate } from "../../../hooks/getConvertDate";
 import {
   Dialog,
   DialogClose,
@@ -23,14 +21,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataExams } from "@/app/hooks/getScheduleExam";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
-import MainContent from "@/layout/mainContent/content";
 import { Check, History, Trophy } from "lucide-react";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
-import HeaderProfile from "@/layout/headerProfile/content";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import { useDataExams } from "@/hooks/getScheduleExam";
+import MainContent from "@/src/layout/mainContent/content";
+import HeaderProfile from "@/src/layout/headerProfile/content";
+import { convertDate } from "@/src/lib/utils/date";
 
 type DataHistoryExams = {
   student_id: string;
@@ -47,22 +46,22 @@ export default function Profil() {
     DataHistoryExams[]
   >([]);
 
-  useEffect(() => {
-    async function getHistoryResultExams() {
-      const { data, error } = await supabase
-        .from("history-exam-student")
-        .select("student_id,exam_id,hasil_ujian,kelas")
-        .eq("idStudent", getIdStudent)
-        .limit(1);
-      if (error) {
-        console.log("Gagal mengambil data");
-        setResultExamPerClass([]);
-      } else {
-        setResultExamPerClass(data);
-      }
-    }
-    getHistoryResultExams();
-  }, []);
+  // useEffect(() => {
+  //   async function getHistoryResultExams() {
+  //     const { data, error } = await supabase
+  //       .from("history-exam-student")
+  //       .select("student_id,exam_id,hasil_ujian,kelas")
+  //       .eq("idStudent", getIdStudent)
+  //       .limit(1);
+  //     if (error) {
+  //       console.log("Gagal mengambil data");
+  //       setResultExamPerClass([]);
+  //     } else {
+  //       setResultExamPerClass(data);
+  //     }
+  //   }
+  //   getHistoryResultExams();
+  // }, []);
 
   function rankingClasses() {
     if (!resultExamPerClass?.length || !dataStudent?.classes) {
@@ -219,7 +218,7 @@ export default function Profil() {
 
               {/* Edit */}
               <Dialog>
-                <DialogTrigger asChild>
+                <DialogTrigger>
                   <Button className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
                     Edit Profil
                   </Button>
@@ -277,7 +276,7 @@ export default function Profil() {
                     </p>
 
                     <DialogFooter className="gap-2">
-                      <DialogClose asChild>
+                      <DialogClose>
                         <Button variant="outline" className="rounded-xl">
                           Batal
                         </Button>
@@ -420,7 +419,7 @@ export default function Profil() {
                           </TableCell>
 
                           <TableCell className="text-sm text-slate-500">
-                            {useConvertDate(item.created_at_historyExams, {
+                            {convertDate(item.created_at_historyExams, {
                               minute: "numeric",
                               hour: "numeric",
                               day: "numeric",

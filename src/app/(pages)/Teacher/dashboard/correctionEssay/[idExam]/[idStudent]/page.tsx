@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase/data";
+import MainContent from "@/src/layout/mainContent/content";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import MainContent from "@/layout/mainContent/content";
 
 const assessmentOptions = [
   {
@@ -143,23 +142,23 @@ export default function CorrectionEssay() {
       return;
     }
 
-    const { error } = await supabase
-      .from("history-exam-student")
-      .update({
-        hasil_ujian: finalResultAssesment,
-      })
-      .eq("exam_id", Number(idExam))
-      .eq("student_id", idStudent);
+    // const { error } = await supabase
+    //   .from("history-exam-student")
+    //   .update({
+    //     hasil_ujian: finalResultAssesment,
+    //   })
+    //   .eq("exam_id", Number(idExam))
+    //   .eq("student_id", idStudent);
 
-    if (error) {
-      console.error("Assessment error:", error);
+    // if (error) {
+    //   console.error("Assessment error:", error);
 
-      toast("Gagal ❌", {
-        description: "Gagal menilai soal.",
-      });
+    //   toast("Gagal ❌", {
+    //     description: "Gagal menilai soal.",
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
 
     toast("Berhasil ✅", {
       description: `Nilai akhir: ${finalResultAssesment}/100`,
@@ -356,7 +355,7 @@ export default function CorrectionEssay() {
                   open={openConfirmDialog}
                   onOpenChange={setOpenConfirmDialog}
                 >
-                  <DialogTrigger asChild>
+                  <DialogTrigger>
                     <Button
                       type="button"
                       className="h-11 rounded-xl bg-blue-600 px-6 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700"

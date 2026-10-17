@@ -1,11 +1,11 @@
-import { useVerifyToken } from "@/app/hooks/getVerifyToken";
 import React, { useEffect } from "react";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import { usePathname } from "next/navigation";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { useShallow } from "zustand/shallow";
 import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
+import { useVerifyToken } from "@/hooks/getVerifyToken";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
   const { loadingSession, statusToken } = useVerifyToken();

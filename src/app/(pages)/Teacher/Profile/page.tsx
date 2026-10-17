@@ -24,89 +24,88 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { supabase } from "@/lib/supabase/data";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
-import MainContent from "@/layout/mainContent/content";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { History } from "lucide-react";
-import HeaderProfile from "@/layout/headerProfile/content";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import HeaderProfile from "@/src/layout/headerProfile/content";
+import MainContent from "@/src/layout/mainContent/content";
 
 export default function TeacherProfile() {
   const getidTeacher = useGetIdUsers((state) => state.idUser);
   const [getHistoryExams, setGetHistoryExams] = useState<string[]>([]);
   const getProfileTeacher = useGetDataUsers((state) => state.dataUsers);
 
-  useEffect(() => {
-    if (!getidTeacher) return;
-    async function historyExams() {
-      const [
-        { data: dataManageExams, error: errorDataManageExams },
-        { data: dataHistoryExams, error: errorDataHistoryExams },
-      ]: any = await Promise.all([
-        supabase
-          .from("managed_exams")
-          .select("kelas,dibuat_tgl,id_Teacher,idExams")
-          .eq("id_Teacher", getidTeacher),
-        supabase
-          .from("history-exam-student")
-          .select(
-            "exam_id,hasil_ujian,student_id,kelas,exams(nama_ujian,tipeUjian,idTeacher)",
-          )
-          .eq("exams.idTeacher", getidTeacher),
-      ]);
+  // useEffect(() => {
+  //   if (!getidTeacher) return;
+  //   async function historyExams() {
+  //     const [
+  //       { data: dataManageExams, error: errorDataManageExams },
+  //       { data: dataHistoryExams, error: errorDataHistoryExams },
+  //     ]: any = await Promise.all([
+  //       supabase
+  //         .from("managed_exams")
+  //         .select("kelas,dibuat_tgl,id_Teacher,idExams")
+  //         .eq("id_Teacher", getidTeacher),
+  //       supabase
+  //         .from("history-exam-student")
+  //         .select(
+  //           "exam_id,hasil_ujian,student_id,kelas,exams(nama_ujian,tipeUjian,idTeacher)",
+  //         )
+  //         .eq("exams.idTeacher", getidTeacher),
+  //     ]);
 
-      if (errorDataManageExams || errorDataHistoryExams) {
-        toast("Gagal ❌", {
-          description: "Data Error Ditampilkan",
-        });
-      }
+  //     if (errorDataManageExams || errorDataHistoryExams) {
+  //       toast("Gagal ❌", {
+  //         description: "Data Error Ditampilkan",
+  //       });
+  //     }
 
-      const fillterNotNull = dataHistoryExams.filter(
-        (data: any) => data.exams !== null,
-      );
+  //     const fillterNotNull = dataHistoryExams.filter(
+  //       (data: any) => data.exams !== null,
+  //     );
 
-      const result = fillterNotNull?.reduce((acc: any, cur: any) => {
-        const found = acc.find(
-          (item: any) =>
-            item.kelas === cur.kelas && item.exam_id === cur.exam_id,
-        );
-        if (!found) {
-          acc.push({
-            kelas: cur.kelas,
-            exam_id: cur.exam_id,
-            nama_ujian: cur.exams.nama_ujian,
-            tipeUjian: cur.exams.tipeUjian,
-            hasil_ujian: [cur.hasil_ujian],
-            student_id: [cur.student_id],
-          });
-        } else {
-          found.hasil_ujian.push(cur.hasil_ujian);
-          found.student_id.push(cur.student_id);
-        }
-        return acc;
-      }, []);
+  //     const result = fillterNotNull?.reduce((acc: any, cur: any) => {
+  //       const found = acc.find(
+  //         (item: any) =>
+  //           item.kelas === cur.kelas && item.exam_id === cur.exam_id,
+  //       );
+  //       if (!found) {
+  //         acc.push({
+  //           kelas: cur.kelas,
+  //           exam_id: cur.exam_id,
+  //           nama_ujian: cur.exams.nama_ujian,
+  //           tipeUjian: cur.exams.tipeUjian,
+  //           hasil_ujian: [cur.hasil_ujian],
+  //           student_id: [cur.student_id],
+  //         });
+  //       } else {
+  //         found.hasil_ujian.push(cur.hasil_ujian);
+  //         found.student_id.push(cur.student_id);
+  //       }
+  //       return acc;
+  //     }, []);
 
-      const mergedData = result?.map(
-        (item: { kelas: string; exam_id: number }) => {
-          const findDetail = dataManageExams.find(
-            (f: { kelas: string; idExams: number }) =>
-              f.kelas === item.kelas && f.idExams === item.exam_id,
-          );
-          return {
-            ...item,
-            ...findDetail,
-          };
-        },
-      );
+  //     const mergedData = result?.map(
+  //       (item: { kelas: string; exam_id: number }) => {
+  //         const findDetail = dataManageExams.find(
+  //           (f: { kelas: string; idExams: number }) =>
+  //             f.kelas === item.kelas && f.idExams === item.exam_id,
+  //         );
+  //         return {
+  //           ...item,
+  //           ...findDetail,
+  //         };
+  //       },
+  //     );
 
-      setGetHistoryExams(mergedData);
-    }
-    historyExams();
-  }, [getidTeacher]);
+  //     setGetHistoryExams(mergedData);
+  //   }
+  //   historyExams();
+  // }, [getidTeacher]);
 
   async function handleEditProfileTeacher(
     event: React.FormEvent<HTMLFormElement>,
@@ -130,20 +129,20 @@ export default function TeacherProfile() {
       return acc;
     }, {});
 
-    const { error } = await supabase
-      .from("account_teacher")
-      .update(payload)
-      .eq("id_teacher", getidTeacher);
+    // const { error } = await supabase
+    //   .from("account_teacher")
+    //   .update(payload)
+    //   .eq("id_teacher", getidTeacher);
 
-    if (error) {
-      toast("Gagal ❌", {
-        description: "Edit Profil Gagal",
-      });
-    } else {
-      toast("Berhasil ✅", {
-        description: "Edit Profil Berhasil Di Update",
-      });
-    }
+    // if (error) {
+    //   toast("Gagal ❌", {
+    //     description: "Edit Profil Gagal",
+    //   });
+    // } else {
+    //   toast("Berhasil ✅", {
+    //     description: "Edit Profil Berhasil Di Update",
+    //   });
+    // }
   }
 
   function resultNilaiRataRata(data: { hasil_ujian: string[] }) {
@@ -181,7 +180,7 @@ export default function TeacherProfile() {
     if (nilaiYangPendingAtauTelat) {
       return (
         <Popover>
-          <PopoverTrigger asChild>
+          <PopoverTrigger>
             <h1>{nilaiRataRata}</h1>
           </PopoverTrigger>
           <PopoverContent className="w-fit p-2">
@@ -225,7 +224,7 @@ export default function TeacherProfile() {
               </div>
 
               <Dialog>
-                <DialogTrigger asChild>
+                <DialogTrigger>
                   <Button className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
                     Edit Profil
                   </Button>
@@ -293,7 +292,7 @@ export default function TeacherProfile() {
                     </p>
 
                     <DialogFooter className="gap-2">
-                      <DialogClose asChild>
+                      <DialogClose>
                         <Button variant="outline" className="rounded-xl">
                           Batal
                         </Button>

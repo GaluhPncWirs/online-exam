@@ -1,4 +1,3 @@
-import { useConvertDate } from "@/app/hooks/getConvertDate";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
+import { convertDate } from "@/src/lib/utils/date";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
 import { User2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -37,7 +37,7 @@ export default function HeaderProfile({
       <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-center">
         {/* Photo */}
         <Dialog>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <button
               type="button"
               className="group relative size-24 shrink-0 overflow-hidden rounded-full border-4 border-white/30 bg-white/10 p-1 backdrop-blur-sm sm:size-28"
@@ -88,13 +88,13 @@ export default function HeaderProfile({
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <DialogClose asChild>
+              <DialogClose>
                 <Button variant="outline" className="rounded-xl">
                   Batal
                 </Button>
               </DialogClose>
 
-              <DialogClose asChild>
+              <DialogClose>
                 <Button className="rounded-xl bg-blue-600 hover:bg-blue-700">
                   Simpan
                 </Button>
@@ -154,7 +154,7 @@ export default function HeaderProfile({
 
             <span className="text-sm font-medium text-slate-900 sm:col-span-2">
               {dataUser?.created_at
-                ? useConvertDate(dataUser.created_at, {
+                ? convertDate(dataUser.created_at, {
                     day: "numeric",
                     month: "long",
                     year: "numeric",

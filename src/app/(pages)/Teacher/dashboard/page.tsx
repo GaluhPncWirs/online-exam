@@ -5,9 +5,6 @@ import ManageStudent from "@/components/local/khususGuru/kelolaSiswa/manageStude
 import { useState } from "react";
 import HeaderDasboard from "@/components/local/forDasboard/content";
 import FloatingBarDashboardTeacher from "@/components/local/khususGuru/navigasi/floatingBar";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { useGetDataUsers } from "@/store/useGetDataUsers/state";
-import MainContent from "@/layout/mainContent/content";
 import { BarChart3, ClipboardCheck, Layers } from "lucide-react";
 import {
   Table,
@@ -17,12 +14,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useManageDataExams } from "@/app/hooks/getManageDataExams";
-import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 import PaginationUi from "@/components/global/pagination/content";
-import { useGetStatistics } from "@/app/hooks/getManageExamStatistik";
-import { usePendingExamResultsStudent } from "@/app/hooks/getExamResultStudent";
-import { getExamStatus } from "@/lib/utils/statusExam";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import { usePendingExamResultsStudent } from "@/hooks/getExamResultStudent";
+import { useGetStatistics } from "@/hooks/getManageExamStatistik";
+import { useManageDataExams } from "@/hooks/getManageDataExams";
+import MainContent from "@/src/layout/mainContent/content";
+import { getExamStatus } from "@/src/lib/utils/statusExam";
 // import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function Teacher() {

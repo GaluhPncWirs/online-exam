@@ -1,8 +1,8 @@
 "use client";
 import FooterComponent from "@/components/global/footer/footerComp";
 import NavigasiBar from "@/components/global/navigasiBar/navbar";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import { useEffect } from "react";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 
 export default function Homepage({ children }: any) {
   const getidUsers = useGetIdUsers((state) => state.setHandleGetIdUsers);

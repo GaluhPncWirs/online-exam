@@ -26,18 +26,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { supabase } from "@/lib/supabase/data";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import MainContent from "@/layout/mainContent/content";
 import { ClipboardList, PenLine, Trash2 } from "lucide-react";
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import MainContent from "@/src/layout/mainContent/content";
 
 const editExamQuestionSchema = z.object({
   id: z.string().min(1),
@@ -116,25 +115,25 @@ export default function ManageExamComponent() {
     },
   });
 
-  useEffect(() => {
-    if (!getidTeacher) return;
-    async function handleViewQuestions() {
-      const { data, error } = await supabase
-        .from("exams")
-        .select("*")
-        .eq("id", Number(id))
-        .eq("idTeacher", getidTeacher)
-        .single();
+  // useEffect(() => {
+  //   if (!getidTeacher) return;
+  //   async function handleViewQuestions() {
+  //     const { data, error } = await supabase
+  //       .from("exams")
+  //       .select("*")
+  //       .eq("id", Number(id))
+  //       .eq("idTeacher", getidTeacher)
+  //       .single();
 
-      if (error) {
-        toast("Gagal ❌", {
-          description: "Soal gagal ditampilkan.",
-        });
-      }
-      setViewQuestions(data);
-    }
-    handleViewQuestions();
-  }, [getidTeacher]);
+  //     if (error) {
+  //       toast("Gagal ❌", {
+  //         description: "Soal gagal ditampilkan.",
+  //       });
+  //     }
+  //     setViewQuestions(data);
+  //   }
+  //   handleViewQuestions();
+  // }, [getidTeacher]);
 
   async function onSubmit(formData: EditExamQuestionSchemaType) {
     const examId = viewQuestions?.id;
@@ -147,203 +146,205 @@ export default function ManageExamComponent() {
       return;
     }
 
-    try {
-      // ==========================================
-      // 1. Ambil data ujian
-      // ==========================================
+    console.log(formData);
 
-      const { data: examData, error: fetchError } = await supabase
-        .from("exams")
-        .select("questions_exam, tipeUjian")
-        .eq("id", examId)
-        .single();
+    // try {
+    //   // ==========================================
+    //   // 1. Ambil data ujian
+    //   // ==========================================
 
-      if (fetchError) {
-        console.error("Fetch exam error:", fetchError);
+    //   const { data: examData, error: fetchError } = await supabase
+    //     .from("exams")
+    //     .select("questions_exam, tipeUjian")
+    //     .eq("id", examId)
+    //     .single();
 
-        toast("Gagal ❌", {
-          description: "Ujian tidak ditemukan.",
-        });
+    //   if (fetchError) {
+    //     console.error("Fetch exam error:", fetchError);
 
-        return;
-      }
+    //     toast("Gagal ❌", {
+    //       description: "Ujian tidak ditemukan.",
+    //     });
 
-      // ==========================================
-      // 2. Pastikan questions_exam berupa array
-      // ==========================================
+    //     return;
+    //   }
 
-      const questions = Array.isArray(examData.questions_exam)
-        ? examData.questions_exam
-        : [];
+    //   // ==========================================
+    //   // 2. Pastikan questions_exam berupa array
+    //   // ==========================================
 
-      // ==========================================
-      // 3. Cek apakah soal yang diedit ada
-      // ==========================================
+    //   const questions = Array.isArray(examData.questions_exam)
+    //     ? examData.questions_exam
+    //     : [];
 
-      const questionExists = questions.some(
-        (question) => question.id === formData.id,
-      );
+    //   // ==========================================
+    //   // 3. Cek apakah soal yang diedit ada
+    //   // ==========================================
 
-      if (!questionExists) {
-        toast("Gagal ❌", {
-          description: "Soal yang ingin diedit tidak ditemukan.",
-        });
+    //   const questionExists = questions.some(
+    //     (question) => question.id === formData.id,
+    //   );
 
-        return;
-      }
+    //   if (!questionExists) {
+    //     toast("Gagal ❌", {
+    //       description: "Soal yang ingin diedit tidak ditemukan.",
+    //     });
 
-      // ==========================================
-      // 4. Update soal
-      // ==========================================
+    //     return;
+    //   }
 
-      const updatedQuestions = questions.map((question) => {
-        if (question.id !== formData.id) {
-          return question;
-        }
+    //   // ==========================================
+    //   // 4. Update soal
+    //   // ==========================================
 
-        if (examData.tipeUjian === "pg") {
-          return {
-            ...question,
-            questions: formData.pertanyaan,
-            answerPg: formData.pilihanGanda,
-            correctAnswer: formData.jawabanYangBenar,
-          };
-        }
+    //   const updatedQuestions = questions.map((question) => {
+    //     if (question.id !== formData.id) {
+    //       return question;
+    //     }
 
-        return {
-          ...question,
-          questions: formData.pertanyaan,
-        };
-      });
+    //     if (examData.tipeUjian === "pg") {
+    //       return {
+    //         ...question,
+    //         questions: formData.pertanyaan,
+    //         answerPg: formData.pilihanGanda,
+    //         correctAnswer: formData.jawabanYangBenar,
+    //       };
+    //     }
 
-      // ==========================================
-      // 5. Simpan ke database
-      // ==========================================
+    //     return {
+    //       ...question,
+    //       questions: formData.pertanyaan,
+    //     };
+    //   });
 
-      const { error: updateError } = await supabase
-        .from("exams")
-        .update({
-          questions_exam: updatedQuestions,
-        })
-        .eq("id", examId);
+    //   // ==========================================
+    //   // 5. Simpan ke database
+    //   // ==========================================
 
-      if (updateError) {
-        console.error("Update exam error:", updateError);
+    //   const { error: updateError } = await supabase
+    //     .from("exams")
+    //     .update({
+    //       questions_exam: updatedQuestions,
+    //     })
+    //     .eq("id", examId);
 
-        toast("Gagal ❌", {
-          description: "Soal gagal diedit. Coba periksa kembali.",
-        });
+    //   if (updateError) {
+    //     console.error("Update exam error:", updateError);
 
-        return;
-      }
+    //     toast("Gagal ❌", {
+    //       description: "Soal gagal diedit. Coba periksa kembali.",
+    //     });
 
-      // ==========================================
-      // 6. Berhasil
-      // ==========================================
+    //     return;
+    //   }
 
-      toast("Berhasil ✅", {
-        description: "Soal berhasil diperbarui.",
-      });
+    //   // ==========================================
+    //   // 6. Berhasil
+    //   // ==========================================
 
-      setOpenDialog((prev) => ({
-        ...prev,
-        editExam: false,
-      }));
-    } catch (error) {
-      console.error("Unexpected update error:", error);
+    //   toast("Berhasil ✅", {
+    //     description: "Soal berhasil diperbarui.",
+    //   });
 
-      toast("Gagal ❌", {
-        description: "Terjadi kesalahan. Silakan coba lagi.",
-      });
-    }
+    //   setOpenDialog((prev) => ({
+    //     ...prev,
+    //     editExam: false,
+    //   }));
+    // } catch (error) {
+    //   console.error("Unexpected update error:", error);
+
+    //   toast("Gagal ❌", {
+    //     description: "Terjadi kesalahan. Silakan coba lagi.",
+    //   });
+    // }
   }
 
-  async function handleDeleteQuestion(questionId: string) {
-    try {
-      // =========================================
-      // 1. Ambil data soal dari exam
-      // =========================================
+  // async function handleDeleteQuestion(questionId: string) {
+  //   try {
+  //     // =========================================
+  //     // 1. Ambil data soal dari exam
+  //     // =========================================
 
-      const { data: exam, error: fetchError } = await supabase
-        .from("exams")
-        .select("questions_exam")
-        .eq("id", viewQuestions?.id)
-        .single();
+  //     const { data: exam, error: fetchError } = await supabase
+  //       .from("exams")
+  //       .select("questions_exam")
+  //       .eq("id", viewQuestions?.id)
+  //       .single();
 
-      if (fetchError) {
-        console.error("Fetch exam error:", fetchError);
+  //     if (fetchError) {
+  //       console.error("Fetch exam error:", fetchError);
 
-        toast("Gagal ❌", {
-          description: "Data ujian gagal diambil.",
-        });
+  //       toast("Gagal ❌", {
+  //         description: "Data ujian gagal diambil.",
+  //       });
 
-        return;
-      }
+  //       return;
+  //     }
 
-      // =========================================
-      // 2. Pastikan questions_exam berupa array
-      // =========================================
+  //     // =========================================
+  //     // 2. Pastikan questions_exam berupa array
+  //     // =========================================
 
-      const questions = Array.isArray(exam?.questions_exam)
-        ? exam.questions_exam
-        : [];
+  //     const questions = Array.isArray(exam?.questions_exam)
+  //       ? exam.questions_exam
+  //       : [];
 
-      // =========================================
-      // 3. Hapus soal berdasarkan ID soal
-      // =========================================
+  //     // =========================================
+  //     // 3. Hapus soal berdasarkan ID soal
+  //     // =========================================
 
-      const updatedQuestions = questions.filter(
-        (question: { id: string }) => question.id !== questionId,
-      );
+  //     const updatedQuestions = questions.filter(
+  //       (question: { id: string }) => question.id !== questionId,
+  //     );
 
-      // =========================================
-      // 4. Pastikan soal memang ditemukan
-      // =========================================
+  //     // =========================================
+  //     // 4. Pastikan soal memang ditemukan
+  //     // =========================================
 
-      if (updatedQuestions.length === questions.length) {
-        toast("Gagal ❌", {
-          description: "Soal yang ingin dihapus tidak ditemukan.",
-        });
+  //     if (updatedQuestions.length === questions.length) {
+  //       toast("Gagal ❌", {
+  //         description: "Soal yang ingin dihapus tidak ditemukan.",
+  //       });
 
-        return;
-      }
+  //       return;
+  //     }
 
-      // =========================================
-      // 5. Update kembali questions_exam
-      // =========================================
+  //     // =========================================
+  //     // 5. Update kembali questions_exam
+  //     // =========================================
 
-      const { error: updateError } = await supabase
-        .from("exams")
-        .update({
-          questions_exam: updatedQuestions,
-        })
-        .eq("id", viewQuestions?.id);
+  //     const { error: updateError } = await supabase
+  //       .from("exams")
+  //       .update({
+  //         questions_exam: updatedQuestions,
+  //       })
+  //       .eq("id", viewQuestions?.id);
 
-      if (updateError) {
-        console.error("Update exam error:", updateError);
+  //     if (updateError) {
+  //       console.error("Update exam error:", updateError);
 
-        toast("Gagal ❌", {
-          description: "Soal gagal dihapus.",
-        });
+  //       toast("Gagal ❌", {
+  //         description: "Soal gagal dihapus.",
+  //       });
 
-        return;
-      }
+  //       return;
+  //     }
 
-      // =========================================
-      // 6. Berhasil
-      // =========================================
+  //     // =========================================
+  //     // 6. Berhasil
+  //     // =========================================
 
-      toast("Berhasil ✅", {
-        description: "Soal berhasil dihapus.",
-      });
-    } catch (error) {
-      console.error("Delete question error:", error);
+  //     toast("Berhasil ✅", {
+  //       description: "Soal berhasil dihapus.",
+  //     });
+  //   } catch (error) {
+  //     console.error("Delete question error:", error);
 
-      toast("Gagal ❌", {
-        description: "Terjadi kesalahan. Silakan coba lagi.",
-      });
-    }
-  }
+  //     toast("Gagal ❌", {
+  //       description: "Terjadi kesalahan. Silakan coba lagi.",
+  //     });
+  //   }
+  // }
 
   function getDataBeforeUpdate(isTypeExam: "pg" | "essay", dataQuestion: any) {
     setSelectedQuestion(dataQuestion);
@@ -758,7 +759,7 @@ export default function ManageExamComponent() {
                   </div>
 
                   <DialogFooter className="mt-5 gap-2">
-                    <DialogClose asChild>
+                    <DialogClose>
                       <Button variant="outline" className="rounded-xl">
                         Batal
                       </Button>
@@ -801,13 +802,13 @@ export default function ManageExamComponent() {
                 </DialogHeader>
 
                 <DialogFooter className="mt-4 gap-2">
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button variant="outline" className="rounded-xl">
                       Batal
                     </Button>
                   </DialogClose>
 
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button
                       variant="destructive"
                       className="rounded-xl bg-red-600 hover:bg-red-700"

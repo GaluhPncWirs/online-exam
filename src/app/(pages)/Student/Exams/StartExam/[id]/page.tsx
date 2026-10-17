@@ -24,10 +24,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { SoalUjian } from "@/types/halamanUjian";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { Flag, List, Timer, X } from "lucide-react";
-import MainContent from "@/layout/mainContent/content";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { SoalUjian } from "@/src/types/halamanUjian";
+import MainContent from "@/src/layout/mainContent/content";
 
 export default function StartExam() {
   const router = useRouter();
@@ -692,7 +692,7 @@ export default function StartExam() {
                     </div>
 
                     <Dialog>
-                      <DialogTrigger asChild>
+                      <DialogTrigger>
                         <Button className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto">
                           Selesai Ujian
                         </Button>
@@ -725,7 +725,7 @@ export default function StartExam() {
                         </DialogHeader>
 
                         <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row">
-                          <DialogClose asChild>
+                          <DialogClose>
                             <Button
                               variant="outline"
                               className="w-full rounded-xl sm:w-auto"
@@ -734,7 +734,7 @@ export default function StartExam() {
                             </Button>
                           </DialogClose>
 
-                          <DialogClose asChild>
+                          <DialogClose>
                             <Button
                               onClick={handleSendExam}
                               className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 sm:w-auto"
