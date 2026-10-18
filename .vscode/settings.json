@@ -3,7 +3,8 @@
         "sedang memperbaiki konfigurasi proses migrasi ke repository yang baru",
         "selesai untuk memperbaiki semua path import yang ada di frontend",
         "menambahkan package lagi yang dibutuhkan karena terlewat",
-        "memperbaiki import component yang error dan menambahkan package mysql2"
+        "memperbaiki import component yang error dan menambahkan package mysql2",
+        "berhasi menghubungkan database ke dalam project dan juga melakukan query sql di dalam code editor "
     ],
     "sqltools.connections": [
         {
