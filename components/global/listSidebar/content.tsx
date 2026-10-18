@@ -1,7 +1,5 @@
-import { useHandleLogout } from "@/app/hooks/getHandleLogout";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { Home, LayoutDashboard, LogOut, User2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -15,6 +13,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useHandleLogout } from "@/hooks/getHandleLogout";
 
 export default function ListSidebar() {
   const getIdUsers = useGetIdUsers((state) => state.role);
@@ -102,7 +102,7 @@ export default function ListSidebar() {
         </div>
 
         <Dialog>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <div className="border-t border-slate-200 pt-2 md:pt-4 md:mt-5">
               <Button
                 type="button"
@@ -122,7 +122,7 @@ export default function ListSidebar() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose asChild>
+              <DialogClose>
                 <Button variant="outline">Batal</Button>
               </DialogClose>
               <Button

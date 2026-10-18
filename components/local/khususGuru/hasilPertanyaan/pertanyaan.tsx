@@ -1,4 +1,3 @@
-import { useManageExams } from "@/app/hooks/getDataManageExams";
 import PaginationUi from "@/components/global/pagination/content";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -33,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useManageExams } from "@/hooks/getDataManageExams";
 import { supabase } from "@/lib/supabase/data";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -429,7 +429,7 @@ export default function ViewQuestions() {
                             render={({ field, fieldState }) => (
                               <div className="space-y-1">
                                 <Popover>
-                                  <PopoverTrigger asChild>
+                                  <PopoverTrigger>
                                     <Button
                                       type="button"
                                       variant="outline"
@@ -609,7 +609,7 @@ export default function ViewQuestions() {
               <DialogDescription className="pt-2 leading-6">
                 Apakah Anda yakin ingin menghapus ujian{" "}
                 <span className="font-bold text-slate-900">
-                  "{selectedExam?.namaUjian}"
+                  &quot;{selectedExam?.namaUjian}&quot;
                 </span>
                 ?
                 <span className="mt-2 block">
@@ -619,13 +619,13 @@ export default function ViewQuestions() {
             </DialogHeader>
 
             <DialogFooter className="mt-4 gap-2">
-              <DialogClose asChild>
+              <DialogClose>
                 <Button variant="outline" className="rounded-xl">
                   Batal
                 </Button>
               </DialogClose>
 
-              <DialogClose asChild>
+              <DialogClose>
                 <Button
                   variant="destructive"
                   className="rounded-xl bg-red-600 hover:bg-red-700"
@@ -666,7 +666,7 @@ export default function ViewQuestions() {
               }))
             }
           >
-            <DialogTrigger asChild>
+            <DialogTrigger>
               <Button
                 type="button"
                 className="w-full rounded-xl bg-blue-500 px-7 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-600 md:w-auto"
@@ -688,7 +688,7 @@ export default function ViewQuestions() {
               </DialogHeader>
 
               <DialogFooter className="mt-4 gap-2">
-                <DialogClose asChild>
+                <DialogClose>
                   <Button variant="outline" className="rounded-xl">
                     Batal
                   </Button>

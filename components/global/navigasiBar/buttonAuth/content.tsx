@@ -1,7 +1,7 @@
-import { useHandleLogout } from "@/app/hooks/getHandleLogout";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -9,9 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { DialogClose } from "@radix-ui/react-dialog";
+import { useHandleLogout } from "@/hooks/getHandleLogout";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import Link from "next/link";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 
 export default function ButtonAutentications() {
   const getidUsers = useGetIdUsers((state) => state.idUser);
@@ -20,7 +20,7 @@ export default function ButtonAutentications() {
     <>
       {getidUsers ? (
         <Dialog>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button className="bg-blue-400 hover:bg-blue-500 hover:text-slate-200 py-1.5 px-5 rounded-lg cursor-pointer font-semibold text-lg">
               Logout
             </Button>
@@ -34,10 +34,10 @@ export default function ButtonAutentications() {
             </DialogHeader>
 
             <DialogFooter>
-              <DialogClose asChild>
+              <DialogClose>
                 <Button variant="secondary">Batal</Button>
               </DialogClose>
-              <DialogClose asChild>
+              <DialogClose>
                 <Button onClick={handleLogout}>Oke</Button>
               </DialogClose>
             </DialogFooter>

@@ -18,7 +18,7 @@ export default function HeaderDashboard({
     <div className="flex items-center justify-end gap-x-3 absolute right-0">
       {remainder.length > 0 ? (
         <Popover>
-          <PopoverTrigger asChild>
+          <PopoverTrigger>
             <div className="relative flex justify-end">
               <div className="size-4 bg-red-400 absolute rounded-md flex justify-center items-center">
                 <span className="text-xs font-bold">{remainder.length}</span>

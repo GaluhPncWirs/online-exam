@@ -33,7 +33,7 @@ export default function Introduction() {
       <header className="relative flex items-center overflow-hidden">
         {/* Background Image */}
         <Image
-          src="/img/beranda/heroSectionUjian.jpg"
+          src="/images/beranda/heroSectionUjian.jpg"
           alt="Platform ujian online"
           fill
           priority
@@ -214,7 +214,7 @@ export default function Introduction() {
 
                       <div className="relative aspect-video w-full bg-slate-100">
                         <Image
-                          src="/img/beranda/dashboardSiswa.jpeg"
+                          src="/images/beranda/dashboardSiswa.jpeg"
                           alt="Dashboard siswa"
                           fill
                           sizes="(max-width: 768px) 100vw, 1024px"
@@ -250,7 +250,7 @@ export default function Introduction() {
 
                       <div className="relative aspect-video w-full bg-slate-100">
                         <Image
-                          src="/img/beranda/profileSiswa.jpeg"
+                          src="/images/beranda/profileSiswa.jpeg"
                           alt="Profile siswa"
                           fill
                           sizes="(max-width: 768px) 100vw, 1024px"
@@ -286,7 +286,7 @@ export default function Introduction() {
 
                       <div className="relative aspect-video w-full bg-slate-100">
                         <Image
-                          src="/img/beranda/ujian.jpeg"
+                          src="/images/beranda/ujian.jpeg"
                           alt="Halaman ujian"
                           fill
                           sizes="(max-width: 768px) 100vw, 1024px"
@@ -322,7 +322,7 @@ export default function Introduction() {
 
                       <div className="relative aspect-video w-full bg-slate-100">
                         <Image
-                          src="/img/beranda/riwayatUjian.jpeg"
+                          src="/images/beranda/riwayatUjian.jpeg"
                           alt="Riwayat ujian"
                           fill
                           sizes="(max-width: 768px) 100vw, 1024px"

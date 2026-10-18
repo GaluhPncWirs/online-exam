@@ -9,7 +9,7 @@ export default function FooterComponent() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Image
-              src="/img/global/logo.png"
+              src="/images/global/logo.png"
               alt="ExamOnline"
               width={500}
               height={500}

@@ -1,5 +1,4 @@
 "use client";
-import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 import PaginationUi from "@/components/global/pagination/content";
 import {
   HoverCard,
@@ -14,7 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
+import { useResultExamDataStudent } from "@/hooks/getDataResultStudent";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -166,7 +166,7 @@ export default function ManageStudent() {
                               >
                                 {isPending && isEssay ? (
                                   <HoverCard>
-                                    <HoverCardTrigger asChild>
+                                    <HoverCardTrigger>
                                       <Link
                                         href={`/Teacher/dashboard/correctionEssay/${nilaiUjian.idUjian}/${data.student_id}`}
                                         className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-600 transition-colors hover:bg-amber-100"

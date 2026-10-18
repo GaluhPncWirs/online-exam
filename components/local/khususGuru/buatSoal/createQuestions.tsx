@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase/data";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,13 +19,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useRandomId } from "@/app/hooks/getRandomId";
 import { Textarea } from "@/components/ui/textarea";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useDataNameExams } from "@/app/hooks/getDataExams";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { useDataNameExams } from "@/hooks/getDataExams";
 
 const createExamSchema = z
   .object({
@@ -180,166 +178,166 @@ export default function CreateNewQuestions() {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
     const isMultipleChoice = isTypeExam === "pg";
 
-    try {
-      // =========================================================
-      // 1. Jika membuat ujian baru, cek nama ujian terlebih dahulu
-      // =========================================================
+    // try {
+    //   // =========================================================
+    //   // 1. Jika membuat ujian baru, cek nama ujian terlebih dahulu
+    //   // =========================================================
 
-      if (isNewExam) {
-        const { data: existingExam, error: checkError } = await supabase
-          .from("exams")
-          .select("id")
-          .eq("nama_ujian", dataNewExam.namaUjianBaru)
-          .eq("idTeacher", idTeacher)
-          .maybeSingle();
+    //   if (isNewExam) {
+    //     const { data: existingExam, error: checkError } = await supabase
+    //       .from("exams")
+    //       .select("id")
+    //       .eq("nama_ujian", dataNewExam.namaUjianBaru)
+    //       .eq("idTeacher", idTeacher)
+    //       .maybeSingle();
 
-        if (checkError) {
-          console.error("Check exam error:", checkError);
+    //     if (checkError) {
+    //       console.error("Check exam error:", checkError);
 
-          toast("Gagal ❌", {
-            description: "Gagal memeriksa nama ujian.",
-          });
+    //       toast("Gagal ❌", {
+    //         description: "Gagal memeriksa nama ujian.",
+    //       });
 
-          return;
-        }
+    //       return;
+    //     }
 
-        if (existingExam) {
-          toast("Gagal ❌", {
-            description: "Nama ujian tersebut sudah pernah dibuat.",
-          });
+    //     if (existingExam) {
+    //       toast("Gagal ❌", {
+    //         description: "Nama ujian tersebut sudah pernah dibuat.",
+    //       });
 
-          return;
-        }
+    //       return;
+    //     }
 
-        // =======================================================
-        // 2. Buat question pertama
-        // =======================================================
+    //     // =======================================================
+    //     // 2. Buat question pertama
+    //     // =======================================================
 
-        const question = isMultipleChoice
-          ? {
-              id: useRandomId(7, "EX"),
-              questions: dataNewExam.pertanyaan,
-              answerPg: dataNewExam.pilihanGanda,
-              correctAnswer: dataNewExam.jawabanYangBenar,
-            }
-          : {
-              id: useRandomId(7, "EX"),
-              questions: dataNewExam.pertanyaan,
-            };
+    //     const question = isMultipleChoice
+    //       ? {
+    //           id: useRandomId(7, "EX"),
+    //           questions: dataNewExam.pertanyaan,
+    //           answerPg: dataNewExam.pilihanGanda,
+    //           correctAnswer: dataNewExam.jawabanYangBenar,
+    //         }
+    //       : {
+    //           id: useRandomId(7, "EX"),
+    //           questions: dataNewExam.pertanyaan,
+    //         };
 
-        const { error: insertError } = await supabase.from("exams").insert({
-          created_at_exams: new Date().toISOString(),
-          nama_ujian: dataNewExam.namaUjianBaru,
-          questions_exam: [question],
-          idTeacher,
-          tipeUjian: dataNewExam.typeUjian,
-        });
+    //     const { error: insertError } = await supabase.from("exams").insert({
+    //       created_at_exams: new Date().toISOString(),
+    //       nama_ujian: dataNewExam.namaUjianBaru,
+    //       questions_exam: [question],
+    //       idTeacher,
+    //       tipeUjian: dataNewExam.typeUjian,
+    //     });
 
-        if (insertError) {
-          console.error("Insert exam error:", insertError);
+    //     if (insertError) {
+    //       console.error("Insert exam error:", insertError);
 
-          toast("Gagal ❌", {
-            description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
-          });
+    //       toast("Gagal ❌", {
+    //         description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
+    //       });
 
-          return;
-        }
+    //       return;
+    //     }
 
-        toast("Berhasil ✅", {
-          description: isMultipleChoice
-            ? "Soal pilihan ganda berhasil ditambahkan."
-            : "Soal essay berhasil ditambahkan.",
-        });
+    //     toast("Berhasil ✅", {
+    //       description: isMultipleChoice
+    //         ? "Soal pilihan ganda berhasil ditambahkan."
+    //         : "Soal essay berhasil ditambahkan.",
+    //     });
 
-        setOpenDialog(false);
-        return;
-      }
+    //     setOpenDialog(false);
+    //     return;
+    //   }
 
-      // =========================================================
-      // 3. Tambahkan soal ke ujian yang sudah ada
-      // =========================================================
+    //   // =========================================================
+    //   // 3. Tambahkan soal ke ujian yang sudah ada
+    //   // =========================================================
 
-      const { data: exam, error: examError } = await supabase
-        .from("exams")
-        .select("id, questions_exam, idTeacher")
-        .eq("nama_ujian", selectedValueNameExam)
-        .eq("idTeacher", idTeacher)
-        .maybeSingle();
+    //   const { data: exam, error: examError } = await supabase
+    //     .from("exams")
+    //     .select("id, questions_exam, idTeacher")
+    //     .eq("nama_ujian", selectedValueNameExam)
+    //     .eq("idTeacher", idTeacher)
+    //     .maybeSingle();
 
-      if (examError) {
-        console.error("Get exam error:", examError);
+    //   if (examError) {
+    //     console.error("Get exam error:", examError);
 
-        toast("Gagal ❌", {
-          description: "Gagal mengambil data ujian.",
-        });
+    //     toast("Gagal ❌", {
+    //       description: "Gagal mengambil data ujian.",
+    //     });
 
-        return;
-      }
+    //     return;
+    //   }
 
-      if (!exam) {
-        toast("Gagal ❌", {
-          description: "Ujian tidak ditemukan.",
-        });
+    //   if (!exam) {
+    //     toast("Gagal ❌", {
+    //       description: "Ujian tidak ditemukan.",
+    //     });
 
-        return;
-      }
+    //     return;
+    //   }
 
-      // =========================================================
-      // 4. Buat question baru
-      // =========================================================
+    //   // =========================================================
+    //   // 4. Buat question baru
+    //   // =========================================================
 
-      const newQuestion = isMultipleChoice
-        ? {
-            id: useRandomId(7, "EX"),
-            questions: dataNewExam.pertanyaan,
-            answerPg: dataNewExam.pilihanGanda,
-            correctAnswer: dataNewExam.jawabanYangBenar,
-          }
-        : {
-            id: useRandomId(7, "EX"),
-            questions: dataNewExam.pertanyaan,
-          };
+    //   const newQuestion = isMultipleChoice
+    //     ? {
+    //         id: useRandomId(7, "EX"),
+    //         questions: dataNewExam.pertanyaan,
+    //         answerPg: dataNewExam.pilihanGanda,
+    //         correctAnswer: dataNewExam.jawabanYangBenar,
+    //       }
+    //     : {
+    //         id: useRandomId(7, "EX"),
+    //         questions: dataNewExam.pertanyaan,
+    //       };
 
-      const currentQuestions = Array.isArray(exam.questions_exam)
-        ? exam.questions_exam
-        : [];
+    //   const currentQuestions = Array.isArray(exam.questions_exam)
+    //     ? exam.questions_exam
+    //     : [];
 
-      const updatedQuestions = [...currentQuestions, newQuestion];
+    //   const updatedQuestions = [...currentQuestions, newQuestion];
 
-      // =========================================================
-      // 5. Update questions
-      // =========================================================
+    //   // =========================================================
+    //   // 5. Update questions
+    //   // =========================================================
 
-      const { error: updateError } = await supabase
-        .from("exams")
-        .update({
-          questions_exam: updatedQuestions,
-        })
-        .eq("id", exam.id)
-        .eq("idTeacher", idTeacher);
+    //   const { error: updateError } = await supabase
+    //     .from("exams")
+    //     .update({
+    //       questions_exam: updatedQuestions,
+    //     })
+    //     .eq("id", exam.id)
+    //     .eq("idTeacher", idTeacher);
 
-      if (updateError) {
-        console.error("Update exam error:", updateError);
+    //   if (updateError) {
+    //     console.error("Update exam error:", updateError);
 
-        toast("Gagal ❌", {
-          description: "Soal gagal ditambahkan. Periksa kembali data soal.",
-        });
+    //     toast("Gagal ❌", {
+    //       description: "Soal gagal ditambahkan. Periksa kembali data soal.",
+    //     });
 
-        return;
-      }
+    //     return;
+    //   }
 
-      toast("Berhasil ✅", {
-        description: "Soal berhasil ditambahkan.",
-      });
+    //   toast("Berhasil ✅", {
+    //     description: "Soal berhasil ditambahkan.",
+    //   });
 
-      setOpenDialog(false);
-    } catch (error) {
-      console.error("Unexpected error:", error);
+    //   setOpenDialog(false);
+    // } catch (error) {
+    //   console.error("Unexpected error:", error);
 
-      toast("Gagal ❌", {
-        description: "Terjadi kesalahan. Silakan coba lagi.",
-      });
-    }
+    //   toast("Gagal ❌", {
+    //     description: "Terjadi kesalahan. Silakan coba lagi.",
+    //   });
+    // }
   }
 
   return (
@@ -645,7 +643,7 @@ export default function CreateNewQuestions() {
             </p>
 
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogTrigger asChild>
+              <DialogTrigger>
                 <Button
                   type="button"
                   className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
@@ -733,7 +731,7 @@ export default function CreateNewQuestions() {
                 </div>
 
                 <DialogFooter className="mt-5 gap-2">
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button variant="outline" className="rounded-xl">
                       Batal
                     </Button>

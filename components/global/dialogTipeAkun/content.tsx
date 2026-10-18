@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/lib/supabase/data";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
+import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -44,24 +43,26 @@ export default function DialogFormAddDataUser({
     const formData = new FormData(event.currentTarget);
     const resultInputPayload = Object.fromEntries(formData.entries());
 
-    const { error } = await supabase
-      .from("account-student")
-      .update(resultInputPayload)
-      .eq("idStudent", idUsers)
-      .single();
+    console.log(resultInputPayload);
 
-    if (error) {
-      toast("Gagal ❌", {
-        description: "Edit Profil Gagal",
-      });
-    } else {
-      toast("Berhasil ✅", {
-        description: "Edit Profil Berhasil Di Update",
-      });
-    }
+    // const { error } = await supabase
+    //   .from("account-student")
+    //   .update(resultInputPayload)
+    //   .eq("idStudent", idUsers)
+    //   .single();
 
-    localStorage.setItem("alreadyShownTypeAccountDialog", "true");
-    setIsTypeAccount(false);
+    // if (error) {
+    //   toast("Gagal ❌", {
+    //     description: "Edit Profil Gagal",
+    //   });
+    // } else {
+    //   toast("Berhasil ✅", {
+    //     description: "Edit Profil Berhasil Di Update",
+    //   });
+    // }
+
+    // localStorage.setItem("alreadyShownTypeAccountDialog", "true");
+    // setIsTypeAccount(false);
   }
   return (
     <Dialog open={isTypeAccount}>

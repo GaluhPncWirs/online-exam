@@ -2,9 +2,9 @@
 import FooterComponent from "@/components/global/footer/footerComp";
 import NavigasiBar from "@/components/global/navigasiBar/navbar";
 import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
-export default function Homepage({ children }: any) {
+export default function Homepage({ children }: React.PropsWithChildren) {
   const getidUsers = useGetIdUsers((state) => state.setHandleGetIdUsers);
   useEffect(() => {
     getidUsers();
