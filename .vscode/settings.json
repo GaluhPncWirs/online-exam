@@ -2,6 +2,24 @@
     "conventionalCommits.scopes": [
         "sedang memperbaiki konfigurasi proses migrasi ke repository yang baru",
         "selesai untuk memperbaiki semua path import yang ada di frontend",
-        "menambahkan package lagi yang dibutuhkan karena terlewat"
+        "menambahkan package lagi yang dibutuhkan karena terlewat",
+        "memperbaiki import component yang error dan menambahkan package mysql2"
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "database": "online_exam",
+            "username": "root",
+            "password": "belajarmysql",
+            "name": "MySQL Local"
+        }
     ]
 }

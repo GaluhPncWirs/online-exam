@@ -27,7 +27,7 @@ export default function FormAuth(props: PropsFormAccount) {
             <div className="relative z-10">
               <Link href="/Introduction" className="inline-flex items-center">
                 <Image
-                  src="/img/global/logo.png"
+                  src="/images/global/logo.png"
                   alt="ExamOnline"
                   width={500}
                   height={500}

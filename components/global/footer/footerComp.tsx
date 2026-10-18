@@ -99,7 +99,7 @@ export default function FooterComponent() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col gap-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} ExamOnline. All rights reserved.</p>
+          <p>© 2026 ExamOnline. All rights reserved.</p>
 
           <div className="flex flex-wrap gap-5">
             <Link
