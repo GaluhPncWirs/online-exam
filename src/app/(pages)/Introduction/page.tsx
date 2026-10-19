@@ -24,9 +24,21 @@ import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 import AlurUjian from "@/components/local/beranda/alurUjian/content";
 import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import Homepage from "@/src/layout/homepage/content";
+import { useEffect } from "react";
 
 export default function Introduction() {
   const getidUsers = useGetIdUsers((state) => state.role);
+
+  useEffect(() => {
+    async function getData() {
+      const req = await fetch("/api/login");
+      const res = await req.json();
+
+      console.log(res);
+    }
+
+    getData();
+  }, []);
 
   return (
     <Homepage>
