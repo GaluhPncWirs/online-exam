@@ -15,3 +15,8 @@ CREATE TABLE manage_exams (
 )ENGINE=innodb
 
 DESCRIBE manage_exams
+
+INSERT INTO manage_exams (id_manage_exam, id_teacher, id_subject, class, deadline_exam, duration_exam, is_manage_exam) VALUES 
+('MNG-oxTG3r', 'TCR-ar45dgU', 'SUB-wPTu3V', '3A', '2026-09-10 10:30:00', 1800, TRUE)
+
+SELECT * FROM manage_exams

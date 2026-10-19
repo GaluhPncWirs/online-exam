@@ -5,7 +5,8 @@
         "menambahkan package lagi yang dibutuhkan karena terlewat",
         "memperbaiki import component yang error dan menambahkan package mysql2",
         "berhasi menghubungkan database ke dalam project dan juga melakukan query sql di dalam code editor ",
-        "sedang membuat struktur table yang dibutuhkan. yang selesai baru table student dan teacher"
+        "sedang membuat struktur table yang dibutuhkan. yang selesai baru table student dan teacher",
+        "selesai membuat seluruh table yang diperlukan untuk project ini "
     ],
     "sqltools.connections": [
         {
