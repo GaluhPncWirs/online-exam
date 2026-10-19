@@ -8,7 +8,8 @@
         "sedang membuat struktur table yang dibutuhkan. yang selesai baru table student dan teacher",
         "selesai membuat seluruh table yang diperlukan untuk project ini ",
         "sudah bisa menambahkan data kedalam setiap table yang ada",
-        "sedang mengerjakan untuk proses autentikasi"
+        "sedang mengerjakan untuk proses autentikasi",
+        "selesai memperbaiki bug error pada saat login"
     ],
     "sqltools.connections": [
         {

@@ -1,25 +1,23 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { handleUserLogin } from "@/src/services/mysql/data-student";
 
 export async function POST(req: Request) {
   const body = await req.json();
 
-  if (body.valueTypeAccount === "siswa") {
+  try {
     const userLogin = await handleUserLogin({
       role: body.valueTypeAccount,
       email: body.valueEmail,
       password: body.valuePassword,
     });
-    const token = jwt.sign(
-      {
-        idStudent: userLogin.data?.id_student,
-        typeAccount: userLogin.data?.type_account,
-        role: "pelajar",
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "3h" },
-    );
+
+    if (!userLogin.success) {
+      return NextResponse.json({
+        success: false,
+        status: userLogin.status,
+        message: userLogin.message,
+      });
+    }
 
     const res = NextResponse.json({
       success: true,
@@ -28,48 +26,21 @@ export async function POST(req: Request) {
       message: userLogin.message,
     });
 
-    res.cookies.set("loginSession", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-    });
+    if (userLogin.token) {
+      res.cookies.set("loginSession", userLogin.token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+      });
+    }
     return res;
-  } else if (body.valueTypeAccount === "guru") {
-    const userLogin = await handleUserLogin({
-      role: body.valueTypeAccount,
-      email: body.valueEmail,
-      password: body.valuePassword,
+  } catch (error) {
+    console.error("Error during login:", error);
+    return NextResponse.json({
+      success: false,
+      status: 500,
+      message: "Internal Server Error",
     });
-    const token = jwt.sign(
-      {
-        idTeacher: userLogin.data?.id_teacher,
-        typeAccount: userLogin.data?.type_account,
-        role: "pengajar",
-      },
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: "3h",
-      },
-    );
-    const res = NextResponse.json({
-      success: true,
-      tipe: userLogin.data?.type_account,
-      message: userLogin.message,
-    });
-    res.cookies.set("loginSession", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/",
-    });
-    return res;
-  } else {
-    console.log("jenis akun belum dipilih");
   }
-  return NextResponse.json({
-    success: false,
-    status: 401,
-    message: "Gagal Fetch Api Autentikasi",
-  });
 }

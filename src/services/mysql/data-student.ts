@@ -12,7 +12,7 @@ type PropsUserLogin = {
 type UserLoginRow = RowDataPacket & {
   id_student?: string;
   id_teacher?: string;
-  type_account: string;
+  type_account: "default" | "google";
 };
 
 type ResultUserLogin = {
@@ -20,7 +20,13 @@ type ResultUserLogin = {
   message: string;
   status: number;
   data?: UserLoginRow;
-  token? : string
+  token?: string;
+};
+
+type TokenJWT = {
+  idUser: string;
+  typeAccount: "default" | "google";
+  role: "siswa" | "guru";
 };
 
 export async function handleUserLogin({
@@ -31,8 +37,14 @@ export async function handleUserLogin({
   try {
     const query =
       role === "siswa"
-        ? `SELECT id_student, role FROM account_students WHERE email = ? AND password = ? LIMIT 1`
-        : `SELECT id_teacher, role FROM account_teacher WHERE email = ? AND password = ? LIMIT 1`;
+        ? `SELECT id_student, type_account
+           FROM account_students
+           WHERE email = ? AND password = ?
+           LIMIT 1`
+        : `SELECT id_teacher, type_account
+           FROM account_teacher
+           WHERE email = ? AND password = ?
+           LIMIT 1`;
 
     const [rows] = await pool.execute<UserLoginRow[]>(query, [email, password]);
 
@@ -46,22 +58,32 @@ export async function handleUserLogin({
       };
     }
 
-        const token = jwt.sign(
-      {
-        idUser: user[],
-        typeAccount: userLogin.data?.type_account,
-        role: "pelajar",
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "3h" },
-    );
+    const idUser = role === "siswa" ? user.id_student : user.id_teacher;
+
+    if (!idUser) {
+      return {
+        success: false,
+        status: 401,
+        message: "Data akun tidak valid",
+      };
+    }
+
+    const token: TokenJWT = {
+      idUser,
+      typeAccount: user.type_account,
+      role,
+    };
+
+    const tokenJWT = jwt.sign(token, process.env.JWT_SECRET!, {
+      expiresIn: "3h",
+    });
 
     return {
       success: true,
       status: 200,
       message: "Berhasil masuk, Selamat datang kembali",
       data: user,
-      token
+      token: tokenJWT,
     };
   } catch (error) {
     console.error("Gagal mengambil data akun", error);
