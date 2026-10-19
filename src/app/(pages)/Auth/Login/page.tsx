@@ -9,21 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import FormAuth from "@/src/layout/formAuth/content";
+import { InputLogin, inputLoginSchema } from "@/src/schemas/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AtSign, Book, GraduationCap, KeyRound, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const inputLoginSchema = z.object({
-  typeAccount: z.string().min(1, "Pilih tipe akun terlebih dahulu"),
-  email: z.email().min(5, "Minimal 5 karakter"),
-  password: z.string().min(1, "Password tidak boleh kosong"),
-});
-
-type InputLogin = z.infer<typeof inputLoginSchema>;
 
 export default function LoginAccount() {
   const { push } = useRouter();
@@ -34,6 +26,9 @@ export default function LoginAccount() {
     formState: { errors, isSubmitting },
   } = useForm<InputLogin>({
     resolver: zodResolver(inputLoginSchema),
+    defaultValues: {
+      typeAccount: "siswa",
+    },
   });
 
   async function onSubmit(data: InputLogin) {
@@ -44,7 +39,7 @@ export default function LoginAccount() {
     };
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -53,27 +48,27 @@ export default function LoginAccount() {
       const dataLogin = await response.json();
 
       if (!dataLogin.success) {
-        toast("Gagal ❌", {
+        toast.error("Gagal", {
           description: dataLogin.message,
         });
         return;
       }
 
-      if (dataLogin.tipe === "siswa") {
-        // push("/Student/Dashboard");
-        toast("Berhasil ✅", {
-          description: dataLogin.message,
-        });
-        return;
-      } else {
-        // push("/Teacher/dashboard");
-        toast("Berhasil ✅", {
+      if (dataLogin.tipe === "guru") {
+        push("/Teacher/dashboard");
+        toast.success("Berhasil", {
           description: dataLogin.message,
         });
         return;
       }
-    } catch (err) {
-      toast("Gagal ❌", {
+
+      push("/Student/Dashboard");
+      toast.success("Berhasil", {
+        description: dataLogin.message,
+      });
+      return;
+    } catch {
+      toast.error("Gagal", {
         description: "Error fetch api",
       });
     }
@@ -91,12 +86,12 @@ export default function LoginAccount() {
             <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger
                 id="accountType"
-                className="w-full rounded-lg border-slate-200 bg-slate-50 px-4 shadow-none transition-all focus:border-blue-500 focus:ring-blue-500"
+                className="w-full border-slate-200 bg-slate-50 px-4 shadow-none text-sm transition-all focus:border-blue-500 focus:ring-blue-500"
               >
                 <SelectValue placeholder="Pilih jenis akun" />
               </SelectTrigger>
 
-              <SelectContent className="rounded-lg border-slate-200 bg-white">
+              <SelectContent>
                 <SelectItem value="guru">
                   <GraduationCap className="size-5" /> Guru
                 </SelectItem>

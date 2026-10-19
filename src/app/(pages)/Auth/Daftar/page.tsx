@@ -11,42 +11,16 @@ import {
   UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { z } from "zod";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormAuth from "@/src/layout/formAuth/content";
-import { generateRandomId } from "@/src/lib/utils/getRandomId";
-
-const inputRegisterSchema = z
-  .object({
-    nama: z
-      .string()
-      .min(2, "Nama minimal 2 karakter")
-      .max(100, "Nama maksimal 100 karakter"),
-    kelas: z.string().min(1, "Kelas tidak boleh kosong"),
-    email: z.email().min(5, "Minimal 5 karakter"),
-    password: z
-      .string()
-      .min(6, "Password minimal 6 karakter")
-      .max(100, "Password maksimal 100 karakter"),
-    ulangiPassword: z
-      .string()
-      .min(6, "Password minimal 6 karakter")
-      .max(100, "Password maksimal 100 karakter"),
-  })
-  .refine((data) => data.password === data.ulangiPassword, {
-    message: "Password tidak sama",
-    path: ["ulangiPassword"],
-  });
-
-type InputRegister = z.infer<typeof inputRegisterSchema>;
+import { InputRegister, inputRegisterSchema } from "@/src/schemas/auth";
 
 export default function RegisterAccount() {
   const { push } = useRouter();
   const {
-    control,
     register,
-    watch,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<InputRegister>({
@@ -59,54 +33,34 @@ export default function RegisterAccount() {
       classes: data.kelas,
       email: data.email,
       password: data.password,
-      role: "pelajar",
-      idStudent: generateRandomId(7, "STD"),
-      typeAccount: "default",
     };
 
-    console.log(dataRegister);
-    // try {
-    //   const { data: existingAccount, error: checkError } = await supabase
-    //     .from("account-student")
-    //     .select("email")
-    //     .eq("email", data.email)
-    //     .limit(1);
+    try {
+      const req = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataRegister),
+      });
 
-    //   if (checkError) {
-    //     toast("Gagal ❌", {
-    //       description: "Terjadi kesalahan saat mengecek email",
-    //     });
-    //     return;
-    //   }
+      const res = await req.json();
 
-    //   if (existingAccount.length > 0) {
-    //     toast("Gagal ❌", {
-    //       description: "Email sudah terdaftar. Gunakan email yang berbeda.",
-    //     });
-    //     return;
-    //   }
+      if (!res.success) {
+        toast.error("Gagal", {
+          description: res.message,
+        });
+        return;
+      }
 
-    //   const { error: insertError } = await supabase
-    //     .from("account-student")
-    //     .insert(dataRegister);
+      push("/Auth/Login");
 
-    //   if (insertError) {
-    //     toast("Gagal ❌", {
-    //       description: "Gagal membuat akun",
-    //     });
-    //     return;
-    //   }
-
-    //   push("/Auth/Login");
-
-    //   toast("Berhasil ✅", {
-    //     description: "Berhasil membuat akun. Silakan login.",
-    //   });
-    // } catch (err) {
-    //   toast("Gagal ❌", {
-    //     description: "Error fetch api",
-    //   });
-    // }
+      toast.success("Berhasil", {
+        description: res.message,
+      });
+    } catch {
+      toast.error("Gagal", {
+        description: "Error fetch api",
+      });
+    }
   }
 
   return (
