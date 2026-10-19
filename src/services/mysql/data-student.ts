@@ -4,7 +4,7 @@ import { RowDataPacket } from "mysql2";
 import jwt from "jsonwebtoken";
 
 type PropsUserLogin = {
-  role: "student" | "teacher";
+  role: "siswa" | "guru";
   email: string;
   password: string;
 };
@@ -18,8 +18,9 @@ type UserLoginRow = RowDataPacket & {
 type ResultUserLogin = {
   success: boolean;
   message: string;
-  status?: number;
+  status: number;
   data?: UserLoginRow;
+  token? : string
 };
 
 export async function handleUserLogin({
@@ -29,9 +30,9 @@ export async function handleUserLogin({
 }: PropsUserLogin): Promise<ResultUserLogin> {
   try {
     const query =
-      role === "student"
-        ? "SELECT id_student, type_account FROM account_students WHERE email = ? AND password = ? LIMIT 1"
-        : "SELECT id_teacher, type_account FROM account_teacher WHERE email = ? AND password = ? LIMIT 1";
+      role === "siswa"
+        ? `SELECT id_student, role FROM account_students WHERE email = ? AND password = ? LIMIT 1`
+        : `SELECT id_teacher, role FROM account_teacher WHERE email = ? AND password = ? LIMIT 1`;
 
     const [rows] = await pool.execute<UserLoginRow[]>(query, [email, password]);
 
@@ -45,11 +46,22 @@ export async function handleUserLogin({
       };
     }
 
+        const token = jwt.sign(
+      {
+        idUser: user[],
+        typeAccount: userLogin.data?.type_account,
+        role: "pelajar",
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "3h" },
+    );
+
     return {
       success: true,
       status: 200,
       message: "Berhasil masuk, Selamat datang kembali",
       data: user,
+      token
     };
   } catch (error) {
     console.error("Gagal mengambil data akun", error);

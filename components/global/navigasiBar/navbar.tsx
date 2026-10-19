@@ -13,7 +13,7 @@ export default function NavigasiBar() {
         <div className="flex items-center">
           <Link href="/" className="shrink-0">
             <Image
-              src="/img/global/logo.png"
+              src="/images/global/logo.png"
               alt="ExamOnline"
               width={500}
               height={500}

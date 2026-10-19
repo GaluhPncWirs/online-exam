@@ -22,24 +22,9 @@ import {
 } from "lucide-react";
 import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 import AlurUjian from "@/components/local/beranda/alurUjian/content";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import Homepage from "@/src/layout/homepage/content";
-import { useEffect } from "react";
 
 export default function Introduction() {
-  const getidUsers = useGetIdUsers((state) => state.role);
-
-  useEffect(() => {
-    async function getData() {
-      const req = await fetch("/api/login");
-      const res = await req.json();
-
-      console.log(res);
-    }
-
-    getData();
-  }, []);
-
   return (
     <Homepage>
       <header className="relative flex items-center overflow-hidden">
@@ -87,11 +72,12 @@ export default function Introduction() {
               <div className="mt-8 flex gap-4 items-center">
                 <Link
                   href={
-                    getidUsers.includes("pelajar")
-                      ? "/Student/Dashboard"
-                      : getidUsers.includes("pengajar")
-                        ? "/Teacher/dashboard"
-                        : "/Auth/Login"
+                    "/Auth/Login"
+                    // getidUsers.includes("pelajar")
+                    //   ? "/Student/Dashboard"
+                    //   : getidUsers.includes("pengajar")
+                    //     ? "/Teacher/dashboard"
+                    //     : "/Auth/Login"
                   }
                   className="group inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
                 >

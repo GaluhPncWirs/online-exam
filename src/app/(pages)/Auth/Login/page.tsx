@@ -62,13 +62,13 @@ export default function LoginAccount() {
       if (dataLogin.tipe === "siswa") {
         // push("/Student/Dashboard");
         toast("Berhasil ✅", {
-          description: "berhasil masuk",
+          description: dataLogin.message,
         });
         return;
       } else {
         // push("/Teacher/dashboard");
         toast("Berhasil ✅", {
-          description: "berhasil masuk",
+          description: dataLogin.message,
         });
         return;
       }
