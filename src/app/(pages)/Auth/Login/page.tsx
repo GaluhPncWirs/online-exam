@@ -43,39 +43,40 @@ export default function LoginAccount() {
       valueTypeAccount: data.typeAccount,
     };
 
-    console.log(payload);
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    // try {
-    //   const response = await fetch("/api/login", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   });
+      const dataLogin = await response.json();
 
-    //   const dataLogin = await response.json();
+      if (!dataLogin.success) {
+        toast("Gagal ❌", {
+          description: dataLogin.message,
+        });
+        return;
+      }
 
-    //   if (!dataLogin.success) {
-    //     toast("Gagal ❌", {
-    //       description: dataLogin.message,
-    //     });
-    //   }
-
-    //   if (dataLogin.tipe === "siswa") {
-    //     push("/Student/Dashboard");
-    //     toast("Berhasil ✅", {
-    //       description: dataLogin.message,
-    //     });
-    //   } else {
-    //     push("/Teacher/dashboard");
-    //     toast("Berhasil ✅", {
-    //       description: dataLogin.message,
-    //     });
-    //   }
-    // } catch (err) {
-    //   toast("Gagal ❌", {
-    //     description: "Error fetch api",
-    //   });
-    // }
+      if (dataLogin.tipe === "siswa") {
+        // push("/Student/Dashboard");
+        toast("Berhasil ✅", {
+          description: "berhasil masuk",
+        });
+        return;
+      } else {
+        // push("/Teacher/dashboard");
+        toast("Berhasil ✅", {
+          description: "berhasil masuk",
+        });
+        return;
+      }
+    } catch (err) {
+      toast("Gagal ❌", {
+        description: "Error fetch api",
+      });
+    }
   }
 
   return (
