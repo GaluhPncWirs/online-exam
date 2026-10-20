@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { convertDate } from "@/src/lib/utils/date";
-import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
+import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { User2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -22,7 +21,7 @@ export default function HeaderProfile({
 }: {
   children: React.ReactNode;
 }) {
-  const dataUser = useGetDataUsers((state) => state.dataUsers);
+  const dataUser = useGetDataUser((state) => state.dataUser);
   const [previewImgProfil, setPreviewImgProfil] = useState<string | null>(null);
 
   function handleChangeImgProfile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -141,8 +140,8 @@ export default function HeaderProfile({
             </span>
 
             <span className="text-sm font-medium text-slate-900 sm:col-span-2">
-              {dataUser?.noTlp
-                ? dataUser.noTlp.match(/.{1,4}/g)?.join("-")
+              {dataUser?.no_tlp
+                ? dataUser.no_tlp.match(/.{1,4}/g)?.join("-")
                 : "-"}
             </span>
           </div>
@@ -153,13 +152,7 @@ export default function HeaderProfile({
             </span>
 
             <span className="text-sm font-medium text-slate-900 sm:col-span-2">
-              {dataUser?.created_at
-                ? convertDate(dataUser.created_at, {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
-                : "-"}
+              {/* {dataUser?.created_at?.toLocaleDateString() || "-"} */}-
             </span>
           </div>
 

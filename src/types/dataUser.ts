@@ -1,16 +1,14 @@
 export type DataUser = {
-  id: number;
-  created_at: string;
-  fullName: string;
-  classes: string;
+  id_student: string;
+  created_at: Date;
+  fullname: string;
+  class?: string;
   email: string;
-  password: string;
-  idStudent: string;
+  type_account: string;
   role: string;
-  nis: string;
-  noTlp: string;
-  id_teacher: string;
-  imgSrc: string;
-  nisn: number;
-  pengajarMapel: string;
+  nis?: string;
+  no_tlp: string;
+  profil_img: string;
+  teach_role?: string;
+  nisn?: string;
 };

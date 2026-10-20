@@ -149,7 +149,7 @@ export default function DashboardClient() {
         <>
           <HeaderDasboard
             user="Siswa"
-            fullName={dataUser?.fullName}
+            fullname={dataUser?.fullname}
             // exams={scheduleExams}
           />
           <div className="space-y-8">
@@ -802,7 +802,7 @@ export default function DashboardClient() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <div className="min-w-[760px] animate-pulse">
+              <div className="min-w-190 animate-pulse">
                 {/* Table Header */}
                 <div className="grid grid-cols-[60px_2fr_1.5fr_1.5fr_1.2fr] gap-4 bg-slate-50 px-5 py-4">
                   <div className="h-4 rounded bg-slate-200" />
@@ -841,7 +841,7 @@ export default function DashboardClient() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <div className="min-w-[650px] animate-pulse">
+              <div className="min-w-162.5 animate-pulse">
                 {/* Table Header */}
                 <div className="grid grid-cols-[60px_2fr_1.5fr_1fr] gap-4 bg-slate-50 px-5 py-4">
                   <div className="h-4 rounded bg-slate-200" />

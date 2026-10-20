@@ -13,19 +13,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import { useHandleLogout } from "@/hooks/getHandleLogout";
+import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 
 export default function ListSidebar() {
-  const getIdUsers = useGetIdUsers((state) => state.role);
+  const dataUser = useGetDataUser((state) => state.dataUser);
   const pathName = usePathname();
   return (
     <div className="flex flex-1 flex-col px-4 py-7">
       <Link
         href={
-          getIdUsers.includes("pelajar")
+          dataUser?.role.includes("student")
             ? "/Student/Dashboard"
-            : getIdUsers.includes("pengajar")
+            : dataUser?.role.includes("teacher")
               ? "/Teacher/dashboard"
               : "/"
         }
@@ -45,9 +45,9 @@ export default function ListSidebar() {
         <div className="grid grid-cols-3 md:grid-cols-1 gap-1">
           <Link
             href={
-              getIdUsers.includes("pelajar")
+              dataUser?.role.includes("student")
                 ? "/Student/Dashboard"
-                : getIdUsers.includes("pengajar")
+                : dataUser?.role.includes("teacher")
                   ? "/Teacher/dashboard"
                   : "/"
             }
@@ -66,9 +66,9 @@ export default function ListSidebar() {
 
           <Link
             href={
-              getIdUsers.includes("pelajar")
+              dataUser?.role.includes("student")
                 ? "/Student/Profile"
-                : getIdUsers.includes("pengajar")
+                : dataUser?.role.includes("teacher")
                   ? "/Teacher/Profile"
                   : "/"
             }

@@ -4,12 +4,12 @@ import { usePathname } from "next/navigation";
 
 type propsHeaderDahboard = {
   user: string;
-  fullName: string;
+  fullname: string;
   exams?: any;
 };
 
 export default function HeaderDasboard(props: propsHeaderDahboard) {
-  const { user, fullName, exams } = props;
+  const { user, fullname, exams } = props;
   const pathName = usePathname();
 
   function informExams() {
@@ -82,7 +82,7 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
             </p>
 
             <h2 className="mt-1 text-2xl font-extrabold capitalize sm:text-3xl">
-              {fullName}
+              {fullname}
             </h2>
 
             <p className="mt-2 max-w-xl text-sm leading-6 text-blue-50 sm:text-base">

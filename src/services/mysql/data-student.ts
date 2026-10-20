@@ -165,12 +165,12 @@ export async function handleGetDataUser(
     role === "siswa"
       ? `
   SELECT 
-  id_student, fullname, class, email, type_account, role, nis, no_tlp, profil_img 
+  id_student, created_at, fullname, class, email, type_account, role, nis, no_tlp, profil_img 
     FROM account_students 
   WHERE id_student = ? 
   LIMIT 1`
       : `
-  SELECT id_teacher, fullname, email, role, teach_role, nisn, no_tlp, profil_img 
+  SELECT id_teacher, created_at, fullname, email, role, teach_role, nisn, no_tlp, profil_img 
     FROM account_teacher 
   WHERE id_teacher = ? 
   LIMIT 1
