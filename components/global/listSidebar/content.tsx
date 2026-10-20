@@ -20,7 +20,7 @@ export default function ListSidebar() {
   const getIdUsers = useGetIdUsers((state) => state.role);
   const pathName = usePathname();
   return (
-    <div className="flex flex-1 flex-col px-4 py-5">
+    <div className="flex flex-1 flex-col px-4 py-7">
       <Link
         href={
           getIdUsers.includes("pelajar")
@@ -31,7 +31,7 @@ export default function ListSidebar() {
         }
       >
         <Image
-          src="/img/global/logo.png"
+          src="/images/global/logo.png"
           alt="ExamOnline"
           width={400}
           height={400}
@@ -102,16 +102,9 @@ export default function ListSidebar() {
         </div>
 
         <Dialog>
-          <DialogTrigger>
-            <div className="border-t border-slate-200 pt-2 md:pt-4 md:mt-5">
-              <Button
-                type="button"
-                className="flex w-full items-center gap-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
-              >
-                <LogOut className="size-5" />
-                Logout
-              </Button>
-            </div>
+          <DialogTrigger className="flex items-center gap-3 text-sm font-semibold justify-center py-3 hover:bg-blue-100">
+            <LogOut className="size-5" />
+            Logout
           </DialogTrigger>
 
           <DialogContent>

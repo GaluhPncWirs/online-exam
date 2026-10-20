@@ -64,13 +64,13 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
         {/* Welcome */}
         <div className="mt-7 flex flex-col gap-5 sm:flex-row sm:items-center">
           {/* Profile Image */}
-          <div className="rounded-full border-4 border-white/30 bg-white/10 p-1 backdrop-blur-sm">
+          <div className="rounded-full size-20 sm:size-28 border-3 border-white/30 bg-white/10 p-0.5 backdrop-blur-sm">
             <Image
-              src="/img/global/userProfile.png"
+              src="/images/global/userProfile.png"
               alt="Foto profil siswa"
               width={500}
               height={500}
-              className="size-20 rounded-full object-cover sm:size-24"
+              className="rounded-full object-cover"
               priority
             />
           </div>

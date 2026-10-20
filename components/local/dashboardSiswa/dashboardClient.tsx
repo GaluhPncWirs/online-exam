@@ -1,12 +1,15 @@
+"use client";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "../forDasboard/content";
 import { useState } from "react";
+import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
+import { BarChart3, CalendarClock } from "lucide-react";
+import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function DashboardClient() {
-  const getIdStudent = useGetIdUsers((state) => state.idUser);
-  // const dataStudent = useGetDataUsers((state) => state.dataUsers);
-  // const scheduleExams = useDataExams(dataStudent, getIdStudent);
   const route = useRouter();
+  const dataUser = useGetDataUser((state) => state.dataUser);
+  // const scheduleExams = useDataExams(dataStudent, getIdStudent);
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<
     Record<string, boolean>
@@ -142,12 +145,12 @@ export default function DashboardClient() {
   // }, [openConfirmDialog]);
   return (
     <div>
-      {dataStudent !== null ? (
+      {dataUser !== null ? (
         <>
           <HeaderDasboard
             user="Siswa"
-            fullName={dataStudent?.fullName}
-            exams={scheduleExams}
+            fullName={dataUser?.fullName}
+            // exams={scheduleExams}
           />
           <div className="space-y-8">
             {/* Summary */}
@@ -204,7 +207,7 @@ export default function DashboardClient() {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {Math.round(averageValue) || 0}
+                        {/* {Math.round(averageValue) || 0} */}0
                       </p>
 
                       <p className="mt-1 text-xs text-slate-400">
@@ -221,7 +224,7 @@ export default function DashboardClient() {
             </section>
 
             {/* Deadline Exam */}
-            {upcomingExam && (
+            {/* {upcomingExam && (
               <section>
                 <div className="mb-4 space-y-2">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
@@ -326,7 +329,7 @@ export default function DashboardClient() {
                   </div>
                 </div>
               </section>
-            )}
+            )} */}
 
             {/* Available Exams */}
             <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
