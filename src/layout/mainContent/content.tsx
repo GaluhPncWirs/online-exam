@@ -4,40 +4,39 @@ import ListSidebar from "@/components/global/listSidebar/content";
 import { useShallow } from "zustand/shallow";
 import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 import { useVerifyToken } from "@/hooks/getVerifyToken";
-import { useGetDataUsers } from "@/src/store/useGetDataUsers/state";
 import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
-  const { loadingSession, statusToken } = useVerifyToken();
+  // const { loadingSession, statusToken } = useVerifyToken();
   const pathName = usePathname();
-  const getDataUsers = useGetDataUsers((state) => state.setGetDataUsers);
-  const { setHandleGetIdUsers, idUsers, role } = useGetIdUsers(
-    useShallow((state) => ({
-      setHandleGetIdUsers: state.setHandleGetIdUsers,
-      idUsers: state.idUser,
-      role: state.role,
-    })),
-  );
+  // const getDataUsers = useGetDataUsers((state) => state.setGetDataUsers);
+  // const { setHandleGetIdUsers, idUsers, role } = useGetIdUsers(
+  //   useShallow((state) => ({
+  //     setHandleGetIdUsers: state.setHandleGetIdUsers,
+  //     idUsers: state.idUser,
+  //     role: state.role,
+  //   })),
+  // );
 
-  useEffect(() => {
-    setHandleGetIdUsers();
-  }, [setHandleGetIdUsers]);
+  // useEffect(() => {
+  //   setHandleGetIdUsers();
+  // }, [setHandleGetIdUsers]);
 
-  useEffect(() => {
-    if (role === "pelajar") {
-      getDataUsers(idUsers, "account-student", "idStudent");
-    } else if (role === "pengajar") {
-      getDataUsers(idUsers, "account_teacher", "id_teacher");
-    }
-  }, [role, idUsers, getDataUsers]);
+  // useEffect(() => {
+  //   if (role === "pelajar") {
+  //     getDataUsers(idUsers, "account-student", "idStudent");
+  //   } else if (role === "pengajar") {
+  //     getDataUsers(idUsers, "account_teacher", "id_teacher");
+  //   }
+  // }, [role, idUsers, getDataUsers]);
 
   return (
-    <div className="bg-black">
-      <DialogFormAddDataUser idUsers={idUsers} />
+    <div>
+      {/* <DialogFormAddDataUser idUsers={idUsers} /> */}
       <div
-        className={`min-h-screen bg-slate-50 ${
-          loadingSession ? "pointer-events-none opacity-60" : ""
-        }`}
+      // className={`min-h-screen bg-slate-50 ${
+      //   loadingSession ? "pointer-events-none opacity-60" : ""
+      // }`}
       >
         {pathName.startsWith("/Student/Exams/StartExam") ? (
           children

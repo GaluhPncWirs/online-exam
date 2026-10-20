@@ -1,15 +1,17 @@
 import { handleDecodeTokenJWT } from "@/src/services/mysql/data-student";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
+  const cookieStore = await cookies();
   const tokenJWTFromLoginDefaultCookies =
-    req.cookies.get("loginSession")?.value;
-  const tokenFromGoogleCookies = req.cookies.get(
+    cookieStore.get("loginSession")?.value;
+  const tokenFromGoogleCookies = cookieStore.get(
     "next-auth.session-token",
   )?.value;
 
-  if (!tokenJWTFromLoginDefaultCookies || !tokenFromGoogleCookies) {
+  if (!tokenJWTFromLoginDefaultCookies && !tokenFromGoogleCookies) {
     return NextResponse.json({
       success: false,
       status: 401,
@@ -33,18 +35,34 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const resultDecodeJWT = await handleDecodeTokenJWT(
-      tokenJWTFromLoginDefaultCookies,
+    const session = await handleDecodeTokenJWT(
+      tokenJWTFromLoginDefaultCookies!,
     );
+
+    if (!session.success) {
+      const response = NextResponse.json(
+        { success: false, message: session.message, code: session.code },
+        { status: session.status },
+      );
+
+      if (
+        session.code === "TOKEN_EXPIRED" ||
+        session.code === "INVALID_TOKEN"
+      ) {
+        response.cookies.delete("loginSession");
+      }
+
+      return response;
+    }
 
     return NextResponse.json({
       success: true,
       status: 200,
-      message: resultDecodeJWT.message,
-      data: resultDecodeJWT.data,
-      role: resultDecodeJWT.role,
-      idUser: resultDecodeJWT.idUser,
-      expired: resultDecodeJWT.expired,
+      message: session.message,
+      data: session.data,
+      role: session.role,
+      idUser: session.idUser,
+      expired: session.expired,
     });
   } catch {
     return NextResponse.json({
