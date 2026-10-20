@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { BarChart3, CalendarClock } from "lucide-react";
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useDataExams } from "@/hooks/getScheduleExam";
 
 export default function DashboardClient() {
   const route = useRouter();
