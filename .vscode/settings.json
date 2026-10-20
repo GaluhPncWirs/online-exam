@@ -12,7 +12,8 @@
         "selesai memperbaiki bug error pada saat login",
         "refaktor code bagian api auth login selesai dan sudah tidak error lagi",
         "selesai untuk mengerjakan fitur register akun siswa",
-        "selesai membuat proses decode token jwt ke data user"
+        "selesai membuat proses decode token jwt ke data user",
+        "selesai memperbaiki masalah pada saat decode token jwt yang selalu error"
     ],
     "sqltools.connections": [
         {

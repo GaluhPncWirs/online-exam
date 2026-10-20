@@ -14,7 +14,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AtSign, Book, GraduationCap, KeyRound, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -31,7 +30,6 @@ export default function LoginAccount() {
       typeAccount: "siswa",
     },
   });
-  const [trigger, setTrigger] = useState(false);
 
   async function onSubmit(data: InputLogin) {
     const payload = {
@@ -41,7 +39,6 @@ export default function LoginAccount() {
     };
 
     try {
-      setTrigger(true);
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,14 +55,14 @@ export default function LoginAccount() {
       }
 
       if (dataLogin.tipe === "guru") {
-        // push("/Teacher/dashboard");
+        push("/Teacher/dashboard");
         toast.success("Berhasil", {
           description: dataLogin.message,
         });
         return;
       }
 
-      // push("/Student/Dashboard");
+      push("/Student/Dashboard");
       toast.success("Berhasil", {
         description: dataLogin.message,
       });
@@ -74,25 +71,8 @@ export default function LoginAccount() {
       toast.error("Gagal", {
         description: "Error fetch api",
       });
-    } finally {
-      setTrigger(false);
     }
   }
-
-  useEffect(() => {
-    async function testAPI() {
-      try {
-        const request = await fetch(`/api/auth/decodeToken`);
-        const response = await request.json();
-
-        console.log("response decode token", response);
-      } catch {
-        console.error("error api");
-      }
-    }
-
-    testAPI();
-  }, [trigger]);
 
   return (
     <FormAuth formTitle={"Login"}>
