@@ -10,7 +10,8 @@
         "sudah bisa menambahkan data kedalam setiap table yang ada",
         "sedang mengerjakan untuk proses autentikasi",
         "selesai memperbaiki bug error pada saat login",
-        "refaktor code bagian api auth login selesai dan sudah tidak error lagi"
+        "refaktor code bagian api auth login selesai dan sudah tidak error lagi",
+        "selesai untuk mengerjakan fitur register akun siswa"
     ],
     "sqltools.connections": [
         {

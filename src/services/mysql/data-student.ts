@@ -1,7 +1,7 @@
 "use server";
 import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
-import jwt from "jsonwebtoken";
+import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { generateRandomId } from "@/src/lib/utils/getRandomId";
 
 // untuk login akun siswa dan guru
@@ -152,6 +152,94 @@ export async function handleUserRegister({
       success: false,
       status: 500,
       message: "Error terhubung kedalam database",
+    };
+  }
+}
+
+// untuk ambil data user
+export async function handleGetDataUser(
+  idUser: string,
+  role: "siswa" | "guru",
+) {
+  const query =
+    role === "siswa"
+      ? `
+  SELECT 
+  id_student, fullname, class, email, type_account, role, nis, no_tlp, profil_img 
+    FROM account_students 
+  WHERE id_student = ? 
+  LIMIT 1`
+      : `
+  SELECT id_teacher, fullname, email, role, teach_role, nisn, no_tlp, profil_img 
+    FROM account_teacher 
+  WHERE id_teacher = ? 
+  LIMIT 1
+  `;
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [idUser]);
+
+    if (rows.length === 0) {
+      return {
+        success: false,
+        message: "Data user tidak ditemukan",
+      };
+    }
+
+    const dataUser = rows[0];
+
+    return {
+      success: true,
+      message: "Berhasil mengambil data user",
+      data: dataUser,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Gagal mengambil data user",
+    };
+  }
+}
+
+// untuk decode data token JWT dari login default dan login google
+export async function handleDecodeTokenJWT(token: string) {
+  if (!token) {
+    return {
+      success: false,
+      status: 401,
+      message: "Unauthorized",
+      code: "UNAUTHORIZED",
+    };
+  }
+  try {
+    const resultDecodeJWT = jwt.verify(
+      token,
+      process.env.JWT_SECRET!,
+    ) as TokenJWT & { exp: number };
+
+    const userData = await handleGetDataUser(
+      resultDecodeJWT.idUser,
+      resultDecodeJWT.role,
+    );
+
+    return {
+      success: true,
+      status: 200,
+      message: "Berhasil decode token",
+      role: resultDecodeJWT.role,
+      expired: resultDecodeJWT.exp,
+      idUser: resultDecodeJWT.idUser,
+      data: userData.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      status: 401,
+      message:
+        error instanceof TokenExpiredError
+          ? "Token sudah kadaluarsa, harap login kembali"
+          : "Invalid token",
+      code:
+        error instanceof TokenExpiredError ? "TOKEN_EXPIRED" : "INVALID_TOKEN",
     };
   }
 }

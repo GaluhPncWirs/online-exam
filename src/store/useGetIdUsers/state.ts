@@ -19,9 +19,9 @@ import { create } from "zustand";
 // };
 
 type dataUserFromGoogleHasNotFilled = {
-  classes: string | null;
-  nis: number | null;
-  noTlp: string | null;
+  classes: string;
+  nis: number;
+  noTlp: string;
 };
 
 type GetIdUsersState = {
@@ -45,36 +45,41 @@ export const useGetIdUsers = create<GetIdUsersState>((set) => ({
   setHandleGetIdUsers: async () => {
     try {
       set({ isLoading: true });
-      const request = await fetch(`/api/decodeToken`, {
+      const request = await fetch(`/api/auth/decodeToken`, {
         credentials: "include",
       });
       const response = await request.json();
-      if (response.status) {
-        if (response.role === "pelajar") {
-          set({
-            idUser: response.data.idStudent,
-            role: response.data.role,
-            typeAccount: response.data.typeAccount,
-            hasNotFilled: {
-              classes: response.data.classes,
-              nis: response.data.nis,
-              noTlp: response.data.noTlp,
-            },
-            isLoading: false,
-            message: "ID berhasil di ambil",
-          });
-        } else if (response.role === "pengajar") {
-          set({
-            idUser: response.data.idTeacher,
-            role: response.data.role,
-            isLoading: false,
-            message: "ID berhasil di ambil",
-          });
-        }
-      } else {
-        set({ idUser: "", isLoading: false, message: "ID gagal di ambil" });
+
+      if (!response.success) {
+        set({
+          idUser: "",
+          isLoading: false,
+          message: response.message,
+        });
       }
-    } catch (error) {
+
+      if (response.role === "pengajar") {
+        set({
+          idUser: response.data.idTeacher,
+          role: response.data.role,
+          isLoading: false,
+          message: "ID berhasil di ambil",
+        });
+      }
+
+      set({
+        idUser: response.data.idStudent,
+        role: response.data.role,
+        typeAccount: response.data.typeAccount,
+        hasNotFilled: {
+          classes: response.data.classes,
+          nis: response.data.nis,
+          noTlp: response.data.noTlp,
+        },
+        isLoading: false,
+        message: "ID berhasil di ambil",
+      });
+    } catch {
       set({
         idUser: "",
         isLoading: false,

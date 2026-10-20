@@ -35,6 +35,7 @@ import { useDataExams } from "@/hooks/getScheduleExam";
 import MainContent from "@/src/layout/mainContent/content";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import { convertDate } from "@/src/lib/utils/date";
+import { getUpComingExam } from "@/hooks/getUpComingExam";
 // import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function DashboardStudent() {
@@ -319,7 +320,7 @@ export default function DashboardStudent() {
                           <DialogDescription className="pt-2 text-left leading-6">
                             Apakah Anda yakin ingin mengerjakan soal{" "}
                             <span className="font-bold text-slate-900">
-                              "{upcomingExam?.exams.nama_ujian || ""}"
+                              &quot;{upcomingExam?.exams.nama_ujian || ""}&quot;
                             </span>
                             ?
                             <span className="mt-3 block">
