@@ -6,8 +6,14 @@ import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { BarChart3, CalendarClock } from "lucide-react";
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDataExams } from "@/hooks/getScheduleExam";
+import { getUpComingExam } from "@/hooks/getUpComingExam";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 
-export default function DashboardClient() {
+type DataExamsStudent = {
+  dataExams: ScheduleExams[];
+};
+
+export default function DashboardClient({ dataExams }: DataExamsStudent) {
   const route = useRouter();
   const dataUser = useGetDataUser((state) => state.dataUser);
   // const scheduleExams = useDataExams(dataStudent, getIdStudent);
@@ -20,7 +26,7 @@ export default function DashboardClient() {
   });
   const [lateExam, setLateExam] = useState([]);
 
-  // const upcomingExam = getUpComingExam(scheduleExams);
+  const upcomingExam = getUpComingExam(dataExams);
 
   // const filterScoreExams = scheduleExams.filter(
   //   (exams: { status_exam: boolean; hasil_ujian: string }) => {

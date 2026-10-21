@@ -1,57 +1,48 @@
-import {
-  convertToNumber,
-  getCurrentTimeInMinutes,
-} from "@/lib/utils/convertDate";
-import { getTodayIndonesia, parseIndonesianDate } from "@/lib/utils/statusExam";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 
-type PropsGetUpComingExam = {
-  dibuat_tgl: string;
-  exams: {
-    nama_ujian: string;
-  };
-  idExams: number;
-  status_exam: boolean | null;
-  tenggat_waktu: string;
-};
+export function getUpComingExam(scheduleExams: ScheduleExams[]) {
+  const now = new Date();
 
-export function getUpComingExam(scheduleExams: PropsGetUpComingExam[]) {
-  const today = getTodayIndonesia();
-  const currentMinute = getCurrentTimeInMinutes();
-
-  const todayNumber = today.year * 10000 + (today.month + 1) * 100 + today.day;
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
 
   const upcomingExams = scheduleExams.filter((exam) => {
-    // Sudah mengerjakan ujian
+    // Ujian yang sudah dikerjakan tidak ditampilkan
     if (exam.status_exam === true) {
       return false;
     }
 
-    const examDate = parseIndonesianDate(exam.dibuat_tgl);
+    // Parse timestamp
+    const examDate = new Date(exam.created_at);
+    const deadline = new Date(exam.deadline_exam);
 
-    if (!examDate) {
+    // Pastikan timestamp valid
+    if (Number.isNaN(examDate.getTime()) || Number.isNaN(deadline.getTime())) {
       return false;
     }
 
-    const examDateNumber =
-      examDate.year * 10000 + (examDate.month + 1) * 100 + examDate.day;
+    // Ambil tanggal ujian berdasarkan zona waktu Indonesia
+    const examDay = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(examDate);
 
     // Hanya ujian hari ini
-    if (examDateNumber !== todayNumber) {
+    if (examDay !== today) {
       return false;
     }
 
-    const { start, end } = convertToNumber(exam.tenggat_waktu);
-
-    if (Number.isNaN(start) || Number.isNaN(end)) {
+    // Ujian yang sudah melewati tenggat tidak ditampilkan
+    if (now.getTime() >= deadline.getTime()) {
       return false;
     }
 
-    // Sudah melewati deadline
-    if (currentMinute >= end) {
-      return false;
-    }
-
-    // Belum mulai atau sedang berlangsung
     return true;
   });
 
@@ -59,10 +50,11 @@ export function getUpComingExam(scheduleExams: PropsGetUpComingExam[]) {
     return null;
   }
 
+  // Pilih ujian dengan tenggat waktu terdekat
   return upcomingExams.reduce((closestExam, currentExam) => {
-    const closestDeadline = convertToNumber(closestExam.tenggat_waktu).end;
+    const closestDeadline = new Date(closestExam.deadline_exam).getTime();
 
-    const currentDeadline = convertToNumber(currentExam.tenggat_waktu).end;
+    const currentDeadline = new Date(currentExam.deadline_exam).getTime();
 
     return currentDeadline < closestDeadline ? currentExam : closestExam;
   });

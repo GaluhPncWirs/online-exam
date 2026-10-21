@@ -6,21 +6,21 @@ export async function handleGetDataSubjectExams(
 ) {
   const query = `
     SELECT
-      manage_exams.*,
+      me.id_manage_exam, me.id_teacher, me.id_subject, me.id_history_exam, me.deadline_exam,
       account_teacher.fullname,
       subject_exam.name_exam,
       history_exams.id_student,
       history_exams.status_exam,
       history_exams.created_at,
       history_exams.result_exam
-    FROM manage_exams
+    FROM manage_exams AS me
     JOIN account_teacher
-      ON manage_exams.id_teacher = account_teacher.id_teacher
+      ON me.id_teacher = account_teacher.id_teacher
     JOIN subject_exam
-      ON manage_exams.id_subject = subject_exam.id_subject
+      ON me.id_subject = subject_exam.id_subject
     JOIN history_exams
-      ON manage_exams.id_history_exam = history_exams.id_history_exam
-    WHERE manage_exams.class = ?
+      ON me.id_history_exam = history_exams.id_history_exam
+    WHERE me.class = ?
       AND history_exams.id_student = ?
   `;
 
