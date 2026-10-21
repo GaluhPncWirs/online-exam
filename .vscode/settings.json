@@ -18,7 +18,8 @@
         "selesai memperbaiki proses pengambilan data user yang di decode melalui token jwt di halaman dashboard siswa",
         "memperbaiki code proses pengambilan data user di halaman profil",
         "sedang mengerjakan untuk proses pengambilan data ujian",
-        "selesa untuk menambahkan foreign key pada table manage_exam untuk menampilkan data ujian ke dashboard siswa"
+        "selesa untuk menambahkan foreign key pada table manage_exam untuk menampilkan data ujian ke dashboard siswa",
+        "selesai memperbaiki kembali fungsi getUpComingExam() untuk menampilkan ujian yang deadlinenya sudah mepet"
     ],
     "sqltools.connections": [
         {

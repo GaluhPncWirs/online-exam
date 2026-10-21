@@ -1,13 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "../forDasboard/content";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
-import { BarChart3, CalendarClock } from "lucide-react";
+import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useDataExams } from "@/hooks/getScheduleExam";
 import { getUpComingExam } from "@/hooks/getUpComingExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
+import { toast } from "sonner";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -28,74 +28,54 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
   const upcomingExam = getUpComingExam(dataExams);
 
-  // const filterScoreExams = scheduleExams.filter(
-  //   (exams: { status_exam: boolean; hasil_ujian: string }) => {
-  //     if (!exams.status_exam) return false;
-  //     if (exams.hasil_ujian === "pending" || exams.hasil_ujian === "telat") {
-  //       return false;
-  //     }
+  const filterScoreExams = dataExams.filter((exams) => {
+    if (!exams.status_exam) return false;
+    if (exams.result_exam === "pending" || exams.result_exam === "telat") {
+      return false;
+    }
 
-  //     const score = Number(exams.hasil_ujian);
+    const score = Number(exams.result_exam);
 
-  //     return Number.isFinite(score);
-  //   },
-  // );
+    return Number.isFinite(score);
+  });
 
-  // const totalScore = filterScoreExams.reduce(
-  //   (total: number, exam: { hasil_ujian: string }) => {
-  //     return total + Number(exam.hasil_ujian);
-  //   },
-  //   0,
-  // );
+  const totalScore = filterScoreExams.reduce((total, result_exam) => {
+    return total + Number(result_exam);
+  }, 0);
 
-  // const averageValue =
-  //   filterScoreExams.length > 0
-  //     ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
-  //     : 0;
+  const averageValue =
+    filterScoreExams.length > 0
+      ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
+      : 0;
 
-  // const lateExams = useCallback(
-  //   async (idUjian: number) => {
-  //     if (!getIdStudent) return;
+  const lateExams = useCallback(
+    async (idUjian: number) => {
+      if (!dataUser?.id_student) return;
+      const payload = {
+        id_student: dataUser.id_student,
+        id_subject: idUjian,
+        result_exam: "telat",
+        status_exam: true,
+        className: dataUser.class,
+      };
 
-  //     const { data: existingExam, error: fetchError } = await supabase
-  //       .from("history-exam-student")
-  //       .select("id, hasil_ujian, status_exam")
-  //       .eq("student_id", getIdStudent)
-  //       .eq("exam_id", Number(idUjian))
-  //       .maybeSingle();
+      const request = await fetch("/api/student/lateExam", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  //     if (fetchError) {
-  //       console.error("Gagal mengecek history ujian:", fetchError);
-  //       return;
-  //     }
+      const response = await request.json();
 
-  //     if (existingExam) {
-  //       return;
-  //     }
-
-  //     const payload = {
-  //       created_at: new Date().toISOString(),
-  //       student_id: getIdStudent,
-  //       exam_id: Number(idUjian),
-  //       answer_student: null,
-  //       hasil_ujian: "telat",
-  //       status_exam: true,
-  //       kelas: dataStudent?.classes,
-  //     };
-
-  //     const { error: insertError } = await supabase
-  //       .from("history-exam-student")
-  //       .insert(payload);
-
-  //     if (insertError) {
-  //       toast("❌ Gagal Simpan Data", {
-  //         description: insertError.message,
-  //       });
-  //       return;
-  //     }
-  //   },
-  //   [scheduleExams],
-  // );
+      if (!response.success) {
+        toast("❌ Gagal Simpan Data", {
+          description: response.message,
+        });
+        return;
+      }
+    },
+    [dataUser?.id_student],
+  );
 
   // useEffect(() => {
   //   if (!scheduleExams.length) {
@@ -187,11 +167,8 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {/* {scheduleExams.filter(
-                    (done: { status_exam: boolean }) =>
-                      done.status_exam !== true,
-                  ).length || 0} */}{" "}
-                        0
+                        {dataExams.filter((done) => done.status_exam !== true)
+                          .length || 0}
                       </p>
 
                       <p className="mt-1 text-xs text-slate-400">
@@ -214,7 +191,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {/* {Math.round(averageValue) || 0} */}0
+                        {Math.round(averageValue) || 0}
                       </p>
 
                       <p className="mt-1 text-xs text-slate-400">

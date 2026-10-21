@@ -2,7 +2,7 @@
 import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
-import { generateRandomId } from "@/src/lib/utils/getRandomId";
+import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 
 // untuk login akun siswa dan guru
 
