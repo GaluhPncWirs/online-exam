@@ -16,7 +16,8 @@
         "selesai memperbaiki masalah pada saat decode token jwt yang selalu error",
         "lagi mengerjakan proses menampilkan data ke frontend menggunakan SSR",
         "selesai memperbaiki proses pengambilan data user yang di decode melalui token jwt di halaman dashboard siswa",
-        "memperbaiki code proses pengambilan data user di halaman profil"
+        "memperbaiki code proses pengambilan data user di halaman profil",
+        "sedang mengerjakan untuk proses pengambilan data ujian"
     ],
     "sqltools.connections": [
         {

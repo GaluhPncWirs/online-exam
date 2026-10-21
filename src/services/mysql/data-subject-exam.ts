@@ -1,26 +1,31 @@
 import { pool } from "@/src/lib/db";
 
-export async function handleGetDataSubjectExams() {
+export async function handleGetDataSubjectExams(
+  className: string,
+  idStudent: string,
+) {
   const query = `
-  SELECT 
-    manage_exams.*, account_teacher.fullname, subject_exam.name_exam, subject_exam.exam_questions 
-  FROM manage_exams 
-  LEFT JOIN account_teacher 
-    ON manage_exams.id_teacher = account_teacher.id_teacher 
-  LEFT JOIN subject_exam 
-    ON manage_exams.id_subject = subject_exam.id_subject 
-  WHERE manage_exams.class = ?
+    SELECT
+      manage_exams.*,
+      account_teacher.fullname,
+      subject_exam.name_exam,
+      history_exams.id_student,
+      history_exams.status_exam,
+      history_exams.created_at,
+      history_exams.result_exam
+    FROM manage_exams
+    JOIN account_teacher
+      ON manage_exams.id_teacher = account_teacher.id_teacher
+    JOIN subject_exam
+      ON manage_exams.id_subject = subject_exam.id_subject
+    JOIN history_exams
+      ON manage_exams.id_history_exam = history_exams.id_history_exam
+    WHERE manage_exams.class = ?
+      AND history_exams.id_student = ?
   `;
 
   try {
-    const [rows] = await pool.execute(query);
-
-    //         if (rows.length=== 0) {
-    //   return {
-    //     success: false,
-    //     message: "Data ujian tidak ditemukan",
-    //   };
-    // }
+    const [rows] = await pool.execute(query, [className, idStudent]);
 
     return {
       data: rows,
