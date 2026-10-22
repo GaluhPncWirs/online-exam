@@ -128,3 +128,33 @@ export async function handleLateExam({
     };
   }
 }
+
+export async function handleGetDataSubjectDetail(
+  id_subject: string,
+  id_student: string,
+) {
+  const query = `
+    SELECT 
+      history_exams.answer_student, subject_exam.name_exam, subject_exam.type_exam, subject_exam.exam_questions 
+    FROM subject_exam
+    JOIN history_exams
+      ON subject_exam.id_subject = history_exams.id_subject
+    WHERE 
+      subject_exam.id_subject = ? AND history_exams.id_student = ?
+  `;
+
+  try {
+    const [rows] = await pool.execute(query, [id_subject, id_student]);
+
+    return {
+      data: rows,
+      success: true,
+      message: "Berhasil mengambil data ujian",
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Gagal mengambil data ujian",
+    };
+  }
+}
