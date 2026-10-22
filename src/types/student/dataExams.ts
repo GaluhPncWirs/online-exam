@@ -9,5 +9,5 @@ export type ScheduleExams = {
   id_teacher: string;
   name_exam: string;
   result_exam: string;
-  status_exam: boolean;
+  status_exam: number;
 };

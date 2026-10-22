@@ -19,7 +19,8 @@
         "memperbaiki code proses pengambilan data user di halaman profil",
         "sedang mengerjakan untuk proses pengambilan data ujian",
         "selesa untuk menambahkan foreign key pada table manage_exam untuk menampilkan data ujian ke dashboard siswa",
-        "selesai memperbaiki kembali fungsi getUpComingExam() untuk menampilkan ujian yang deadlinenya sudah mepet"
+        "selesai memperbaiki kembali fungsi getUpComingExam() untuk menampilkan ujian yang deadlinenya sudah mepet",
+        "sedang mengerjakan untuk handle ujian yang telat agar bisa otomatis langsung masuk ke database"
     ],
     "sqltools.connections": [
         {

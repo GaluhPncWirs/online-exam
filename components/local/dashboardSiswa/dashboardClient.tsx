@@ -1,13 +1,33 @@
 "use client";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "../forDasboard/content";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
-import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getUpComingExam } from "@/hooks/getUpComingExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { toast } from "sonner";
+import { getExamStatus } from "@/src/lib/utils/statusExam";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -24,7 +44,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
     upComingExamCard: false,
     statusBadge: false,
   });
-  const [lateExam, setLateExam] = useState([]);
+  const [lateExam, setLateExam] = useState<ScheduleExams[]>([]);
 
   const upcomingExam = getUpComingExam(dataExams);
 
@@ -49,7 +69,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
       : 0;
 
   const lateExams = useCallback(
-    async (idUjian: number) => {
+    async (idUjian: string) => {
       if (!dataUser?.id_student) return;
       const payload = {
         id_student: dataUser.id_student,
@@ -77,59 +97,54 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
     [dataUser?.id_student],
   );
 
-  // useEffect(() => {
-  //   if (!scheduleExams.length) {
-  //     setLateExam([]);
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!dataExams.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLateExam([]);
+      return;
+    }
 
-  //   const lateExamsList = scheduleExams.filter(
-  //     (exam: {
-  //       tenggat_waktu: string;
-  //       dibuat_tgl: string;
-  //       idExams: number;
-  //     }) => {
-  //       return getExamStatus(exam.tenggat_waktu, exam.dibuat_tgl) === "LEWAT";
-  //     },
-  //   );
+    const lateExamsList = dataExams.filter((exam) => {
+      return getExamStatus(exam.deadline_exam, exam.created_at) === "LEWAT";
+    });
 
-  //   setLateExam(lateExamsList);
+    setLateExam(lateExamsList);
 
-  //   if (lateExamsList.length === 0) {
-  //     return;
-  //   }
+    if (lateExamsList.length === 0) {
+      return;
+    }
 
-  // async function saveLateExams() {
-  //   await Promise.all(
-  //     lateExamsList.map((exam: { idExams: number }) =>
-  //       lateExams(exam.idExams),
-  //     ),
-  //   );
-  // }
+    async function saveLateExams() {
+      await Promise.all(
+        lateExamsList.map((exam) => lateExams(exam.id_subject)),
+      );
+    }
 
-  // saveLateExams();
-  // }, [scheduleExams]);
+    saveLateExams();
+  }, [dataExams]);
 
-  // useEffect(() => {
-  //   if (!openConfirmDialog) {
-  //     setConfirm(5);
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!openConfirmDialog) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setConfirm(5);
+      return;
+    }
 
-  //   setConfirm(5);
+    setConfirm(5);
 
-  //   const timer = setInterval(() => {
-  //     setConfirm((prev: number) => {
-  //       if (prev <= 0) {
-  //         clearInterval(timer);
-  //         return 0;
-  //       }
-  //       return prev - 1;
-  //     });
-  //   }, 1000);
+    const timer = setInterval(() => {
+      setConfirm((prev: number) => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  //   return () => clearInterval(timer);
-  // }, [openConfirmDialog]);
+    return () => clearInterval(timer);
+  }, [openConfirmDialog]);
+
   return (
     <div>
       {dataUser !== null ? (
@@ -137,7 +152,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
           <HeaderDasboard
             user="Siswa"
             fullname={dataUser?.fullname}
-            // exams={scheduleExams}
+            exams={dataExams}
           />
           <div className="space-y-8">
             {/* Summary */}
@@ -167,7 +182,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {dataExams.filter((done) => done.status_exam !== true)
+                        {dataExams.filter((done) => done.status_exam !== 1)
                           .length || 0}
                       </p>
 
@@ -208,7 +223,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
             </section>
 
             {/* Deadline Exam */}
-            {/* {upcomingExam && (
+            {upcomingExam && (
               <section>
                 <div className="mb-4 space-y-2">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
@@ -235,12 +250,12 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                         </p>
 
                         <h3 className="mt-1 text-xl font-bold text-slate-900">
-                          {upcomingExam?.exams.nama_ujian}
+                          {upcomingExam?.name_exam}
                         </h3>
 
                         <p className="mt-1 text-sm font-medium text-slate-500">
-                          {upcomingExam?.dibuat_tgl} ·{" "}
-                          {upcomingExam?.tenggat_waktu}
+                          {upcomingExam?.created_at.toISOString()} ·{" "}
+                          {upcomingExam?.deadline_exam.toISOString()}
                         </p>
                       </div>
                     </div>
@@ -272,7 +287,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                           <DialogDescription className="pt-2 text-left leading-6">
                             Apakah Anda yakin ingin mengerjakan soal{" "}
                             <span className="font-bold text-slate-900">
-                              &quot;{upcomingExam?.exams.nama_ujian || ""}&quot;
+                              &quot;{upcomingExam?.name_exam || ""}&quot;
                             </span>
                             ?
                             <span className="mt-3 block">
@@ -299,7 +314,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                               }));
 
                               route.push(
-                                `/Student/Exams/StartExam/${upcomingExam.idExams}`,
+                                `/Student/Exams/StartExam/${upcomingExam.id_subject}`,
                               );
                             }}
                             className="rounded-xl bg-blue-600 hover:bg-blue-700"
@@ -313,7 +328,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                   </div>
                 </div>
               </section>
-            )} */}
+            )}
 
             {/* Available Exams */}
             <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -329,8 +344,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                   </div>
 
                   <div className="hidden rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:block">
-                    {/* {scheduleExams.length} Ujian */}
-                    ujian
+                    {dataExams.length} Ujian
                   </div>
                 </div>
               </div>
@@ -357,142 +371,143 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                     </TableRow>
                   </TableHeader>
 
-                  {/* <TableBody>
-              {scheduleExams.length > 0 ? (
-                scheduleExams.map((data: any, i: number) => {
-                  const status = getExamStatus(
-                    data.tenggat_waktu,
-                    data.dibuat_tgl,
-                  );
+                  <TableBody>
+                    {dataExams.length > 0 ? (
+                      dataExams.map((data, i: number) => {
+                        const status = getExamStatus(
+                          data.deadline_exam,
+                          data.created_at,
+                        );
 
-                  return (
-                    <TableRow
-                      key={i}
-                      className="transition-colors hover:bg-slate-50"
-                    >
-                      <TableCell className="font-medium text-slate-500">
-                        {i + 1}
-                      </TableCell>
-
-                      <TableCell className="font-semibold text-slate-800">
-                        {data.exams.nama_ujian}
-                      </TableCell>
-
-                      <TableCell className="text-sm text-slate-500">
-                        {data.dibuat_tgl} {data.tenggat_waktu}
-                      </TableCell>
-
-                      <TableCell className="text-sm text-slate-600">
-                        {data.account_teacher.fullName}
-                      </TableCell>
-
-                      <TableCell>
-                        {data.status_exam === true &&
-                        data.hasil_ujian !== "telat" ? (
-                          <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-                            Selesai
-                          </span>
-                        ) : data.status_exam === true &&
-                          data.hasil_ujian === "telat" ? (
-                          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                            Telat
-                          </span>
-                        ) : status === "BELUM_MULAI" ? (
-                          <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                            Belum Dimulai
-                          </span>
-                        ) : status === "LEWAT" ? (
-                          <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                            Lewat Batas Waktu
-                          </span>
-                        ) : status === "BERLANGSUNG" ? (
-                          <Dialog
-                            open={openConfirmDialog.badgeStatus}
-                            onOpenChange={(open) =>
-                              setOpenConfirmDialog((prev) => ({
-                                ...prev,
-                                badgeStatus: open,
-                              }))
-                            }
+                        return (
+                          <TableRow
+                            key={i}
+                            className="transition-colors hover:bg-slate-50"
                           >
-                            <DialogTrigger>
-                              <button
-                                className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
-                                onClick={() => setConfirm(5)}
-                              >
-                                Sedang Berlangsung
-                              </button>
-                            </DialogTrigger>
+                            <TableCell className="font-medium text-slate-500">
+                              {i + 1}
+                            </TableCell>
 
-                            <DialogContent className="rounded-2xl sm:max-w-md">
-                              <DialogHeader>
-                                <DialogTitle className="text-xl font-bold">
-                                  Konfirmasi Masuk Ujian
-                                </DialogTitle>
+                            <TableCell className="font-semibold text-slate-800">
+                              {data.name_exam}
+                            </TableCell>
 
-                                <DialogDescription className="pt-2">
-                                  Yakin ingin masuk ke ujian{" "}
-                                  <span className="font-bold text-slate-900">
-                                    &quot;{data.exams.nama_ujian}&quot;
-                                  </span>
-                                  ?
-                                </DialogDescription>
-                              </DialogHeader>
+                            <TableCell className="text-sm text-slate-500">
+                              {formatDateToYYYYMMDD(data.created_at)} | {""}
+                              {formatDateToYYYYMMDD(data.deadline_exam)}
+                            </TableCell>
 
-                              <DialogFooter className="mt-4 gap-2">
-                                <DialogClose>
-                                  <Button
-                                    variant="outline"
-                                    className="rounded-xl"
-                                  >
-                                    Batal
-                                  </Button>
-                                </DialogClose>
+                            <TableCell className="text-sm text-slate-600">
+                              {data.fullname}
+                            </TableCell>
 
-                                <Button
-                                  onClick={() => {
-                                    if (!upcomingExam) return;
-
+                            <TableCell>
+                              {data.status_exam === 1 &&
+                              data.result_exam !== "telat" ? (
+                                <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                                  Selesai
+                                </span>
+                              ) : data.status_exam === 1 &&
+                                data.result_exam === "telat" ? (
+                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                                  Telat
+                                </span>
+                              ) : status === "BELUM_MULAI" ? (
+                                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                                  Belum Dimulai
+                                </span>
+                              ) : status === "LEWAT" ? (
+                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                                  Lewat Batas Waktu
+                                </span>
+                              ) : status === "BERLANGSUNG" ? (
+                                <Dialog
+                                  open={openConfirmDialog.badgeStatus}
+                                  onOpenChange={(open) =>
                                     setOpenConfirmDialog((prev) => ({
                                       ...prev,
-                                      badgeStatus: false,
-                                    }));
-
-                                    route.push(
-                                      `/Student/Exams/StartExam/${data.idExams}`,
-                                    );
-                                  }}
-                                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                                  disabled={confirm > 0}
+                                      badgeStatus: open,
+                                    }))
+                                  }
                                 >
-                                  {confirm <= 0 ? "Mulai" : confirm}
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                        ) : null}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <CalendarClock className="size-8 text-slate-300" />
+                                  <DialogTrigger>
+                                    <button
+                                      className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                                      onClick={() => setConfirm(5)}
+                                    >
+                                      Sedang Berlangsung
+                                    </button>
+                                  </DialogTrigger>
 
-                      <p className="mt-2 font-semibold text-slate-500">
-                        Belum Ada Ujian
-                      </p>
+                                  <DialogContent className="rounded-2xl sm:max-w-md">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-xl font-bold">
+                                        Konfirmasi Masuk Ujian
+                                      </DialogTitle>
 
-                      <p className="text-sm text-slate-400">
-                        Ujian yang tersedia akan muncul di sini.
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody> */}
+                                      <DialogDescription className="pt-2">
+                                        Yakin ingin masuk ke ujian{" "}
+                                        <span className="font-bold text-slate-900">
+                                          &quot;{data.name_exam}&quot;
+                                        </span>
+                                        ?
+                                      </DialogDescription>
+                                    </DialogHeader>
+
+                                    <DialogFooter className="mt-4 gap-2">
+                                      <DialogClose>
+                                        <Button
+                                          variant="outline"
+                                          className="rounded-xl"
+                                        >
+                                          Batal
+                                        </Button>
+                                      </DialogClose>
+
+                                      <Button
+                                        onClick={() => {
+                                          if (!upcomingExam) return;
+
+                                          setOpenConfirmDialog((prev) => ({
+                                            ...prev,
+                                            badgeStatus: false,
+                                          }));
+
+                                          route.push(
+                                            `/Student/Exams/StartExam/${data.id_subject}`,
+                                          );
+                                        }}
+                                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                                        disabled={confirm > 0}
+                                      >
+                                        {confirm <= 0 ? "Mulai" : confirm}
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              ) : null}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-32 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <CalendarClock className="size-8 text-slate-300" />
+
+                            <p className="mt-2 font-semibold text-slate-500">
+                              Belum Ada Ujian
+                            </p>
+
+                            <p className="text-sm text-slate-400">
+                              Ujian yang tersedia akan muncul di sini.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
                 </Table>
               </div>
             </section>

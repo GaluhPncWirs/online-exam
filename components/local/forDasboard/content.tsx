@@ -2,11 +2,12 @@
 import Image from "next/image";
 import HeaderDashboard from "../headerDashboard/content";
 import { usePathname } from "next/navigation";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 
 type propsHeaderDahboard = {
   user: string;
   fullname: string;
-  exams?: any;
+  exams?: ScheduleExams[];
 };
 
 export default function HeaderDasboard(props: propsHeaderDahboard) {
@@ -17,9 +18,7 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
     const examList = Array.isArray(exams) ? exams : [];
 
     if (pathName === "/Student/Dashboard") {
-      const filterSisaUjian = examList.filter(
-        (done: any) => done.status_exam !== true,
-      );
+      const filterSisaUjian = examList.filter((done) => done.status_exam !== 1);
 
       return (
         <HeaderDashboard
@@ -30,10 +29,10 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
     }
 
     const filterNilaiSiswa = examList
-      .flatMap((exam: any) =>
-        Array.isArray(exam.resultUjian) ? exam.resultUjian : [],
+      .flatMap((exam) =>
+        Array.isArray(exam.result_exam) ? exam.result_exam : [],
       )
-      .filter((result: any) => result.hasil_ujian === "pending");
+      .filter((result) => result.hasil_ujian === "pending");
 
     return (
       <HeaderDashboard remainder={filterNilaiSiswa} isLocationPage={pathName} />
@@ -41,7 +40,7 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-sky-600 via-blue-500 to-cyan-600 p-6 text-white shadow-lg shadow-blue-100 mb-8 sm:p-8">
+    <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-linear-to-r from-sky-600 via-blue-500 to-cyan-600 p-6 text-white shadow-lg shadow-blue-100 mb-8 sm:p-8">
       {/* Decorative Circle */}
       <div className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-white/10" />
       <div className="pointer-events-none absolute -bottom-24 left-1/3 size-72 rounded-full bg-white/5" />

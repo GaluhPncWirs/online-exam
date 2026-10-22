@@ -15,50 +15,127 @@ const MONTHS_ID: Record<string, number> = {
   Desember: 11,
 };
 
-export function parseIndonesianDate(dateString: string) {
-  const [day, month, year] = dateString.trim().split(" ");
+type DateInput = Date | string | number;
 
-  const monthIndex = MONTHS_ID[month];
+type ParsedDate = {
+  day: number;
+  month: number;
+  year: number;
+};
 
-  if (!day || !year || monthIndex === undefined) {
+export function parseIndonesianDate(dateInput: DateInput): ParsedDate | null {
+  // Jika input berupa Date, string timestamp, atau angka
+  if (dateInput instanceof Date || typeof dateInput === "number") {
+    const date = new Date(dateInput);
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Jakarta",
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+    }).formatToParts(date);
+
+    const getPart = (type: string) =>
+      Number(parts.find((part) => part.type === type)?.value);
+
+    return {
+      day: getPart("day"),
+      month: getPart("month") - 1,
+      year: getPart("year"),
+    };
+  }
+
+  const value = dateInput.trim();
+
+  // Format tanggal Indonesia: "22 Oktober 2026"
+  const match = value.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+
+  if (match) {
+    const [, day, month, year] = match;
+    const monthIndex = MONTHS_ID[month.toLowerCase()];
+
+    if (monthIndex === undefined) {
+      return null;
+    }
+
+    const parsedDay = Number(day);
+    const parsedYear = Number(year);
+
+    const validationDate = new Date(
+      Date.UTC(parsedYear, monthIndex, parsedDay),
+    );
+
+    if (
+      validationDate.getUTCFullYear() !== parsedYear ||
+      validationDate.getUTCMonth() !== monthIndex ||
+      validationDate.getUTCDate() !== parsedDay
+    ) {
+      return null;
+    }
+
+    return {
+      day: parsedDay,
+      month: monthIndex,
+      year: parsedYear,
+    };
+  }
+
+  // Format timestamp ISO atau format tanggal yang didukung Date
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
 
-  return {
-    day: Number(day),
-    month: monthIndex,
-    year: Number(year),
-  };
-}
-
-export function getTodayIndonesia() {
-  const formatter = new Intl.DateTimeFormat("id-ID", {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Jakarta",
     day: "numeric",
     month: "numeric",
     year: "numeric",
-  });
+  }).formatToParts(date);
 
-  const parts = formatter.formatToParts(new Date());
+  const getPart = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value);
 
   return {
-    day: Number(parts.find((part) => part.type === "day")?.value),
-    month: Number(parts.find((part) => part.type === "month")?.value) - 1,
-    year: Number(parts.find((part) => part.type === "year")?.value),
+    day: getPart("day"),
+    month: getPart("month") - 1,
+    year: getPart("year"),
+  };
+}
+
+export function getTodayIndonesia(): ParsedDate {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }).formatToParts(new Date());
+
+  const getPart = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value);
+
+  return {
+    day: getPart("day"),
+    month: getPart("month") - 1,
+    year: getPart("year"),
   };
 }
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
 
 export function getExamStatus(
-  tenggatWaktu: string,
-  tglUjian: string,
+  tenggatWaktu: Date,
+  tglUjian: DateInput,
 ): ExamStatus {
-  const { start, end } = convertToNumber(tenggatWaktu);
+  const { start, end } = convertToNumber(tenggatWaktu.toISOString());
 
   const examDate = parseIndonesianDate(tglUjian);
   const today = getTodayIndonesia();
-
   const currentMinute = getCurrentTimeInMinutes();
 
   if (!examDate || Number.isNaN(start) || Number.isNaN(end)) {

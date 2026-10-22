@@ -1,12 +1,13 @@
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 import { Bell } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 type PropsHeaderDashboard = {
-  remainder: any[];
+  remainder: ScheduleExams[] | string[];
   isLocationPage: string;
 };
 
@@ -27,12 +28,12 @@ export default function HeaderDashboard({
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-fit p-3">
-            <h1 className="font-semibold text-xs">
+            <p className="font-semibold text-xs">
               Ada {remainder.length} Ujian Yang Belum{" "}
               {isLocationPage === "/Student/Dashboard"
                 ? "Dikerjakan"
                 : "Dinilai"}
-            </h1>
+            </p>
           </PopoverContent>
         </Popover>
       ) : (
