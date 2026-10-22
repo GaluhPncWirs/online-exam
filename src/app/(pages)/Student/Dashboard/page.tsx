@@ -1,5 +1,5 @@
-import DashboardClient from "@/components/local/dashboardSiswa/dashboardClient";
-import DashboardSkeletonStudent from "@/components/local/dashboardSiswa/skeleton";
+import DashboardClient from "@/components/local/student/dashboard/dashboardClient";
+import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/data-subject-exam";
 import { ScheduleExams } from "@/src/types/student/dataExams";

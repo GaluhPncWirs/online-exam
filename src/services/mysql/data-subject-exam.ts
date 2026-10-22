@@ -129,7 +129,7 @@ export async function handleLateExam({
   }
 }
 
-export async function handleGetDataSubjectDetail(
+export async function handleGetDataResultExam(
   id_subject: string,
   id_student: string,
 ) {

@@ -15,11 +15,28 @@ CREATE TABLE history_exams (
 
 DESCRIBE history_exams
 
+ALTER TABLE history_exams DROP FOREIGN KEY fk_id_subject
+
+ALTER TABLE history_exams
+ADD CONSTRAINT fk_id_subject
+FOREIGN KEY (id_subject)
+REFERENCES subject_exam(id_subject)
+
+SHOW CREATE TABLE history_exams
+
+SELECT 
+      history_exams.answer_student, subject_exam.name_exam, subject_exam.type_exam, subject_exam.exam_questions 
+    FROM subject_exam
+    JOIN history_exams
+      ON subject_exam.id_subject = history_exams.id_subject
+    WHERE 
+      subject_exam.id_subject = "SUB-wPTu3V" AND history_exams.id_student = "STD-aMClguF"
+
 ALTER TABLE history_exams
   ADD CONSTRAINT uq_history_student_subject UNIQUE (id_subject, id_subject)
 
 INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES 
-('HIS-uRnH3o', 'STD-aMClguF', 'SUB-wPTu3V', '{
+('HIS-uHnE3o', 'STD-aMClguF', 'SUB-rT6UeV', '{
   "EX-GEO16": "Energi surya",
   "EX-GEO14": "Amazon, Kongo, dan Indonesia",
   "EX-GEO12": "Papua Nugini",

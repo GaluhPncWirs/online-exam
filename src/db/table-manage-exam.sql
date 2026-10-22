@@ -16,6 +16,13 @@ CREATE TABLE manage_exams (
 
 DESCRIBE manage_exams
 
+ALTER TABLE manage_exams DROP FOREIGN KEY fk_id_manage_subject_exam
+
+ALTER TABLE manage_exams
+ADD CONSTRAINT fk_id_manage_subject_exam
+FOREIGN KEY (id_subject)
+REFERENCES subject_exam(id_subject)
+
 ALTER TABLE manage_exams ADD COLUMN id_history_exam VARCHAR(10) NOT NULL
 
 ALTER TABLE manage_exams MODIFY COLUMN id_history_exam VARCHAR(10) NOT NULL AFTER id_subject

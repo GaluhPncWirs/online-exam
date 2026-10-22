@@ -22,7 +22,8 @@
         "selesai memperbaiki kembali fungsi getUpComingExam() untuk menampilkan ujian yang deadlinenya sudah mepet",
         "sedang mengerjakan untuk handle ujian yang telat agar bisa otomatis langsung masuk ke database",
         "selesai untuk proses migrasi database ke mysql di halaman dashboard siswa",
-        "memperbaiki masalah pada proses pemanggilan API untuk handle ujian yang telat yang selalu tereksekusi"
+        "memperbaiki masalah pada proses pemanggilan API untuk handle ujian yang telat yang selalu tereksekusi",
+        "sedang mengerjakan untuk menampilkan data hasil ujian siswa di halaman detail ujian"
     ],
     "sqltools.connections": [
         {
