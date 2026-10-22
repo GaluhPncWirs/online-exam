@@ -28,6 +28,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import Link from "next/link";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -147,728 +153,547 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
   return (
     <div>
-      {dataUser !== null ? (
-        <>
-          <HeaderDasboard
-            user="Siswa"
-            fullname={dataUser?.fullname}
-            exams={dataExams}
-          />
-          <div className="space-y-8">
-            {/* Summary */}
-            <section>
-              <div className="mb-5 space-y-2">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                  Overview
-                </p>
+      <HeaderDasboard
+        user="Siswa"
+        fullname={dataUser?.fullname ?? ""}
+        exams={dataExams}
+      />
+      <div className="space-y-8">
+        {/* Summary */}
+        <section>
+          <div className="mb-5 space-y-2">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+              Overview
+            </p>
 
-                <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-                  Ringkasan Ujian
-                </h2>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+              Ringkasan Ujian
+            </h2>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Pantau ujian yang tersedia dan perkembangan hasil ujian Anda.
-                </p>
-              </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Pantau ujian yang tersedia dan perkembangan hasil ujian Anda.
+            </p>
+          </div>
 
-              {/* Statistic Cards */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Ujian Terjadwal */}
-                <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/40">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-500">
-                        Ujian Terjadwal
-                      </p>
-
-                      <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {dataExams.filter((done) => done.status_exam !== 1)
-                          .length || 0}
-                      </p>
-
-                      <p className="mt-1 text-xs text-slate-400">
-                        Ujian yang belum diselesaikan
-                      </p>
-                    </div>
-
-                    <div className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
-                      <CalendarClock className="size-6" strokeWidth={1.8} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nilai Rata-rata */}
-                <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/40">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-500">
-                        Nilai Rata-Rata
-                      </p>
-
-                      <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {Math.round(averageValue) || 0}
-                      </p>
-
-                      <p className="mt-1 text-xs text-slate-400">
-                        Berdasarkan ujian yang telah selesai
-                      </p>
-                    </div>
-
-                    <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
-                      <BarChart3 className="size-6" strokeWidth={1.8} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Deadline Exam */}
-            {upcomingExam && (
-              <section>
-                <div className="mb-4 space-y-2">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
-                    Perlu Diperhatikan
+          {/* Statistic Cards */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Ujian Terjadwal */}
+            <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/40">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500">
+                    Ujian Terjadwal
                   </p>
 
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-                    Ujian Segera Berakhir
-                  </h2>
+                  <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                    {dataExams.filter((done) => done.status_exam !== 1)
+                      .length || 0}
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    Ujian yang belum diselesaikan
+                  </p>
                 </div>
 
-                <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
-                  <div className="absolute -right-10 -top-10 size-40 rounded-full bg-amber-100/50 blur-2xl" />
+                <div className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                  <CalendarClock className="size-6" strokeWidth={1.8} />
+                </div>
+              </div>
+            </div>
 
-                  <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-                        <BellRing className="size-6" strokeWidth={1.8} />
-                      </div>
+            {/* Nilai Rata-rata */}
+            <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/40">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500">
+                    Nilai Rata-Rata
+                  </p>
 
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-amber-600">
-                          Deadline Terdekat
-                        </p>
+                  <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                    {Math.round(averageValue) || 0}
+                  </p>
 
-                        <h3 className="mt-1 text-xl font-bold text-slate-900">
-                          {upcomingExam?.name_exam}
-                        </h3>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Berdasarkan ujian yang telah selesai
+                  </p>
+                </div>
 
-                        <p className="mt-1 text-sm font-medium text-slate-500">
-                          {upcomingExam?.created_at.toISOString()} ·{" "}
-                          {upcomingExam?.deadline_exam.toISOString()}
-                        </p>
-                      </div>
-                    </div>
+                <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                  <BarChart3 className="size-6" strokeWidth={1.8} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                    <Dialog
-                      open={openConfirmDialog.upComingExamCard}
-                      onOpenChange={(open) =>
-                        setOpenConfirmDialog((prev) => ({
-                          ...prev,
-                          upComingExamCard: open,
-                        }))
-                      }
-                    >
-                      <DialogTrigger>
-                        <Button
-                          className="w-full rounded-xl bg-amber-500 px-6 font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 sm:w-auto"
-                          onClick={() => setConfirm(5)}
-                        >
-                          Mulai Ujian
-                        </Button>
-                      </DialogTrigger>
+        {/* Deadline Exam */}
+        {upcomingExam && (
+          <section>
+            <div className="mb-4 space-y-2">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+                Perlu Diperhatikan
+              </p>
 
-                      <DialogContent className="rounded-2xl sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-bold">
-                            Konfirmasi Masuk Ujian
-                          </DialogTitle>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                Ujian Segera Berakhir
+              </h2>
+            </div>
 
-                          <DialogDescription className="pt-2 text-left leading-6">
-                            Apakah Anda yakin ingin mengerjakan soal{" "}
-                            <span className="font-bold text-slate-900">
-                              &quot;{upcomingExam?.name_exam || ""}&quot;
-                            </span>
-                            ?
-                            <span className="mt-3 block">
-                              Pastikan Anda sudah siap. Setelah masuk ke halaman
-                              ujian, Anda tidak dapat kembali ke dashboard.
-                            </span>
-                          </DialogDescription>
-                        </DialogHeader>
+            <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
+              <div className="absolute -right-10 -top-10 size-40 rounded-full bg-amber-100/50 blur-2xl" />
 
-                        <DialogFooter className="mt-4 gap-2">
-                          <DialogClose>
-                            <Button variant="outline" className="rounded-xl">
-                              Batal
-                            </Button>
-                          </DialogClose>
-
-                          <Button
-                            onClick={() => {
-                              if (!upcomingExam) return;
-
-                              setOpenConfirmDialog((prev) => ({
-                                ...prev,
-                                upComingExamCard: false,
-                              }));
-
-                              route.push(
-                                `/Student/Exams/StartExam/${upcomingExam.id_subject}`,
-                              );
-                            }}
-                            className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                            disabled={confirm > 0}
-                          >
-                            {confirm <= 0 ? "Mulai" : confirm}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <BellRing className="size-6" strokeWidth={1.8} />
                   </div>
-                </div>
-              </section>
-            )}
 
-            {/* Available Exams */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="space-y-1">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      Ujian Tersedia
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Daftar ujian yang tersedia untuk Anda.
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-600">
+                      Deadline Terdekat
+                    </p>
+
+                    <h3 className="mt-1 text-xl font-bold text-slate-900">
+                      {upcomingExam?.name_exam}
+                    </h3>
+
+                    <p className="mt-1 text-sm font-medium text-slate-500">
+                      {upcomingExam?.created_at.toISOString()} ·{" "}
+                      {upcomingExam?.deadline_exam.toISOString()}
                     </p>
                   </div>
-
-                  <div className="hidden rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:block">
-                    {dataExams.length} Ujian
-                  </div>
                 </div>
+
+                <Dialog
+                  open={openConfirmDialog.upComingExamCard}
+                  onOpenChange={(open) =>
+                    setOpenConfirmDialog((prev) => ({
+                      ...prev,
+                      upComingExamCard: open,
+                    }))
+                  }
+                >
+                  <DialogTrigger>
+                    <Button
+                      className="w-full rounded-xl bg-amber-500 px-6 font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 sm:w-auto"
+                      onClick={() => setConfirm(5)}
+                    >
+                      Mulai Ujian
+                    </Button>
+                  </DialogTrigger>
+
+                  <DialogContent className="rounded-2xl sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold">
+                        Konfirmasi Masuk Ujian
+                      </DialogTitle>
+
+                      <DialogDescription className="pt-2 text-left leading-6">
+                        Apakah Anda yakin ingin mengerjakan soal{" "}
+                        <span className="font-bold text-slate-900">
+                          &quot;{upcomingExam?.name_exam || ""}&quot;
+                        </span>
+                        ?
+                        <span className="mt-3 block">
+                          Pastikan Anda sudah siap. Setelah masuk ke halaman
+                          ujian, Anda tidak dapat kembali ke dashboard.
+                        </span>
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="mt-4 gap-2">
+                      <DialogClose>
+                        <Button variant="outline" className="rounded-xl">
+                          Batal
+                        </Button>
+                      </DialogClose>
+
+                      <Button
+                        onClick={() => {
+                          if (!upcomingExam) return;
+
+                          setOpenConfirmDialog((prev) => ({
+                            ...prev,
+                            upComingExamCard: false,
+                          }));
+
+                          route.push(
+                            `/Student/Exams/StartExam/${upcomingExam.id_subject}`,
+                          );
+                        }}
+                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                        disabled={confirm > 0}
+                      >
+                        {confirm <= 0 ? "Mulai" : confirm}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Available Exams */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <h2 className="text-xl font-bold text-slate-900">
+                  Ujian Tersedia
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Daftar ujian yang tersedia untuk Anda.
+                </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 hover:bg-slate-50">
-                      <TableHead className="font-semibold text-sm text-slate-600">
-                        No
-                      </TableHead>
-                      <TableHead className="font-semibold text-sm text-slate-600">
-                        Nama Ujian
-                      </TableHead>
-                      <TableHead className="font-semibold text-sm text-slate-600">
-                        Waktu Tenggat
-                      </TableHead>
-                      <TableHead className="font-semibold text-sm text-slate-600">
-                        Guru Pengampu
-                      </TableHead>
-                      <TableHead className="font-semibold text-sm text-slate-600">
-                        Status
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-
-                  <TableBody>
-                    {dataExams.length > 0 ? (
-                      dataExams.map((data, i: number) => {
-                        const status = getExamStatus(
-                          data.deadline_exam,
-                          data.created_at,
-                        );
-
-                        return (
-                          <TableRow
-                            key={i}
-                            className="transition-colors hover:bg-slate-50"
-                          >
-                            <TableCell className="font-medium text-slate-500">
-                              {i + 1}
-                            </TableCell>
-
-                            <TableCell className="font-semibold text-slate-800">
-                              {data.name_exam}
-                            </TableCell>
-
-                            <TableCell className="text-sm text-slate-500">
-                              {formatDateToYYYYMMDD(data.created_at)} | {""}
-                              {formatDateToYYYYMMDD(data.deadline_exam)}
-                            </TableCell>
-
-                            <TableCell className="text-sm text-slate-600">
-                              {data.fullname}
-                            </TableCell>
-
-                            <TableCell>
-                              {data.status_exam === 1 &&
-                              data.result_exam !== "telat" ? (
-                                <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                  Selesai
-                                </span>
-                              ) : data.status_exam === 1 &&
-                                data.result_exam === "telat" ? (
-                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                                  Telat
-                                </span>
-                              ) : status === "BELUM_MULAI" ? (
-                                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                                  Belum Dimulai
-                                </span>
-                              ) : status === "LEWAT" ? (
-                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                                  Lewat Batas Waktu
-                                </span>
-                              ) : status === "BERLANGSUNG" ? (
-                                <Dialog
-                                  open={openConfirmDialog.badgeStatus}
-                                  onOpenChange={(open) =>
-                                    setOpenConfirmDialog((prev) => ({
-                                      ...prev,
-                                      badgeStatus: open,
-                                    }))
-                                  }
-                                >
-                                  <DialogTrigger>
-                                    <button
-                                      className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
-                                      onClick={() => setConfirm(5)}
-                                    >
-                                      Sedang Berlangsung
-                                    </button>
-                                  </DialogTrigger>
-
-                                  <DialogContent className="rounded-2xl sm:max-w-md">
-                                    <DialogHeader>
-                                      <DialogTitle className="text-xl font-bold">
-                                        Konfirmasi Masuk Ujian
-                                      </DialogTitle>
-
-                                      <DialogDescription className="pt-2">
-                                        Yakin ingin masuk ke ujian{" "}
-                                        <span className="font-bold text-slate-900">
-                                          &quot;{data.name_exam}&quot;
-                                        </span>
-                                        ?
-                                      </DialogDescription>
-                                    </DialogHeader>
-
-                                    <DialogFooter className="mt-4 gap-2">
-                                      <DialogClose>
-                                        <Button
-                                          variant="outline"
-                                          className="rounded-xl"
-                                        >
-                                          Batal
-                                        </Button>
-                                      </DialogClose>
-
-                                      <Button
-                                        onClick={() => {
-                                          if (!upcomingExam) return;
-
-                                          setOpenConfirmDialog((prev) => ({
-                                            ...prev,
-                                            badgeStatus: false,
-                                          }));
-
-                                          route.push(
-                                            `/Student/Exams/StartExam/${data.id_subject}`,
-                                          );
-                                        }}
-                                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                                        disabled={confirm > 0}
-                                      >
-                                        {confirm <= 0 ? "Mulai" : confirm}
-                                      </Button>
-                                    </DialogFooter>
-                                  </DialogContent>
-                                </Dialog>
-                              ) : null}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-32 text-center">
-                          <div className="flex flex-col items-center justify-center">
-                            <CalendarClock className="size-8 text-slate-300" />
-
-                            <p className="mt-2 font-semibold text-slate-500">
-                              Belum Ada Ujian
-                            </p>
-
-                            <p className="text-sm text-slate-400">
-                              Ujian yang tersedia akan muncul di sini.
-                            </p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <div className="hidden rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:block">
+                {dataExams.length} Ujian
               </div>
-            </section>
+            </div>
+          </div>
 
-            {/* Recent Scores */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
-                <div className="space-y-1">
-                  <h2 className="text-xl font-bold text-slate-900">
-                    Nilai Terakhir
-                  </h2>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                  <TableHead className="font-semibold text-sm text-slate-600">
+                    No
+                  </TableHead>
+                  <TableHead className="font-semibold text-sm text-slate-600">
+                    Nama Ujian
+                  </TableHead>
+                  <TableHead className="font-semibold text-sm text-slate-600">
+                    Waktu Tenggat
+                  </TableHead>
+                  <TableHead className="font-semibold text-sm text-slate-600">
+                    Guru Pengampu
+                  </TableHead>
+                  <TableHead className="font-semibold text-sm text-slate-600">
+                    Status
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
 
-                  <p className="text-sm text-slate-500">
-                    Riwayat hasil ujian yang telah Anda selesaikan.
-                  </p>
-                </div>
-              </div>
+              <TableBody>
+                {dataExams.length > 0 ? (
+                  dataExams.map((data, i: number) => {
+                    const status = getExamStatus(
+                      data.deadline_exam,
+                      data.created_at,
+                    );
 
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 hover:bg-slate-50">
-                      <TableHead className="font-semibold text-slate-600">
-                        No
-                      </TableHead>
-                      <TableHead className="font-semibold text-slate-600">
-                        Nama Ujian
-                      </TableHead>
-                      <TableHead className="font-semibold text-slate-600">
-                        Tanggal Pengerjaan
-                      </TableHead>
-                      <TableHead className="font-semibold text-slate-600">
-                        Nilai
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-
-                  {/* <TableBody>
-              {scheduleExams.length > 0 ? (
-                scheduleExams.map((item: any, i: number) => {
-                  const isCompleted = item.status_exam === true;
-                  const isLate = item.hasil_ujian === "telat";
-                  const isPending = item.hasil_ujian === "pending";
-
-                  // =========================
-                  // UJIAN TELAT
-                  // =========================
-                  if (isLate) {
                     return (
                       <TableRow
-                        key={item.idExams ?? i}
+                        key={i}
                         className="transition-colors hover:bg-slate-50"
                       >
                         <TableCell className="font-medium text-slate-500">
                           {i + 1}
                         </TableCell>
 
-                        <TableCell>
-                          <span className="font-semibold text-slate-800">
-                            {item.exams.nama_ujian}
-                          </span>
+                        <TableCell className="font-semibold text-slate-800">
+                          {data.name_exam}
                         </TableCell>
 
                         <TableCell className="text-sm text-slate-500">
-                          {item.created_at_historyExams
-                            ? convertDate(item.created_at_historyExams, {
-                                minute: "numeric",
-                                hour: "numeric",
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              })
-                            : "-"}
+                          {formatDateToYYYYMMDD(data.created_at)} | {""}
+                          {formatDateToYYYYMMDD(data.deadline_exam)}
+                        </TableCell>
+
+                        <TableCell className="text-sm text-slate-600">
+                          {data.fullname}
                         </TableCell>
 
                         <TableCell>
-                          <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-600">
-                            Tidak Ada Nilai
-                          </span>
+                          {data.status_exam === 1 &&
+                          data.result_exam !== "telat" ? (
+                            <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                              Selesai
+                            </span>
+                          ) : data.status_exam === 1 &&
+                            data.result_exam === "telat" ? (
+                            <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                              Telat
+                            </span>
+                          ) : status === "BELUM_MULAI" ? (
+                            <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                              Belum Dimulai
+                            </span>
+                          ) : status === "LEWAT" ? (
+                            <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                              Lewat Batas Waktu
+                            </span>
+                          ) : status === "BERLANGSUNG" ? (
+                            <Dialog
+                              open={openConfirmDialog.badgeStatus}
+                              onOpenChange={(open) =>
+                                setOpenConfirmDialog((prev) => ({
+                                  ...prev,
+                                  badgeStatus: open,
+                                }))
+                              }
+                            >
+                              <DialogTrigger>
+                                <button
+                                  className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                                  onClick={() => setConfirm(5)}
+                                >
+                                  Sedang Berlangsung
+                                </button>
+                              </DialogTrigger>
+
+                              <DialogContent className="rounded-2xl sm:max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle className="text-xl font-bold">
+                                    Konfirmasi Masuk Ujian
+                                  </DialogTitle>
+
+                                  <DialogDescription className="pt-2">
+                                    Yakin ingin masuk ke ujian{" "}
+                                    <span className="font-bold text-slate-900">
+                                      &quot;{data.name_exam}&quot;
+                                    </span>
+                                    ?
+                                  </DialogDescription>
+                                </DialogHeader>
+
+                                <DialogFooter className="mt-4 gap-2">
+                                  <DialogClose>
+                                    <Button
+                                      variant="outline"
+                                      className="rounded-xl"
+                                    >
+                                      Batal
+                                    </Button>
+                                  </DialogClose>
+
+                                  <Button
+                                    onClick={() => {
+                                      if (!upcomingExam) return;
+
+                                      setOpenConfirmDialog((prev) => ({
+                                        ...prev,
+                                        badgeStatus: false,
+                                      }));
+
+                                      route.push(
+                                        `/Student/Exams/StartExam/${data.id_subject}`,
+                                      );
+                                    }}
+                                    className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                                    disabled={confirm > 0}
+                                  >
+                                    {confirm <= 0 ? "Mulai" : confirm}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          ) : null}
                         </TableCell>
                       </TableRow>
                     );
-                  }
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-32 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <CalendarClock className="size-8 text-slate-300" />
 
-                  // =========================
-                  // UJIAN SUDAH DIKERJAKAN
-                  // =========================
-                  if (isCompleted) {
-                    return (
-                      <TableRow
-                        key={item.idExams ?? i}
-                        className="transition-colors hover:bg-slate-50"
-                      >
-                        <TableCell className="font-medium text-slate-500">
-                          {i + 1}
-                        </TableCell>
+                        <p className="mt-2 font-semibold text-slate-500">
+                          Belum Ada Ujian
+                        </p>
 
-                        <TableCell>
-                          <HoverCard>
-                            <HoverCardTrigger>
-                              <Link
-                                href={`/Student/Dashboard/ResultExam/${item.idExams}`}
+                        <p className="text-sm text-slate-400">
+                          Ujian yang tersedia akan muncul di sini.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+
+        {/* Recent Scores */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-slate-900">
+                Nilai Terakhir
+              </h2>
+
+              <p className="text-sm text-slate-500">
+                Riwayat hasil ujian yang telah Anda selesaikan.
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                  <TableHead className="font-semibold text-slate-600">
+                    No
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-600">
+                    Nama Ujian
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-600">
+                    Tanggal Pengerjaan
+                  </TableHead>
+                  <TableHead className="font-semibold text-slate-600">
+                    Nilai
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {dataExams.length > 0 ? (
+                  dataExams.map((item, i: number) => {
+                    const isCompleted = item.status_exam === 1;
+                    const isLate = item.result_exam === "telat";
+                    const isPending = item.result_exam === "pending";
+
+                    // =========================
+                    // UJIAN TELAT
+                    // =========================
+                    if (isLate) {
+                      return (
+                        <TableRow
+                          key={item.id_subject}
+                          className="transition-colors hover:bg-slate-50"
+                        >
+                          <TableCell className="font-medium text-slate-500">
+                            {i + 1}
+                          </TableCell>
+
+                          <TableCell>
+                            <span className="font-semibold text-slate-800">
+                              {item.name_exam}
+                            </span>
+                          </TableCell>
+
+                          <TableCell className="text-sm text-slate-500">
+                            {item.created_at
+                              ? formatDateToYYYYMMDD(item.created_at)
+                              : "-"}
+                          </TableCell>
+
+                          <TableCell>
+                            <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-600">
+                              Tidak Ada Nilai
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    // =========================
+                    // UJIAN SUDAH DIKERJAKAN
+                    // =========================
+                    if (isCompleted) {
+                      return (
+                        <TableRow
+                          key={item.id_subject}
+                          className="transition-colors hover:bg-slate-50"
+                        >
+                          <TableCell className="font-medium text-slate-500">
+                            {i + 1}
+                          </TableCell>
+
+                          <TableCell>
+                            <HoverCard>
+                              <HoverCardTrigger
+                                href={`/Student/Dashboard/ResultExam/${item.id_subject}`}
                                 className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
                               >
-                                {item.exams.nama_ujian}
-                              </Link>
-                            </HoverCardTrigger>
+                                {item.name_exam}
+                              </HoverCardTrigger>
 
-                            <HoverCardContent className="w-fit rounded-lg p-3">
-                              <p className="text-xs font-medium text-slate-600">
-                                Lihat hasil ujian
-                              </p>
-                            </HoverCardContent>
-                          </HoverCard>
-                        </TableCell>
+                              <HoverCardContent className="w-fit rounded-lg p-3">
+                                <p className="text-xs font-medium text-slate-700">
+                                  Lihat hasil ujian
+                                </p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          </TableCell>
 
-                        <TableCell className="text-sm text-slate-500">
-                          {item.created_at_historyExams
-                            ? convertDate(item.created_at_historyExams, {
-                                minute: "numeric",
-                                hour: "numeric",
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              })
-                            : "-"}
+                          <TableCell className="text-sm text-slate-500">
+                            {item.created_at
+                              ? formatDateToYYYYMMDD(item.created_at)
+                              : "-"}
+                          </TableCell>
+
+                          <TableCell>
+                            {isPending ? (
+                              <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-bold text-amber-600">
+                                Pending
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-600">
+                                {item.result_exam} / 100
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+
+                    // =========================
+                    // BELUM MENGERJAKAN
+                    // =========================
+                    return (
+                      <TableRow
+                        key={item.id_subject}
+                        className="transition-colors hover:bg-slate-50"
+                      >
+                        <TableCell className="font-medium text-slate-500">
+                          {i + 1}
                         </TableCell>
 
                         <TableCell>
-                          {isPending ? (
-                            <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-bold text-amber-600">
-                              Pending
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-600">
-                              {item.hasil_ujian} / 100
-                            </span>
-                          )}
+                          <span className="font-semibold text-slate-700">
+                            {item.name_exam}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-sm text-slate-500">
+                          -
+                        </TableCell>
+
+                        <TableCell>
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-500">
+                            Belum Ada Nilai
+                          </span>
                         </TableCell>
                       </TableRow>
                     );
-                  }
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-32 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <BarChart3 className="size-8 text-slate-300" />
 
-                  // =========================
-                  // BELUM MENGERJAKAN
-                  // =========================
-                  return (
-                    <TableRow
-                      key={item.idExams ?? i}
-                      className="transition-colors hover:bg-slate-50"
-                    >
-                      <TableCell className="font-medium text-slate-500">
-                        {i + 1}
-                      </TableCell>
-
-                      <TableCell>
-                        <span className="font-semibold text-slate-700">
-                          {item.exams.nama_ujian}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="text-sm text-slate-500">
-                        -
-                      </TableCell>
-
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-500">
+                        <p className="mt-2 font-semibold text-slate-500">
                           Belum Ada Nilai
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <BarChart3 className="size-8 text-slate-300" />
+                        </p>
 
-                      <p className="mt-2 font-semibold text-slate-500">
-                        Belum Ada Nilai
-                      </p>
-
-                      <p className="text-sm text-slate-400">
-                        Hasil ujian akan muncul setelah Anda menyelesaikan
-                        ujian.
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody> */}
-                </Table>
-              </div>
-            </section>
+                        <p className="text-sm text-slate-400">
+                          Hasil ujian akan muncul setelah Anda menyelesaikan
+                          ujian.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
-        </>
-      ) : (
-        <>
-          {/* ==================== HEADER ==================== */}
-          <section className="relative overflow-hidden rounded-3xl bg-slate-200 p-6 animate-pulse sm:p-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              {/* Profile */}
-              <div className="size-20 shrink-0 rounded-full bg-slate-300 sm:size-24" />
-
-              {/* Heading */}
-              <div className="w-full max-w-xl">
-                <div className="h-3 w-28 rounded bg-slate-300" />
-
-                <div className="mt-3 h-8 w-56 rounded-md bg-slate-300 sm:h-9" />
-
-                <div className="mt-3 h-4 w-full max-w-md rounded bg-slate-300" />
-                <div className="mt-2 h-4 w-3/4 max-w-sm rounded bg-slate-300" />
-              </div>
-            </div>
-          </section>
-
-          {/* ==================== SUMMARY ==================== */}
-          <section className="mt-8">
-            {/* Heading */}
-            <div>
-              <div className="h-3 w-24 rounded bg-slate-200 animate-pulse" />
-
-              <div className="mt-2 h-7 w-48 rounded-md bg-slate-200 animate-pulse" />
-
-              <div className="mt-2 h-4 w-80 max-w-full rounded bg-slate-100 animate-pulse" />
-            </div>
-
-            {/* Statistic Cards */}
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {[1, 2].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                >
-                  <div className="flex items-start justify-between animate-pulse">
-                    <div className="w-full">
-                      <div className="h-4 w-32 rounded bg-slate-200" />
-
-                      <div className="mt-3 h-9 w-16 rounded-md bg-slate-200" />
-
-                      <div className="mt-2 h-3 w-44 rounded bg-slate-100" />
-                    </div>
-
-                    <div className="size-12 shrink-0 rounded-xl bg-slate-100" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ==================== DEADLINE ==================== */}
-          <section className="mt-8">
-            <div className="mb-4 animate-pulse">
-              <div className="h-3 w-28 rounded bg-slate-200" />
-              <div className="mt-2 h-7 w-60 rounded-md bg-slate-200" />
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-4 animate-pulse">
-                  <div className="size-12 shrink-0 rounded-xl bg-slate-200" />
-
-                  <div className="w-full">
-                    <div className="h-3 w-28 rounded bg-slate-100" />
-
-                    <div className="mt-2 h-6 w-60 max-w-full rounded-md bg-slate-200" />
-
-                    <div className="mt-2 h-4 w-44 rounded bg-slate-100" />
-                  </div>
-                </div>
-
-                <div className="h-11 w-full rounded-xl bg-slate-200 animate-pulse sm:w-32" />
-              </div>
-            </div>
-          </section>
-
-          {/* ==================== AVAILABLE EXAMS ==================== */}
-          <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {/* Section Header */}
-            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="animate-pulse">
-                  <div className="h-6 w-40 rounded-md bg-slate-200" />
-                  <div className="mt-2 h-3 w-64 max-w-full rounded bg-slate-100" />
-                </div>
-
-                <div className="hidden h-7 w-20 rounded-full bg-slate-100 animate-pulse sm:block" />
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <div className="min-w-190 animate-pulse">
-                {/* Table Header */}
-                <div className="grid grid-cols-[60px_2fr_1.5fr_1.5fr_1.2fr] gap-4 bg-slate-50 px-5 py-4">
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                </div>
-
-                {/* Rows */}
-                {[1, 2, 3, 4, 5].map((row) => (
-                  <div
-                    key={row}
-                    className="grid grid-cols-[60px_2fr_1.5fr_1.5fr_1.2fr] gap-4 border-t border-slate-100 px-5 py-5"
-                  >
-                    <div className="h-4 w-6 rounded bg-slate-100" />
-                    <div className="h-4 w-40 rounded bg-slate-100" />
-                    <div className="h-4 w-28 rounded bg-slate-100" />
-                    <div className="h-4 w-32 rounded bg-slate-100" />
-                    <div className="h-6 w-24 rounded-full bg-slate-100" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ==================== RECENT SCORES ==================== */}
-          <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {/* Section Header */}
-            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
-              <div className="animate-pulse">
-                <div className="h-6 w-36 rounded-md bg-slate-200" />
-                <div className="mt-2 h-3 w-72 max-w-full rounded bg-slate-100" />
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <div className="min-w-162.5 animate-pulse">
-                {/* Table Header */}
-                <div className="grid grid-cols-[60px_2fr_1.5fr_1fr] gap-4 bg-slate-50 px-5 py-4">
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                  <div className="h-4 rounded bg-slate-200" />
-                </div>
-
-                {/* Rows */}
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-[60px_2fr_1.5fr_1fr] gap-4 border-t border-slate-100 px-5 py-5"
-                  >
-                    <div className="h-4 w-6 rounded bg-slate-100" />
-
-                    <div className="h-4 w-44 rounded bg-slate-100" />
-
-                    <div className="h-4 w-32 rounded bg-slate-100" />
-
-                    <div className="h-6 w-20 rounded-full bg-slate-100" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </>
-      )}
+        </section>
+      </div>
     </div>
   );
 }
