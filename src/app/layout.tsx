@@ -24,7 +24,7 @@ export default function RootLayout({
     >
       <body className={fontStyle.className}>
         <SessionProvider>
-          <Toaster />
+          <Toaster richColors />
           {children}
         </SessionProvider>
       </body>

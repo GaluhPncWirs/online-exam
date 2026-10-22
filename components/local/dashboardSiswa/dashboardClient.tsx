@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "../forDasboard/content";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 import {
@@ -33,7 +33,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import Link from "next/link";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -51,6 +50,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
     statusBadge: false,
   });
   const [lateExam, setLateExam] = useState<ScheduleExams[]>([]);
+  const savedLateExamIds = useRef<Set<string>>(new Set());
 
   const upcomingExam = getUpComingExam(dataExams);
 
@@ -77,57 +77,75 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
   const lateExams = useCallback(
     async (idUjian: string) => {
       if (!dataUser?.id_student) return;
-      const payload = {
-        id_student: dataUser.id_student,
-        id_subject: idUjian,
-        result_exam: "telat",
-        status_exam: true,
-        className: dataUser.class,
-      };
 
-      const request = await fetch("/api/student/lateExam", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // Jika ujian sudah tersimpan, jangan panggil API lagi
+      if (savedLateExamIds.current.has(idUjian)) return;
 
-      const response = await request.json();
+      // Tandai sementara agar request tidak dikirim berulang
+      savedLateExamIds.current.add(idUjian);
 
-      if (!response.success) {
-        toast("❌ Gagal Simpan Data", {
-          description: response.message,
+      try {
+        const payload = {
+          id_student: dataUser.id_student,
+          id_subject: idUjian,
+          result_exam: "telat",
+          status_exam: true,
+          className: dataUser.class,
+        };
+
+        const request = await fetch("/api/student/lateExam", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         });
-        return;
+
+        const response = await request.json();
+
+        if (!request.ok || !response.success) {
+          // Izinkan percobaan ulang jika penyimpanan gagal
+          savedLateExamIds.current.delete(idUjian);
+
+          toast("❌ Gagal Simpan Data", {
+            description: response.message,
+          });
+
+          return;
+        }
+      } catch (error) {
+        // Izinkan percobaan ulang jika terjadi error jaringan
+        savedLateExamIds.current.delete(idUjian);
+
+        toast("❌ Gagal Simpan Data", {
+          description: "Terjadi kesalahan saat menghubungi server.",
+        });
+
+        console.error(error);
       }
     },
-    [dataUser?.id_student],
+    [dataUser],
   );
 
   useEffect(() => {
-    if (!dataExams.length) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLateExam([]);
-      return;
-    }
+    const lateExamsList = dataExams.filter(
+      (exam) => getExamStatus(exam.deadline_exam, exam.created_at) === "LEWAT",
+    );
 
-    const lateExamsList = dataExams.filter((exam) => {
-      return getExamStatus(exam.deadline_exam, exam.created_at) === "LEWAT";
-    });
-
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLateExam(lateExamsList);
 
-    if (lateExamsList.length === 0) {
-      return;
-    }
+    // Hanya memproses ujian yang belum berhasil disimpan
+    const unsavedLateExams = lateExamsList.filter(
+      (exam) => !savedLateExamIds.current.has(exam.id_subject),
+    );
 
-    async function saveLateExams() {
-      await Promise.all(
-        lateExamsList.map((exam) => lateExams(exam.id_subject)),
-      );
-    }
+    if (unsavedLateExams.length === 0) return;
 
-    saveLateExams();
-  }, [dataExams]);
+    void Promise.all(
+      unsavedLateExams.map((exam) => lateExams(exam.id_subject)),
+    );
+  }, [dataExams, lateExams]);
 
   useEffect(() => {
     if (!openConfirmDialog) {

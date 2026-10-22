@@ -13,7 +13,10 @@ CREATE TABLE history_exams (
     CONSTRAINT fk_id_subject FOREIGN KEY(id_subject) REFERENCES subject_exam
 )ENGINE=innodb
 
-ALTER TABLE 
+DESCRIBE history_exams
+
+ALTER TABLE history_exams
+  ADD CONSTRAINT uq_history_student_subject UNIQUE (id_subject, id_subject)
 
 INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES 
 ('HIS-uRnH3o', 'STD-aMClguF', 'SUB-wPTu3V', '{

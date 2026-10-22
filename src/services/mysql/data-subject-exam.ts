@@ -1,5 +1,6 @@
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { ResultSetHeader } from "mysql2";
 
 export async function handleGetDataSubjectExams(
   className: string,
@@ -65,16 +66,19 @@ export async function handleLateExam({
   const query = `
     INSERT 
       INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) 
-    VALUES
-      (?, ?, ?, ?, ?, ?, ?) 
-    WHERE 
-      id_student = ? AND id_subject = ?
+    SELECT ?, ?, ?, ?, ?, ?, ?
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT 1 
+      FROM history_exams
+      WHERE id_student = ? AND id_subject = ?
+    )
   `;
 
   const generateIdHistoryExam = generateRandomId(7, "HIS");
 
   try {
-    await pool.execute(query, [
+    const [result] = await pool.execute<ResultSetHeader>(query, [
       generateIdHistoryExam,
       id_student,
       id_subject,
@@ -82,7 +86,18 @@ export async function handleLateExam({
       result_exam,
       status_exam,
       className,
+      // parameter untuk NOT EXISTS
+      id_student,
+      id_subject,
     ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: true,
+        status: 200,
+        message: "Data sudah tersimpan sebelumnya",
+      };
+    }
 
     return {
       success: true,
@@ -90,6 +105,7 @@ export async function handleLateExam({
       message: "Data berhasil tersimpan",
     };
   } catch (error) {
+    // Pengaman jika dua request masuk bersamaan (race condition)
     if (
       typeof error === "object" &&
       error !== null &&
@@ -97,11 +113,13 @@ export async function handleLateExam({
       error.code === "ER_DUP_ENTRY"
     ) {
       return {
-        success: false,
-        status: 409,
-        message: "Data sudah ada tidak boleh terduplikat",
+        success: true,
+        status: 200,
+        message: "Data sudah tersimpan sebelumnya",
       };
     }
+
+    console.error(error);
 
     return {
       success: false,
