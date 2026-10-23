@@ -1,14 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -27,7 +20,6 @@ import ListSidebar from "@/components/global/listSidebar/content";
 import { useDataExams } from "@/hooks/getScheduleExam";
 import MainContent from "@/src/layout/mainContent/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
-import { convertDate } from "@/src/lib/utils/date";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 
 type DataHistoryExams = {
@@ -39,127 +31,109 @@ type DataHistoryExams = {
 
 export default function Profil() {
   const dataUser = useGetDataUser((state) => state.dataUser);
-  // const getHistoryStudent = useDataExams(dataUser, getIdStudent);
-  const [resultExamPerClass, setResultExamPerClass] = useState<
-    DataHistoryExams[]
-  >([]);
+  // const [resultExamPerClass, setResultExamPerClass] = useState<
+  //   DataHistoryExams[]
+  // >([]);
 
-  // useEffect(() => {
-  //   async function getHistoryResultExams() {
-  //     const { data, error } = await supabase
-  //       .from("history-exam-student")
-  //       .select("student_id,exam_id,hasil_ujian,kelas")
-  //       .eq("idStudent", getIdStudent)
-  //       .limit(1);
-  //     if (error) {
-  //       console.log("Gagal mengambil data");
-  //       setResultExamPerClass([]);
-  //     } else {
-  //       setResultExamPerClass(data);
-  //     }
+  // function rankingClasses() {
+  //   if (!resultExamPerClass?.length || !dataUser?.class) {
+  //     return { ranking: 0, lenStudentPerClass: 0 };
   //   }
-  //   getHistoryResultExams();
-  // }, []);
 
-  function rankingClasses() {
-    if (!resultExamPerClass?.length || !dataUser?.class) {
-      return { ranking: 0, lenStudentPerClass: 0 };
-    }
+  //   const normalizedResults = resultExamPerClass.map((item) => ({
+  //     ...item,
+  //     hasil_ujian:
+  //       item.hasil_ujian !== "telat" && item.hasil_ujian !== "pending"
+  //         ? item.hasil_ujian
+  //         : "0",
+  //   }));
 
-    const normalizedResults = resultExamPerClass.map((item) => ({
-      ...item,
-      hasil_ujian:
-        item.hasil_ujian !== "telat" && item.hasil_ujian !== "pending"
-          ? item.hasil_ujian
-          : "0",
-    }));
+  //   type StudentScores = {
+  //     student_id: string;
+  //     pointExams: number[];
+  //   };
 
-    type StudentScores = {
-      student_id: string;
-      pointExams: number[];
-    };
+  //   type ClassGroup = {
+  //     kelas: string;
+  //     resultExam: StudentScores[];
+  //   };
 
-    type ClassGroup = {
-      kelas: string;
-      resultExam: StudentScores[];
-    };
+  //   const groupedByClass = normalizedResults.reduce<ClassGroup[]>(
+  //     (acc, cur) => {
+  //       const classGroup = acc.find((group) => group.kelas === cur.kelas);
+  //       const score = Number(cur.hasil_ujian);
 
-    const groupedByClass = normalizedResults.reduce<ClassGroup[]>(
-      (acc, cur) => {
-        const classGroup = acc.find((group) => group.kelas === cur.kelas);
-        const score = Number(cur.hasil_ujian);
+  //       if (!classGroup) {
+  //         acc.push({
+  //           kelas: cur.kelas,
+  //           resultExam: [
+  //             {
+  //               student_id: cur.student_id,
+  //               pointExams: [score],
+  //             },
+  //           ],
+  //         });
+  //       } else {
+  //         const studentItem = classGroup.resultExam.find(
+  //           (item) => item.student_id === cur.student_id,
+  //         );
 
-        if (!classGroup) {
-          acc.push({
-            kelas: cur.kelas,
-            resultExam: [
-              {
-                student_id: cur.student_id,
-                pointExams: [score],
-              },
-            ],
-          });
-        } else {
-          const studentItem = classGroup.resultExam.find(
-            (item) => item.student_id === cur.student_id,
-          );
+  //         if (studentItem) {
+  //           studentItem.pointExams.push(score);
+  //         } else {
+  //           classGroup.resultExam.push({
+  //             student_id: cur.student_id,
+  //             pointExams: [score],
+  //           });
+  //         }
+  //       }
 
-          if (studentItem) {
-            studentItem.pointExams.push(score);
-          } else {
-            classGroup.resultExam.push({
-              student_id: cur.student_id,
-              pointExams: [score],
-            });
-          }
-        }
+  //       return acc;
+  //     },
+  //     [],
+  //   );
 
-        return acc;
-      },
-      [],
-    );
+  //   // Step 3: Calculate total scores for current class
+  //   const currentClassData = groupedByClass.find(
+  //     (group) => group.kelas === dataUser.class,
+  //   );
 
-    // Step 3: Calculate total scores for current class
-    const currentClassData = groupedByClass.find(
-      (group) => group.kelas === dataUser.class,
-    );
+  //   if (!currentClassData?.resultExam.length) {
+  //     return { ranking: 0, lenStudentPerClass: 0 };
+  //   }
 
-    if (!currentClassData?.resultExam.length) {
-      return { ranking: 0, lenStudentPerClass: 0 };
-    }
+  //   const totalScores = currentClassData.resultExam.map((item) => ({
+  //     ...item,
+  //     pointExams: item.pointExams.reduce((sum, score) => sum + score, 0),
+  //   }));
 
-    const totalScores = currentClassData.resultExam.map((item) => ({
-      ...item,
-      pointExams: item.pointExams.reduce((sum, score) => sum + score, 0),
-    }));
+  //   // Step 4: Sort by score (descending)
+  //   const sortedByScore = [...totalScores].sort(
+  //     (a, b) => b.pointExams - a.pointExams,
+  //   );
 
-    // Step 4: Sort by score (descending)
-    const sortedByScore = [...totalScores].sort(
-      (a, b) => b.pointExams - a.pointExams,
-    );
+  //   // Step 5: Add ranks (handling ties)
+  //   let lastScore: number | null = null;
+  //   let currentRank = 0;
 
-    // Step 5: Add ranks (handling ties)
-    let lastScore: number | null = null;
-    let currentRank = 0;
+  //   const withRanking = sortedByScore.map((item, index) => {
+  //     if (item.pointExams !== lastScore) {
+  //       currentRank = index + 1;
+  //       lastScore = item.pointExams;
+  //     }
+  //     return { ...item, ranking: currentRank };
+  //   });
 
-    const withRanking = sortedByScore.map((item, index) => {
-      if (item.pointExams !== lastScore) {
-        currentRank = index + 1;
-        lastScore = item.pointExams;
-      }
-      return { ...item, ranking: currentRank };
-    });
+  //   // Step 6: Find current student's ranking
+  //   const studentRanking = withRanking.find(
+  //     (item) => item.student_id === dataUser.id_student,
+  //   );
 
-    // Step 6: Find current student's ranking
-    const studentRanking = withRanking.find(
-      (item) => item.student_id === dataUser.id_student,
-    );
-
-    return {
-      ranking: studentRanking?.ranking ?? 0,
-      lenStudentPerClass: totalScores.length,
-    };
-  }
+  //   return {
+  //     ranking: studentRanking?.ranking ?? 0,
+  //     lenStudentPerClass: totalScores.length,
+  //   };
+  // }
 
   // async function handleEditProfileStudent(
   //   event: React.FormEvent<HTMLFormElement>,
@@ -215,10 +189,8 @@ export default function Profil() {
 
             {/* Edit */}
             <Dialog>
-              <DialogTrigger>
-                <Button className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
-                  Edit Profil
-                </Button>
+              <DialogTrigger className="rounded-lg py-2 border text-sm border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
+                Edit Profil
               </DialogTrigger>
 
               <DialogContent className="rounded-2xl sm:max-w-lg">
@@ -344,11 +316,12 @@ export default function Profil() {
                     </p>
 
                     <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                      {rankingClasses().ranking || 0}
+                      {/* {rankingClasses().ranking || 0} */} 0
                     </p>
 
                     <p className="mt-1 text-xs text-slate-400">
-                      Dari {rankingClasses().lenStudentPerClass || 0} siswa
+                      {/* Dari {rankingClasses().lenStudentPerClass || 0} siswa */}
+                      Dari 0 siswa
                     </p>
                   </div>
 
