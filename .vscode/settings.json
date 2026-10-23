@@ -26,7 +26,8 @@
         "sedang mengerjakan untuk menampilkan data hasil ujian siswa di halaman detail ujian",
         "memperbaiki isi data untuk table ujian dan histori selesai",
         "selesai merefaktor code untuk halaman resultExam",
-        "lagi cari cara untuk mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard"
+        "lagi cari cara untuk mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard",
+        "selesai untuk cara mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard dan halaman hasil ujian"
     ],
     "sqltools.connections": [
         {

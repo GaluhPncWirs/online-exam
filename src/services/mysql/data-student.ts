@@ -3,6 +3,7 @@ import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { connection } from "next/server";
 
 // untuk login akun siswa dan guru
 
@@ -202,6 +203,7 @@ export async function handleGetDataUser(
 
 // untuk decode data token JWT dari login default dan login google
 export async function handleDecodeTokenJWT(token: string) {
+  await connection();
   if (!token) {
     return {
       success: false,

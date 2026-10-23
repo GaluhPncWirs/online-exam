@@ -1,13 +1,10 @@
 import DashboardClient from "@/components/local/student/dashboard/dashboardClient";
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
-import { authOptions } from "@/src/app/api/auth/[...nextauth]/route";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleDecodeTokenJWT } from "@/src/services/mysql/data-student";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/data-subject-exam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
-import { getServerSession } from "next-auth";
-import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 export default function Loader() {
