@@ -25,7 +25,7 @@ export default function ResultExamClient({
   return (
     <div className="space-y-8">
       {/* ================= HEADER / RESULT SUMMARY ================= */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
+      <section className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
         <div className="absolute -right-20 -top-20 size-64 rounded-full bg-white/10" />
         <div className="absolute -bottom-32 left-1/3 size-80 rounded-full bg-white/5" />
 
@@ -73,8 +73,7 @@ export default function ResultExamClient({
             Periksa kembali jawaban yang telah Anda berikan pada setiap soal.
           </p>
         </div>
-
-        {dataResultExam.type_exam === "pg" ? (
+        {dataResultExam.type_exam === "PG" ? (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             {(dataResultExam.exam_questions as MultipleChoice[]).map(
               (item: MultipleChoice, i: number) => (
@@ -98,16 +97,17 @@ export default function ResultExamClient({
                   {/* Answers */}
                   <div className="p-5">
                     <ul className="flex flex-col gap-3">
-                      {(["a", "b", "c", "d", "e"] as const).map((opt) => {
-                        const answerKey = `answer_${opt}` as keyof typeof item;
-                        const answerText = item[answerKey];
+                      {["a", "b", "c", "d", "e"].map((opt) => {
+                        const choiceKey =
+                          `choice_${opt}` as keyof typeof item.multipleChoice;
+                        const choiceText = item.multipleChoice[choiceKey];
 
                         return (
                           <li
                             key={opt}
                             className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${correctAnswer(
                               item.id,
-                              answerText,
+                              choiceText,
                             )}`}
                           >
                             <div className="flex items-start gap-3">
@@ -115,7 +115,7 @@ export default function ResultExamClient({
                                 {opt.toUpperCase()}
                               </span>
 
-                              <span className="leading-6">{answerText}</span>
+                              <span className="leading-6">{choiceText}</span>
                             </div>
                           </li>
                         );

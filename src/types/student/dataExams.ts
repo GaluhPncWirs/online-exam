@@ -26,7 +26,7 @@ export type ExamQuestions = {
   correctAnswer: string;
 };
 
-export type MultipleChoice = ExamQuestions & Choice;
+export type MultipleChoice = ExamQuestions & { multipleChoice: Choice };
 export type Essay = ExamQuestions;
 
 export type DataResultExam = {

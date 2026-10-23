@@ -1,6 +1,6 @@
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
-import { ResultSetHeader } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export async function handleGetDataSubjectExams(
   className: string,
@@ -144,10 +144,14 @@ export async function handleGetDataResultExam(
   `;
 
   try {
-    const [rows] = await pool.execute(query, [id_subject, id_student]);
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      id_subject,
+      id_student,
+    ]);
+    const dataResultExam = rows[0];
 
     return {
-      data: rows,
+      data: dataResultExam,
       success: true,
       message: "Berhasil mengambil data ujian",
     };
