@@ -36,3 +36,222 @@ INSERT INTO subject_exam(id_subject, id_teacher, exam_questions, name_exam, type
 SELECT * FROM subject_exam
 
 DELETE FROM subject_exam WHERE id_subject = 'SUB-wPTu3V'
+
+UPDATE subject_exam SET exam_questions = '[
+  {
+    "id": "EX-ENG1",
+    "questions": "Choose the correct form: She ____ to school every day.",
+    "multipleChoice": {
+      "choice_a": "go",
+      "choice_b": "goes",
+      "choice_c": "going",
+      "choice_d": "gone",
+      "choice_e": "is go"
+    },
+    "correctAnswer": "goes"
+  },
+  {
+    "id": "EX-ENG2",
+    "questions": "The opposite of \'difficult\' is?",
+    "multipleChoice": {
+      "choice_a": "Hard",
+      "choice_b": "Easy",
+      "choice_c": "Tough",
+      "choice_d": "Strong",
+      "choice_e": "Weak"
+    },
+    "correctAnswer": "Easy"
+  },
+  {
+    "id": "EX-ENG3",
+    "questions": "Which one is a past tense verb?",
+    "multipleChoice": {
+      "choice_a": "Run",
+      "choice_b": "Eat",
+      "choice_c": "Went",
+      "choice_d": "Go",
+      "choice_e": "See"
+    },
+    "correctAnswer": "Went"
+  },
+  {
+    "id": "EX-ENG4",
+    "questions": "Choose the correct article: I saw ___ elephant in the zoo.",
+    "multipleChoice": {
+      "choice_a": "a",
+      "choice_b": "an",
+      "choice_c": "the",
+      "choice_d": "no article",
+      "choice_e": "some"
+    },
+    "correctAnswer": "an"
+  },
+  {
+    "id": "EX-ENG5",
+    "questions": "Complete the sentence: They ____ watching TV when I arrived.",
+    "multipleChoice": {
+      "choice_a": "was",
+      "choice_b": "were",
+      "choice_c": "is",
+      "choice_d": "are",
+      "choice_e": "been"
+    },
+    "correctAnswer": "were"
+  },
+  {
+    "id": "EX-ENG6",
+    "questions": "What is the synonym of \'happy\'?",
+    "multipleChoice": {
+      "choice_a": "Sad",
+      "choice_b": "Glad",
+      "choice_c": "Angry",
+      "choice_d": "Weak",
+      "choice_e": "Afraid"
+    },
+    "correctAnswer": "Glad"
+  },
+  {
+    "id": "EX-ENG7",
+    "questions": "Change into negative: She likes apples.",
+    "multipleChoice": {
+      "choice_a": "She not like apples",
+      "choice_b": "She doesn`t like apples",
+      "choice_c": "She don`t like apples",
+      "choice_d": "She isn`t like apples",
+      "choice_e": "She no like apples"
+    },
+    "correctAnswer": "She doesn`t like apples"
+  },
+  {
+    "id": "EX-ENG8",
+    "questions": "Which word is an adjective?",
+    "multipleChoice": {
+      "choice_a": "Quickly",
+      "choice_b": "Happiness",
+      "choice_c": "Beautiful",
+      "choice_d": "Sing",
+      "choice_e": "Dance"
+    },
+    "correctAnswer": "Beautiful"
+  },
+  {
+    "id": "EX-ENG9",
+    "questions": "Choose the correct preposition: He is interested ___ music.",
+    "multipleChoice": {
+      "choice_a": "at",
+      "choice_b": "in",
+      "choice_c": "on",
+      "choice_d": "to",
+      "choice_e": "with"
+    },
+    "correctAnswer": "in"
+  },
+  {
+    "id": "EX-ENG10",
+    "questions": "Identify the correct comparative form: This book is ____ than that one.",
+    "multipleChoice": {
+      "choice_a": "good",
+      "choice_b": "better",
+      "choice_c": "best",
+      "choice_d": "more good",
+      "choice_e": "most good"
+    },
+    "correctAnswer": "better"
+  },
+  {
+    "id": "EX-ENG11",
+    "questions": "Which one is a countable noun?",
+    "multipleChoice": {
+      "choice_a": "Water",
+      "choice_b": "Sugar",
+      "choice_c": "Chair",
+      "choice_d": "Rice",
+      "choice_e": "Milk"
+    },
+    "correctAnswer": "Chair"
+  },
+  {
+    "id": "EX-ENG12",
+    "questions": "What is the past form of \'buy\'?",
+    "multipleChoice": {
+      "choice_a": "Buyed",
+      "choice_b": "Bought",
+      "choice_c": "Buys",
+      "choice_d": "Buying",
+      "choice_e": "Been"
+    },
+    "correctAnswer": "Bought"
+  },
+  {
+    "id": "EX-ENG13",
+    "questions": "Choose the correct question tag: You are a student, ____?",
+    "multipleChoice": {
+      "choice_a": "aren`t you",
+      "choice_b": "isn`t you",
+      "choice_c": "don`t you",
+      "choice_d": "won`t you",
+      "choice_e": "doesn`t you"
+    },
+    "correctAnswer": "aren`t you"
+  },
+  {
+    "id": "EX-ENG14",
+    "questions": "What is the plural form of \'child\'?",
+    "multipleChoice": {
+      "choice_a": "Childs",
+      "choice_b": "Children",
+      "choice_c": "Childes",
+      "choice_d": "Childrens",
+      "choice_e": "Childer"
+    },
+    "correctAnswer": "Children"
+  },
+  {
+    "id": "EX-ENG15",
+    "questions": "Fill in the blank: He has lived in Jakarta ____ 2010.",
+    "multipleChoice": {
+      "choice_a": "since",
+      "choice_b": "for",
+      "choice_c": "by",
+      "choice_d": "at",
+      "choice_e": "from"
+    },
+    "correctAnswer": "since"
+  },
+  {
+    "id": "EX-ENG16",
+    "questions": "Choose the correct modal: You ____ wear a helmet when riding a motorcycle.",
+    "multipleChoice": {
+      "choice_a": "must",
+      "choice_b": "can",
+      "choice_c": "may",
+      "choice_d": "could",
+      "choice_e": "might"
+    },
+    "correctAnswer": "must"
+  },
+  {
+    "id": "EX-ENG17",
+    "questions": "Which sentence is in Present Perfect Tense?",
+    "multipleChoice": {
+      "choice_a": "She goes to school.",
+      "choice_b": "She went to school.",
+      "choice_c": "She has gone to school.",
+      "choice_d": "She is going to school.",
+      "choice_e": "She will go to school."
+    },
+    "correctAnswer": "She has gone to school."
+  },
+  {
+    "id": "EX-ENG18",
+    "questions": "What is the meaning of \'library\'?",
+    "multipleChoice": {
+      "choice_a": "Rumah sakit",
+      "choice_b": "Sekolah",
+      "choice_c": "Perpustakaan",
+      "choice_d": "Pasar",
+      "choice_e": "Bioskop"
+    },
+    "correctAnswer": "Perpustakaan"
+  }
+]', name_exam = "Ujian Bahasa Inggris" WHERE id_subject = 'SUB-wPTu3V'

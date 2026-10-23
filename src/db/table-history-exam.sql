@@ -56,4 +56,30 @@ INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_stude
   "EX-GEO5": "Oseania"
 }', '53', TRUE, '3A')
 
+INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES 
+('HIS-tY7cRq', 'STD-aMClguF', 'SUB-wPTu3V', '{
+  "EX-ENG16": "must",
+  "EX-ENG8": "Beautiful",
+  "EX-ENG17": "She goes to school.",
+  "EX-ENG1": "go",
+  "EX-ENG9": "to",
+  "EX-ENG2": "Easy",
+  "EX-ENG10": "better",
+  "EX-ENG15": "since",
+  "EX-ENG7": "She doesn`t like apples",
+  "EX-ENG13": "isn`t you",
+  "EX-ENG3": "Went",
+  "EX-ENG18": "Perpustakaan",
+  "EX-ENG5": "are",
+  "EX-ENG14": "Children",
+  "EX-ENG6": "Sad",
+  "EX-ENG4": "an",
+  "EX-ENG11": "Chair",
+  "EX-ENG12": "Bought"
+}', '67', TRUE, '3A')
+
+DELETE FROM history_exams WHERE id_history_exam = 'HIS-uHnE3o'
+
+UPDATE history_exams SET id_subject = "SUB-rT6UeV" WHERE id_history_exam = 'HIS-uHnE3o'
+
 SELECT * FROM history_exams
