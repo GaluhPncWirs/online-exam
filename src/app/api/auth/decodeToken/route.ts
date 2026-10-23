@@ -62,7 +62,6 @@ export async function GET(req: NextRequest) {
       data: session.data,
       role: session.role,
       idUser: session.idUser,
-      expired: session.expired,
     });
   } catch {
     return NextResponse.json({

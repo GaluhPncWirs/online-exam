@@ -214,7 +214,7 @@ export async function handleDecodeTokenJWT(token: string) {
     const resultDecodeJWT = jwt.verify(
       token,
       process.env.JWT_SECRET!,
-    ) as TokenJWT & { exp: number };
+    ) as TokenJWT;
 
     const userData = await handleGetDataUser(
       resultDecodeJWT.idUser,
@@ -226,7 +226,6 @@ export async function handleDecodeTokenJWT(token: string) {
       status: 200,
       message: "Berhasil decode token",
       role: resultDecodeJWT.role,
-      expired: resultDecodeJWT.exp,
       idUser: resultDecodeJWT.idUser,
       data: userData.data,
     };
