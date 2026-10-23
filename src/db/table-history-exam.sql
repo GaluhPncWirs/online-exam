@@ -78,8 +78,6 @@ INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_stude
   "EX-ENG12": "Bought"
 }', '67', TRUE, '3A')
 
-DELETE FROM history_exams WHERE id_history_exam = 'HIS-uHnE3o'
-
-UPDATE history_exams SET id_subject = "SUB-rT6UeV" WHERE id_history_exam = 'HIS-uHnE3o'
+UPDATE history_exams SET id_subject = "SUB-rT6UeV" WHERE id_history_exam = 'HIS-uRnH3o'
 
 SELECT * FROM history_exams

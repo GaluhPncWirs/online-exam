@@ -32,6 +32,13 @@ ALTER TABLE manage_exams ADD CONSTRAINT fk_id_history_exam FOREIGN KEY(id_histor
 INSERT INTO manage_exams (id_manage_exam, id_teacher, id_subject, id_history_exam, class, deadline_exam, duration_exam, is_manage_exam) VALUES 
 ('MNG-oxTG3r', 'TCR-ar45dgU', 'SUB-wPTu3V', 'HIS-uRnH3o', '3A', '2026-09-10 10:30:00', 1800, TRUE)
 
+UPDATE manage_exams SET id_history_exam = 'HIS-tY7cRq' WHERE id_manage_exam = 'MNG-oxTG3r'
+
+INSERT INTO manage_exams (id_manage_exam, id_teacher, id_subject, id_history_exam, class, deadline_exam, duration_exam, is_manage_exam) VALUES 
+('MNG-Igr3nY', 'TCR-ar45dgU', 'SUB-rT6UeV', 'HIS-uRnH3o', '3A', '2026-10-15 07:44:32', 3000, TRUE)
+
+
+
 DELETE FROM manage_exams WHERE id_manage_exam = 'MNG-oxTG3r'
 
 SELECT * FROM manage_exams
