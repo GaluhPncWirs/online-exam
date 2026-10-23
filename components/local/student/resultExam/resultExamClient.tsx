@@ -19,7 +19,7 @@ export default function ResultExamClient({
     if (!dataResultExam) return null;
     const answerStudentObj = dataResultExam?.answer_student;
     const studentAnswer = answerStudentObj[questionsId];
-    return studentAnswer === pg && "bg-blue-400 rounded-sm py-1 font-semibold";
+    return studentAnswer === pg && "bg-blue-200 rounded-sm py-1 font-semibold";
   }
 
   return (
@@ -169,17 +169,6 @@ export default function ResultExamClient({
           </div>
         )}
       </section>
-
-      {/* ================= BACK BUTTON ================= */}
-      <div className="flex justify-center pb-4 sm:justify-start">
-        <Link
-          href="/Student/Dashboard"
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-lg"
-        >
-          <ArrowLeft className="size-5" />
-          Kembali ke Dashboard
-        </Link>
-      </div>
     </div>
   );
 }

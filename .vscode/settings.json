@@ -24,7 +24,8 @@
         "selesai untuk proses migrasi database ke mysql di halaman dashboard siswa",
         "memperbaiki masalah pada proses pemanggilan API untuk handle ujian yang telat yang selalu tereksekusi",
         "sedang mengerjakan untuk menampilkan data hasil ujian siswa di halaman detail ujian",
-        "memperbaiki isi data untuk table ujian dan histori selesai"
+        "memperbaiki isi data untuk table ujian dan histori selesai",
+        "selesai merefaktor code untuk halaman resultExam"
     ],
     "sqltools.connections": [
         {
