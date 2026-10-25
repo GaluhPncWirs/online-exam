@@ -3,24 +3,11 @@ import { z } from "zod";
 // Update data student schema
 export const inputUpdateDataSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(3, "Nama minimal 3 karakter")
-      .max(100, "Nama maksimal 100 karakter")
-      .optional(),
+    name: z.string().trim().optional(),
 
-    password: z
-      .string()
-      .min(6, "Password minimal 6 karakter")
-      .max(100, "Password maksimal 100 karakter")
-      .optional(),
+    password: z.string().optional(),
 
-    noTlp: z
-      .string()
-      .trim()
-      .regex(/^\d{11,14}$/, "No telepon harus terdiri dari 11-14 digit")
-      .optional(),
+    noTlp: z.string().trim().optional(),
   })
   .refine(
     (data) =>

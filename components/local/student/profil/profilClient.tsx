@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -17,8 +16,6 @@ import { toast } from "sonner";
 import { Check, History, Trophy } from "lucide-react";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
-import { useDataExams } from "@/hooks/getScheduleExam";
-import MainContent from "@/src/layout/mainContent/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { ScheduleExams } from "@/src/types/student/dataExams";
@@ -28,6 +25,8 @@ import {
   inputUpdateDataSchema,
 } from "@/src/schemas/updateDataStudent";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Loader from "@/components/global/loader/component";
+import { createPortal } from "react-dom";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -121,9 +120,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
     },
   });
 
-  console.log(errors);
-
-  async function onSubmit(data: InputUpdateData) {
+  const onSubmit = async (data: InputUpdateData) => {
     const dataPayload = {
       name: data.name,
       password: data.password,
@@ -164,7 +161,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
         description: "Error fetch api",
       });
     }
-  }
+  };
 
   return (
     <section>
@@ -282,6 +279,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
               </form>
             </DialogContent>
           </Dialog>
+          {isSubmitting && createPortal(<Loader />, document.body)}
         </HeaderProfile>
 
         {/* ================= EXAM STATISTICS ================= */}

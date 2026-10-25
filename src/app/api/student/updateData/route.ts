@@ -1,3 +1,4 @@
+import { inputUpdateDataSchema } from "@/src/schemas/updateDataStudent";
 import { handleUpdateDataStudent } from "@/src/services/mysql/student/data-student";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -6,22 +7,20 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const { idStudent, fieldInput } = body;
 
-    if (!fieldInput) {
+    const validateInput = inputUpdateDataSchema.safeParse(fieldInput);
+
+    if (!validateInput.success) {
       return NextResponse.json(
         { success: false, message: "Data field wajib diisi" },
         {
-          status: 401,
+          status: 400,
         },
       );
     }
 
     const handleUpdate = await handleUpdateDataStudent({
       idStudent,
-      fieldInput: {
-        name: fieldInput.name,
-        password: fieldInput.password,
-        noTlp: fieldInput.noTlp,
-      },
+      fieldInput,
     });
 
     return NextResponse.json(

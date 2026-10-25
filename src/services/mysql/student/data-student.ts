@@ -281,7 +281,7 @@ export async function handleUpdateDataStudent({
     throw new Error("Tidak ada data yang ingin diperbarui.");
   }
 
-  const query = `UPDATE account_students SET ${fields.join(", ")} = ? WHERE id_student = ?`;
+  const query = `UPDATE account_students SET ${fields.join(", ")} WHERE id_student = ?`;
 
   try {
     await pool.execute(query, [...values, idStudent]);
