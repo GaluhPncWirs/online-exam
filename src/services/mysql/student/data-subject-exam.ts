@@ -162,3 +162,7 @@ export async function handleGetDataResultExam(
     };
   }
 }
+
+export async function handleGetHistoryExam() {
+  const query = `SELECT  FROM history_exams`;
+}

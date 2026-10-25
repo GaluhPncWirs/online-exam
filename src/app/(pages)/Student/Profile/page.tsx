@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import SkeletonProfil from "@/components/local/student/profil/skeleton";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
+import ProfilClient from "@/components/local/student/profil/profilClient";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 
 export default function Loader() {
   return (
@@ -30,7 +32,7 @@ async function Profil() {
 
   return (
     <MainContent>
-      <h1>hello dunia</h1>
+      <ProfilClient dataExams={dataExams.data as ScheduleExams[]} />
     </MainContent>
   );
 }

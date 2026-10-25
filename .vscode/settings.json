@@ -29,7 +29,8 @@
         "lagi cari cara untuk mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard",
         "selesai untuk cara mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard dan halaman hasil ujian",
         "telah selesai untuk merombak code di halaman dashboard siswa",
-        "sedang mengerjakan untuk merombak halaman profil"
+        "sedang mengerjakan untuk merombak halaman profil",
+        "memperbaiki struktur folder bagian penghubung database ke client"
     ],
     "sqltools.connections": [
         {

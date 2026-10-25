@@ -23,15 +23,13 @@ import HeaderProfile from "@/src/layout/headerProfile/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 
-type DataHistoryExams = {
-  student_id: string;
-  exam_id: number;
-  hasil_ujian: string;
-  kelas: string;
-};
-
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
+};
+
+type ClassGroup = {
+  id_student: string;
+  pointExams: number[];
 };
 
 export default function ProfilClient({ dataExams }: DataExamsStudent) {
@@ -40,74 +38,33 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
   //   DataHistoryExams[]
   // >([]);
 
-  useEffect(() => {
-    async function getHistoryResultExams() {
-      const { data, error } = await supabase
-        .from("history-exam-student")
-        .select("student_id,exam_id,hasil_ujian,kelas")
-        .eq("idStudent", getIdStudent)
-        .limit(1);
-      if (error) {
-        console.log("Gagal mengambil data");
-        setResultExamPerClass([]);
-      } else {
-        setResultExamPerClass(data);
-      }
-    }
-    getHistoryResultExams();
-  }, []);
-
   function rankingClasses() {
-    if (!resultExamPerClass?.length || !dataUser?.class) {
+    if (!dataExams?.length || !dataUser?.class) {
       return { ranking: 0, lenStudentPerClass: 0 };
     }
 
-    const normalizedResults = resultExamPerClass.map((item) => ({
+    const normalizedResults = dataExams.map((item) => ({
       ...item,
       hasil_ujian:
-        item.hasil_ujian !== "telat" && item.hasil_ujian !== "pending"
-          ? item.hasil_ujian
+        item.result_exam !== "telat" && item.result_exam !== "pending"
+          ? item.result_exam
           : "0",
     }));
 
-    type StudentScores = {
-      student_id: string;
-      pointExams: number[];
-    };
-
-    type ClassGroup = {
-      kelas: string;
-      resultExam: StudentScores[];
-    };
-
     const groupedByClass = normalizedResults.reduce<ClassGroup[]>(
       (acc, cur) => {
-        const classGroup = acc.find((group) => group.kelas === cur.kelas);
+        const idStudentGroup = acc.find(
+          (group) => group.id_student === cur.id_student,
+        );
         const score = Number(cur.hasil_ujian);
 
-        if (!classGroup) {
+        if (!idStudentGroup) {
           acc.push({
-            kelas: cur.kelas,
-            resultExam: [
-              {
-                student_id: cur.student_id,
-                pointExams: [score],
-              },
-            ],
+            id_student: cur.id_student,
+            pointExams: [score],
           });
         } else {
-          const studentItem = classGroup.resultExam.find(
-            (item) => item.student_id === cur.student_id,
-          );
-
-          if (studentItem) {
-            studentItem.pointExams.push(score);
-          } else {
-            classGroup.resultExam.push({
-              student_id: cur.student_id,
-              pointExams: [score],
-            });
-          }
+          idStudentGroup.pointExams.push(score);
         }
 
         return acc;
@@ -115,16 +72,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
       [],
     );
 
-    // Step 3: Calculate total scores for current class
-    const currentClassData = groupedByClass.find(
-      (group) => group.kelas === dataUser.class,
-    );
-
-    if (!currentClassData?.resultExam.length) {
-      return { ranking: 0, lenStudentPerClass: 0 };
-    }
-
-    const totalScores = currentClassData.resultExam.map((item) => ({
+    const totalScores = groupedByClass.map((item) => ({
       ...item,
       pointExams: item.pointExams.reduce((sum, score) => sum + score, 0),
     }));
@@ -148,7 +96,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
 
     // Step 6: Find current student's ranking
     const studentRanking = withRanking.find(
-      (item) => item.student_id === dataUser.id_student,
+      (item) => item.id_student === dataUser.id_student,
     );
 
     return {
@@ -157,28 +105,29 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
     };
   }
 
-  // async function handleEditProfileStudent(
-  //   event: React.FormEvent<HTMLFormElement>,
-  // ) {
-  //   event.preventDefault();
-  //   const formData = new FormData(event.currentTarget);
-  //   const resultPayload = Object.fromEntries(formData.entries());
+  //   async function handleEditProfileStudent(
+  //     event: React.FormEvent<HTMLFormElement>,
+  //   ) {
+  //     event.preventDefault();
+  //     const formData = new FormData(event.currentTarget);
+  //     const resultPayload = Object.fromEntries(formData.entries());
 
-  //   const { error } = await supabase
-  //     .from("account-student")
-  //     .update(resultPayload)
-  //     .eq("idStudent", getIdStudent);
+  //     const { error } = await supabase
+  //       .from("account-student")
+  //       .update(resultPayload)
+  //       .eq("idStudent", getIdStudent);
 
-  //   if (error) {
-  //     toast("Gagal ❌", {
-  //       description: "Edit Profil Gagal",
-  //     });
-  //   } else {
-  //     toast("Berhasil ✅", {
-  //       description: "Edit Profil Berhasil Di Update",
-  //     });
+  //     if (error) {
+  //       toast("Gagal ❌", {
+  //         description: "Edit Profil Gagal",
+  //       });
+  //     } else {
+  //       toast("Berhasil ✅", {
+  //         description: "Edit Profil Berhasil Di Update",
+  //       });
+  //     }
   //   }
-  // }
+
   return (
     <section>
       <div className="flex justify-between items-center mb-3">
@@ -313,7 +262,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {/* {getHistoryStudent.length || 0} */}0
+                    {dataExams.length || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -336,12 +285,11 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {/* {rankingClasses().ranking || 0} */} 0
+                    {rankingClasses().ranking || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
-                    {/* Dari {rankingClasses().lenStudentPerClass || 0} siswa */}
-                    Dari 0 siswa
+                    Dari {rankingClasses().lenStudentPerClass || 0}
                   </p>
                 </div>
 
