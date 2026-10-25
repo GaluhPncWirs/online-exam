@@ -22,6 +22,12 @@ import MainContent from "@/src/layout/mainContent/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { ScheduleExams } from "@/src/types/student/dataExams";
+import { useForm } from "react-hook-form";
+import {
+  InputUpdateData,
+  inputUpdateDataSchema,
+} from "@/src/schemas/updateDataStudent";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -102,28 +108,63 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
     };
   };
 
-  // async function handleEditProfileStudent(
-  //   event: React.FormEvent<HTMLFormElement>,
-  // ) {
-  //   event.preventDefault();
-  //   const formData = new FormData(event.currentTarget);
-  //   const resultPayload = Object.fromEntries(formData.entries());
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<InputUpdateData>({
+    resolver: zodResolver(inputUpdateDataSchema),
+    defaultValues: {
+      name: dataUser?.fullname,
+      noTlp: dataUser?.no_tlp,
+      password: "",
+    },
+  });
 
-  //   const { error } = await supabase
-  //     .from("account-student")
-  //     .update(resultPayload)
-  //     .eq("idStudent", getIdStudent);
+  console.log(errors);
 
-  //   if (error) {
-  //     toast("Gagal ❌", {
-  //       description: "Edit Profil Gagal",
-  //     });
-  //   } else {
-  //     toast("Berhasil ✅", {
-  //       description: "Edit Profil Berhasil Di Update",
-  //     });
-  //   }
-  // }
+  async function onSubmit(data: InputUpdateData) {
+    const dataPayload = {
+      name: data.name,
+      password: data.password,
+      noTlp: data.noTlp,
+    };
+
+    const filteredPayload = Object.fromEntries(
+      Object.entries(dataPayload).filter(
+        ([, value]) => value !== undefined && value !== "",
+      ),
+    );
+
+    try {
+      const request = await fetch("/api/student/updateData", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idStudent: dataUser?.id_student,
+          fieldInput: filteredPayload,
+        }),
+      });
+
+      const response = await request.json();
+
+      if (!response.success) {
+        toast.error("Gagal", {
+          description: response.message,
+        });
+        return;
+      }
+
+      toast.success("Berhasil", {
+        description: response.message,
+      });
+      return;
+    } catch {
+      toast.error("Gagal", {
+        description: "Error fetch api",
+      });
+    }
+  }
 
   return (
     <section>
@@ -159,10 +200,11 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
               Edit Profil
             </DialogTrigger>
 
-            <DialogContent className="rounded-2xl sm:max-w-lg">
+            <DialogContent>
               <form
-                className="grid gap-5"
-                // onSubmit={(event) => handleEditProfileStudent(event)}
+                className="space-y-3"
+                onSubmit={handleSubmit(onSubmit)}
+                id="handleEditDataStudent"
               >
                 <DialogHeader>
                   <DialogTitle className="text-xl font-bold">
@@ -176,6 +218,22 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
 
                 <div>
                   <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-semibold text-slate-700"
+                  >
+                    Nama
+                  </label>
+
+                  <Input
+                    type="text"
+                    id="name"
+                    {...register("name")}
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <label
                     htmlFor="password"
                     className="mb-2 block text-sm font-semibold text-slate-700"
                   >
@@ -184,25 +242,38 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
 
                   <Input
                     type="password"
-                    name="password"
                     id="password"
+                    {...register("password")}
                     className="h-11 rounded-xl"
                   />
                 </div>
 
-                <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-5 text-amber-700">
+                <div>
+                  <label
+                    htmlFor="noTlp"
+                    className="mb-2 block text-sm font-semibold text-slate-700"
+                  >
+                    No. Telepon
+                  </label>
+
+                  <Input
+                    type="text"
+                    id="noTlp"
+                    {...register("noTlp")}
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+
+                <p className="rounded-lg bg-amber-100 px-3 py-2 text-xs font-medium leading-5 text-amber-700">
                   Kosongkan field yang tidak ingin diubah.
                 </p>
 
                 <DialogFooter className="gap-2">
-                  <DialogClose>
-                    <Button variant="outline" className="rounded-xl">
-                      Batal
-                    </Button>
-                  </DialogClose>
+                  <DialogClose>Batal</DialogClose>
 
                   <Button
                     type="submit"
+                    form="handleEditDataStudent"
                     className="rounded-xl bg-blue-600 hover:bg-blue-700"
                   >
                     Simpan Perubahan

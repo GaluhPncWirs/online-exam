@@ -246,6 +246,57 @@ export async function handleDecodeTokenJWT(token: string) {
 }
 
 // untuk update data student
-export async function handleUpdateDataStudent() {
-  const query = `UPDATE account_students SET `;
+type FieldInputUpdateDataStudent = {
+  idStudent: string;
+  fieldInput: {
+    name?: string;
+    password?: string;
+    noTlp?: string;
+  };
+};
+
+export async function handleUpdateDataStudent({
+  idStudent,
+  fieldInput,
+}: FieldInputUpdateDataStudent) {
+  const fields: string[] = [];
+  const values: string[] = [];
+
+  if (fieldInput?.name !== undefined) {
+    fields.push("fullname = ?");
+    values.push(fieldInput.name);
+  }
+
+  if (fieldInput?.password !== undefined) {
+    fields.push("password = ?");
+    values.push(fieldInput.password);
+  }
+
+  if (fieldInput?.noTlp !== undefined) {
+    fields.push("no_tlp = ?");
+    values.push(fieldInput.noTlp);
+  }
+
+  if (fields.length === 0) {
+    throw new Error("Tidak ada data yang ingin diperbarui.");
+  }
+
+  const query = `UPDATE account_students SET ${fields.join(", ")} = ? WHERE id_student = ?`;
+
+  try {
+    await pool.execute(query, [...values, idStudent]);
+
+    return {
+      success: true,
+      status: 201,
+      message: "Berhasil update data kamu.",
+    };
+  } catch (error) {
+    console.error("Gagal update data", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Error terhubung kedalam database",
+    };
+  }
 }

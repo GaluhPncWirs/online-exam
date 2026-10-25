@@ -31,7 +31,8 @@
         "telah selesai untuk merombak code di halaman dashboard siswa",
         "sedang mengerjakan untuk merombak halaman profil",
         "memperbaiki struktur folder bagian penghubung database ke client",
-        "selesai mengerjakan bagian fitur ranking tapi sepertinya salah untuk proses pengambilan data fieldnya nanti akan di perbaiki lagi"
+        "selesai mengerjakan bagian fitur ranking tapi sepertinya salah untuk proses pengambilan data fieldnya nanti akan di perbaiki lagi",
+        "sedang mengerjakan fitur edit data student di halaman profil"
     ],
     "sqltools.connections": [
         {

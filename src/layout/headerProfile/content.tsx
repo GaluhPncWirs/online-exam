@@ -145,7 +145,7 @@ export default function HeaderProfile({
             </span>
 
             <span className="text-sm font-medium text-slate-900 sm:col-span-2">
-              {/* {dataUser?.created_at?.toLocaleDateString() || "-"} */}-
+              {dataUser?.created_at.toLocaleString() || "-"}
             </span>
           </div>
 
