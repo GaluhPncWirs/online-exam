@@ -1,7 +1,7 @@
-import { handleDecodeTokenJWT } from "@/src/services/mysql/data-student";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { handleDecodeTokenJWT } from "@/src/services/mysql/student/data-student";
 
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();

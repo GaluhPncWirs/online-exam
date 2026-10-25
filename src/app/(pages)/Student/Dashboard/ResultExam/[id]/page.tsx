@@ -2,7 +2,7 @@ import ResultExamClient from "@/components/local/student/resultExam/resultExamCl
 import ResultExamSkeleton from "@/components/local/student/resultExam/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
-import { handleGetDataResultExam } from "@/src/services/mysql/data-subject-exam";
+import { handleGetDataResultExam } from "@/src/services/mysql/student/data-subject-exam";
 import { DataResultExam } from "@/src/types/student/dataExams";
 import { Suspense } from "react";
 

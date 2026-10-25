@@ -1,5 +1,5 @@
+import { handleUserLogin } from "@/src/services/mysql/student/data-student";
 import { NextResponse } from "next/server";
-import { handleUserLogin } from "@/src/services/mysql/data-student";
 
 export async function POST(req: Request) {
   const body = await req.json();

@@ -1,4 +1,4 @@
-import { handleLateExam } from "@/src/services/mysql/data-subject-exam";
+import { handleLateExam } from "@/src/services/mysql/student/data-subject-exam";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
