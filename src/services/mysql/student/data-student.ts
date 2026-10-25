@@ -244,3 +244,8 @@ export async function handleDecodeTokenJWT(token: string) {
     };
   }
 }
+
+// untuk update data student
+export async function handleUpdateDataStudent() {
+  const query = `UPDATE account_students SET `;
+}

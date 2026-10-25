@@ -30,7 +30,8 @@
         "selesai untuk cara mangambil data user kelas dan id dari token jwt untuk menampilkan data dashboard dan halaman hasil ujian",
         "telah selesai untuk merombak code di halaman dashboard siswa",
         "sedang mengerjakan untuk merombak halaman profil",
-        "memperbaiki struktur folder bagian penghubung database ke client"
+        "memperbaiki struktur folder bagian penghubung database ke client",
+        "selesai mengerjakan bagian fitur ranking tapi sepertinya salah untuk proses pengambilan data fieldnya nanti akan di perbaiki lagi"
     ],
     "sqltools.connections": [
         {

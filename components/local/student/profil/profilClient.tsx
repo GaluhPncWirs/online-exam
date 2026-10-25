@@ -34,18 +34,15 @@ type ClassGroup = {
 
 export default function ProfilClient({ dataExams }: DataExamsStudent) {
   const dataUser = useGetDataUser((state) => state.dataUser);
-  // const [resultExamPerClass, setResultExamPerClass] = useState<
-  //   DataHistoryExams[]
-  // >([]);
 
-  function rankingClasses() {
+  const rankingClasses = () => {
     if (!dataExams?.length || !dataUser?.class) {
       return { ranking: 0, lenStudentPerClass: 0 };
     }
 
     const normalizedResults = dataExams.map((item) => ({
       ...item,
-      hasil_ujian:
+      result_exam:
         item.result_exam !== "telat" && item.result_exam !== "pending"
           ? item.result_exam
           : "0",
@@ -56,7 +53,7 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
         const idStudentGroup = acc.find(
           (group) => group.id_student === cur.id_student,
         );
-        const score = Number(cur.hasil_ujian);
+        const score = Number(cur.result_exam);
 
         if (!idStudentGroup) {
           acc.push({
@@ -103,30 +100,30 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
       ranking: studentRanking?.ranking ?? 0,
       lenStudentPerClass: totalScores.length,
     };
-  }
+  };
 
-  //   async function handleEditProfileStudent(
-  //     event: React.FormEvent<HTMLFormElement>,
-  //   ) {
-  //     event.preventDefault();
-  //     const formData = new FormData(event.currentTarget);
-  //     const resultPayload = Object.fromEntries(formData.entries());
+  // async function handleEditProfileStudent(
+  //   event: React.FormEvent<HTMLFormElement>,
+  // ) {
+  //   event.preventDefault();
+  //   const formData = new FormData(event.currentTarget);
+  //   const resultPayload = Object.fromEntries(formData.entries());
 
-  //     const { error } = await supabase
-  //       .from("account-student")
-  //       .update(resultPayload)
-  //       .eq("idStudent", getIdStudent);
+  //   const { error } = await supabase
+  //     .from("account-student")
+  //     .update(resultPayload)
+  //     .eq("idStudent", getIdStudent);
 
-  //     if (error) {
-  //       toast("Gagal ❌", {
-  //         description: "Edit Profil Gagal",
-  //       });
-  //     } else {
-  //       toast("Berhasil ✅", {
-  //         description: "Edit Profil Berhasil Di Update",
-  //       });
-  //     }
+  //   if (error) {
+  //     toast("Gagal ❌", {
+  //       description: "Edit Profil Gagal",
+  //     });
+  //   } else {
+  //     toast("Berhasil ✅", {
+  //       description: "Edit Profil Berhasil Di Update",
+  //     });
   //   }
+  // }
 
   return (
     <section>
@@ -176,22 +173,6 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
                     Perbarui informasi akun yang ingin Anda ubah.
                   </DialogDescription>
                 </DialogHeader>
-
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-semibold text-slate-700"
-                  >
-                    Email
-                  </label>
-
-                  <Input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="h-11 rounded-xl"
-                  />
-                </div>
 
                 <div>
                   <label
