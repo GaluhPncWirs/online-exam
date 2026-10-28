@@ -41,7 +41,6 @@ type DataExamsStudent = {
 export default function DashboardClient({ dataExams }: DataExamsStudent) {
   const route = useRouter();
   const dataUser = useGetDataUser((state) => state.dataUser);
-  // const scheduleExams = useDataExams(dataStudent, getIdStudent);
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<
     Record<string, boolean>
@@ -51,6 +50,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
   });
   const [lateExam, setLateExam] = useState<ScheduleExams[]>([]);
   const savedLateExamIds = useRef<Set<string>>(new Set());
+  const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
 
   const upcomingExam = getUpComingExam(dataExams);
 
@@ -394,8 +394,8 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
               </TableHeader>
 
               <TableBody>
-                {dataExams.length > 0 ? (
-                  dataExams.map((data, i: number) => {
+                {isExamAvaible.length > 0 ? (
+                  isExamAvaible.map((data, i: number) => {
                     const status = getExamStatus(
                       data.deadline_exam,
                       data.created_at,

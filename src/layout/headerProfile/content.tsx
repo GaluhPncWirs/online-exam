@@ -10,7 +10,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { User2 } from "lucide-react";
 import Image from "next/image";
@@ -48,7 +47,7 @@ export default function HeaderProfile({
               />
             ) : (
               <Image
-                src="/img/global/userProfile.png"
+                src="/images/global/userProfile.png"
                 alt="Foto profil siswa"
                 width={300}
                 height={300}

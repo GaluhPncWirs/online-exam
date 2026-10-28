@@ -1,6 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Table, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogClose,
@@ -27,6 +34,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import Loader from "@/components/global/loader/component";
 import { createPortal } from "react-dom";
+import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
@@ -391,68 +399,62 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
                 </TableRow>
               </TableHeader>
 
-              {/* <TableBody>
-                    {getHistoryStudent.length > 0 ? (
-                      getHistoryStudent.map((item: any, i: number) => (
-                        <TableRow
-                          key={i}
-                          className="transition-colors hover:bg-slate-50"
-                        >
-                          <TableCell className="font-medium text-slate-500">
-                            {i + 1}
-                          </TableCell>
+              <TableBody>
+                {dataExams.length > 0 ? (
+                  dataExams.map((item, i: number) => (
+                    <TableRow
+                      key={i}
+                      className="transition-colors hover:bg-slate-50"
+                    >
+                      <TableCell className="font-medium text-slate-500">
+                        {i + 1}
+                      </TableCell>
 
-                          <TableCell className="font-semibold text-slate-800">
-                            {item.exams?.nama_ujian || "-"}
-                          </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        {item.name_exam || "-"}
+                      </TableCell>
 
-                          <TableCell className="text-sm text-slate-500">
-                            {convertDate(item.created_at_historyExams, {
-                              minute: "numeric",
-                              hour: "numeric",
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </TableCell>
+                      <TableCell className="text-sm text-slate-500">
+                        {formatDateToYYYYMMDD(item.created_at) || "-"}
+                      </TableCell>
 
-                          <TableCell>
-                            <span className="font-bold text-slate-800">
-                              {item.hasil_ujian ?? "-"}
-                            </span>
-                          </TableCell>
+                      <TableCell>
+                        <span className="font-bold text-slate-800">
+                          {item.result_exam ?? "-"}
+                        </span>
+                      </TableCell>
 
-                          <TableCell>
-                            {item.status_exam === true ? (
-                              <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
-                                Selesai
-                              </span>
-                            ) : (
-                              <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-600">
-                                Belum Selesai
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-36 text-center">
-                          <div className="flex flex-col items-center justify-center">
-                            <History className="size-8 text-slate-300" />
+                      <TableCell>
+                        {item.status_exam === 1 ? (
+                          <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                            Selesai
+                          </span>
+                        ) : (
+                          <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-600">
+                            Belum Selesai
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-36 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <History className="size-8 text-slate-300" />
 
-                            <p className="mt-3 font-semibold text-slate-500">
-                              Belum Ada Riwayat
-                            </p>
+                        <p className="mt-3 font-semibold text-slate-500">
+                          Belum Ada Riwayat
+                        </p>
 
-                            <p className="mt-1 text-sm text-slate-400">
-                              Riwayat ujian Anda akan muncul di sini.
-                            </p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody> */}
+                        <p className="mt-1 text-sm text-slate-400">
+                          Riwayat ujian Anda akan muncul di sini.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
             </Table>
           </div>
         </section>
