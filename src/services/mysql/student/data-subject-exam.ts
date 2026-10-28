@@ -163,6 +163,36 @@ export async function handleGetDataResultExam(
   }
 }
 
-export async function handleGetHistoryExam() {
-  const query = `SELECT  FROM history_exams`;
+export async function handleGetExams(id_subject: string) {
+  const query = `
+    SELECT 
+      me.duration_exam, me.id_subject, se.exam_questions, se.name_exam, se.type_exam
+    FROM manage_exams AS me
+    JOIN subject_exam AS se
+      ON me.id_subject = se.id_subject
+    WHERE me.id_subject = ?
+  `;
+
+  if (!id_subject) {
+    return {
+      data: [],
+      success: false,
+      message: "Tidak ada id ujian!",
+    };
+  }
+
+  try {
+    const [rows] = await pool.execute(query, [id_subject]);
+
+    return {
+      data: rows,
+      success: true,
+      message: "Berhasil mengambil data ujian",
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Gagal mengambil data ujian",
+    };
+  }
 }
