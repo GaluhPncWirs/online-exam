@@ -275,8 +275,6 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     }
   }, [isClosedContent]);
 
-  console.log(isClosedContent);
-
   return (
     <div className="bg-slate-100">
       {/* ================= MOBILE OVERLAY ================= */}
@@ -292,9 +290,9 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
         />
       )}
 
-      <div className="flex max-w-7xl mx-auto">
+      <div className="flex max-w-7xl mx-auto relative">
         {/* ================= SIDEBAR ================= */}
-        <div className="lg:basis-96">
+        <div className="lg:w-96 lg:shrink-0">
           {/* Overlay mobile */}
           {isSizeMobile && showInformationExam && (
             <button
@@ -311,7 +309,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
           {/* Sidebar */}
           <aside
             ref={handleClickedOutsideContent}
-            className={`fixed inset-y-0 left-0 z-50 w-75 max-w-[85vw] bg-slate-700 text-white shadow-2xl transition-transform duration-300 ease-out ${isSizeMobile && !showInformationExam ? "-translate-x-full" : "translate-x-0"} lg:translate-x-0 lg:max-w-none lg:shadow-xl`}
+            className={`fixed inset-y-0 left-0 z-50 w-75 max-w-[85vw] bg-slate-700 text-white shadow-2xl transition-transform duration-300 ease-out ${isSizeMobile && !showInformationExam ? "-translate-x-full" : "translate-x-0"} lg:sticky lg:inset-y-auto lg:top-0 lg:left-auto lg:h-screen lg:w-full lg:max-w-none lg:translate-x-0 lg:shadow-xl`}
           >
             <div className="flex h-screen flex-col">
               {/* Header */}
@@ -340,8 +338,8 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                 </div>
 
                 {/* Timer */}
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="min-w-0 rounded-xl bg-white/5 p-3">
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="min-w-0 rounded-xl bg-white/5 p-3 shadow-md shadow-slate-500">
                     <p className="text-[11px] text-slate-400">Tipe Ujian</p>
 
                     <p className="mt-1 truncate text-sm font-semibold">
@@ -370,12 +368,12 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                     Daftar Soal
                   </h3>
 
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-300">
                     {dataUjianRandom.length} soal
                   </span>
                 </div>
 
-                <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 lg:gap-3">
                   {dataUjianRandom.map((item, i: number) => {
                     const isAnswerPg = clickedAnswerPg[item.id];
                     const isAnswerEssay = answerEssayExams[item.id];
@@ -390,7 +388,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                       <button
                         type="button"
                         key={item.id ?? i}
-                        className={`relative aspect-square min-w-0 rounded-lg text-xs font-bold sm:rounded-xl sm:text-sm ${
+                        className={`relative aspect-square shadow-md shadow-slate-500 min-w-0 rounded-lg text-xs font-bold sm:rounded-xl sm:text-sm ${
                           isAnswered
                             ? "bg-emerald-500 text-white hover:bg-emerald-400"
                             : "bg-white/10 text-slate-300 hover:bg-white/20"
@@ -424,7 +422,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
         </div>
 
         {/* ================= MAIN CONTENT ================= */}
-        <main className="basis-full">
+        <main className="basis-full min-w-0">
           <div className="p-3 sm:p-5 lg:p-6">
             {/* Exam Header */}
             <section className="sticky z-30 mb-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-xl top-3 sm:mb-5 sm:rounded-2xl sm:p-5 lg:p-6 lg:static">
