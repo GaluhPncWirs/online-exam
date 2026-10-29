@@ -27,9 +27,5 @@ async function StartExamPage({ params }: Props) {
     return <h3>Error ambil data</h3>;
   }
 
-  return (
-    <MainContent>
-      <BeginExam dataExam={dataExam.data as unknown as Exam} />
-    </MainContent>
-  );
+  return <BeginExam dataExam={dataExam.data as unknown as Exam} />;
 }

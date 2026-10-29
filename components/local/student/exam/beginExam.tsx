@@ -55,7 +55,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const clickedAnswerQuestions = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const mediaQuery = window.matchMedia("(max-width: 1024px)");
     function handler(e: MediaQueryListEvent | MediaQueryList) {
       setIsSizeMobile(e.matches);
     }
@@ -275,8 +275,10 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     }
   }, [isClosedContent]);
 
+  console.log(isClosedContent);
+
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="bg-slate-100">
       {/* ================= MOBILE OVERLAY ================= */}
       {isSizeMobile && showInformationExam && (
         <button
@@ -290,9 +292,9 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
         />
       )}
 
-      <div className="flex min-h-screen">
+      <div className="flex max-w-7xl mx-auto">
         {/* ================= SIDEBAR ================= */}
-        <div className="min-h-screen">
+        <div className="lg:basis-96">
           {/* Overlay mobile */}
           {isSizeMobile && showInformationExam && (
             <button
@@ -309,11 +311,11 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
           {/* Sidebar */}
           <aside
             ref={handleClickedOutsideContent}
-            className={`fixed inset-y-0 left-0 z-50 w-75 max-w-[85vw] bg-slate-950 text-white shadow-2xl transition-transform duration-300 ease-out ${isSizeMobile && !showInformationExam ? "-translate-x-full" : "translate-x-0"} lg:translate-x-0 lg:max-w-none lg:shadow-xl`}
+            className={`fixed inset-y-0 left-0 z-50 w-75 max-w-[85vw] bg-slate-700 text-white shadow-2xl transition-transform duration-300 ease-out ${isSizeMobile && !showInformationExam ? "-translate-x-full" : "translate-x-0"} lg:translate-x-0 lg:max-w-none lg:shadow-xl`}
           >
             <div className="flex h-screen flex-col">
               {/* Header */}
-              <div className="shrink-0 border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+              <div className="shrink-0 border-b border-white/10 p-4 sm:p5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-300 sm:text-xs">
@@ -419,20 +421,13 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
               </div>
             </div>
           </aside>
-
-          {/* Main */}
-          <main className="min-h-screen min-w-0 ml-0 lg:ml-60">
-            <div className="mx-auto w-full max-w-5xl p-0 sm:p-5 lg:p-8">
-              {/* content */}
-            </div>
-          </main>
         </div>
 
         {/* ================= MAIN CONTENT ================= */}
-        <main className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-6xl p-3 sm:p-5 lg:p-8">
+        <main className="basis-full">
+          <div className="p-3 sm:p-5 lg:p-6">
             {/* Exam Header */}
-            <section className="sticky top-0 z-30 mb-4 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-xl sm:mb-5 sm:rounded-2xl sm:p-5 lg:p-6">
+            <section className="sticky z-30 mb-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-xl top-3 sm:mb-5 sm:rounded-2xl sm:p-5 lg:p-6 lg:static">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-600 sm:text-xs">
@@ -445,7 +440,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                 </div>
 
                 {/* Mobile Controls */}
-                <div className="flex shrink-0 items-center gap-2 md:hidden">
+                <div className="flex shrink-0 items-center gap-2 lg:hidden">
                   {formatedTime !== "NaN:NaN" && (
                     <div
                       className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 font-mono text-xs font-bold tabular-nums sm:gap-2 sm:rounded-xl sm:px-3 sm:text-sm ${minute === 0 && second <= 20 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}
@@ -461,7 +456,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                       setShowInformationExam(true);
                       setIsClosedContent(false);
                     }}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white sm:size-10 sm:rounded-xl"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-white sm:size-10 sm:rounded-xl"
                     aria-label="Buka navigasi soal"
                   >
                     <List className="size-4 sm:size-5" />
