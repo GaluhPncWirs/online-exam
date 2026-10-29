@@ -35,7 +35,7 @@ export type Exam = {
   idSubject: string;
   exam_questions: TypeExamQuestions;
   name_exam: string;
-  type_exam: string;
+  type_exam: "PG" | "ESSAY";
   duration: number;
 };
 

@@ -36,7 +36,8 @@
         "lagi mengerjakan fitur update data student yang selesai, proses simpan data api dan pengambilah data di frontend",
         "selesai mengerjakan fitur edit data student",
         "mengubah data ujian yang tersedia menjadi kosong jika ujiannya itu sudah selesai",
-        "sedang mengerjakan untuk refaktor code di halaman ujian online"
+        "sedang mengerjakan untuk refaktor code di halaman ujian online",
+        "selesai memperbaiki masalah error ketika masuk ke dalam halaman ujian"
     ],
     "sqltools.connections": [
         {

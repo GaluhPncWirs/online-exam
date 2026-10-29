@@ -67,7 +67,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
 
   // save answer
   useEffect(() => {
-    if (dataExam?.type_exam === "pg") {
+    if (dataExam?.type_exam === "PG") {
       const savedMark = localStorage.getItem("markQuestions");
       const savedAnswerPg = localStorage.getItem("exam-answer-pg");
       if (savedAnswerPg && savedMark) {
@@ -76,7 +76,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
       }
     }
 
-    if (dataExam?.type_exam === "essay") {
+    if (dataExam?.type_exam === "ESSAY") {
       const savedMark = localStorage.getItem("markQuestions");
       const savedAnswerEssay = localStorage.getItem("exam-answer-essay");
       if (savedAnswerEssay && savedMark) {
@@ -87,12 +87,12 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   }, [dataExam?.type_exam]);
 
   useEffect(() => {
-    if (dataExam?.type_exam === "pg") {
+    if (dataExam?.type_exam === "PG") {
       localStorage.setItem("markQuestions", JSON.stringify(markQuestions));
       localStorage.setItem("exam-answer-pg", JSON.stringify(clickedAnswerPg));
     }
 
-    if (dataExam?.type_exam === "essay") {
+    if (dataExam?.type_exam === "ESSAY") {
       localStorage.setItem("markQuestions", JSON.stringify(markQuestions));
       localStorage.setItem(
         "exam-answer-essay",
@@ -180,8 +180,8 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
       student_id: getIdStudent,
       exam_id: dataExam.idSubject,
       answer_student:
-        dataExam?.type_exam === "pg" ? clickedAnswerPg : answerEssayExams,
-      hasil_ujian: dataExam?.type_exam === "pg" ? resultExam : "pending",
+        dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
+      hasil_ujian: dataExam?.type_exam === "PG" ? resultExam : "pending",
       status_exam: true,
       // kelas: dataStudent?.classes,
     };
@@ -309,22 +309,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
           {/* Sidebar */}
           <aside
             ref={handleClickedOutsideContent}
-            className={`
-      fixed inset-y-0 left-0 z-50
-      w-[300px] max-w-[85vw]
-      bg-slate-950 text-white shadow-2xl
-      transition-transform duration-300 ease-out
-
-      ${
-        isSizeMobile && !showInformationExam
-          ? "-translate-x-full"
-          : "translate-x-0"
-      }
-
-      lg:translate-x-0
-      lg:max-w-none
-      lg:shadow-xl
-    `}
+            className={`fixed inset-y-0 left-0 z-50 w-75 max-w-[85vw] bg-slate-950 text-white shadow-2xl transition-transform duration-300 ease-out ${isSizeMobile && !showInformationExam ? "-translate-x-full" : "translate-x-0"} lg:translate-x-0 lg:max-w-none lg:shadow-xl`}
           >
             <div className="flex h-screen flex-col">
               {/* Header */}
@@ -358,21 +343,13 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                     <p className="text-[11px] text-slate-400">Tipe Ujian</p>
 
                     <p className="mt-1 truncate text-sm font-semibold">
-                      {dataExam?.type_exam === "pg" ? "Pilihan Ganda" : "Essay"}
+                      {dataExam?.type_exam === "PG" ? "Pilihan Ganda" : "Essay"}
                     </p>
                   </div>
 
                   {formatedTime !== "NaN:NaN" && (
                     <div
-                      className={`
-                flex min-h-[58px] items-center justify-center gap-2
-                rounded-xl px-2
-                ${
-                  minute === 0 && second <= 20
-                    ? "animate-pulse bg-red-500"
-                    : "bg-emerald-500"
-                }
-              `}
+                      className={`flex min-h-14.5 items-center justify-center gap-2 rounded-xl px-2 ${minute === 0 && second <= 20 ? "animate-pulse bg-red-500" : "bg-emerald-500"}`}
                     >
                       <Timer className="size-5 shrink-0" />
 
@@ -403,7 +380,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                     const isMarking = markQuestions[item.id];
 
                     const isAnswered =
-                      dataExam?.type_exam === "pg"
+                      dataExam?.type_exam === "PG"
                         ? Boolean(isAnswerPg)
                         : Boolean(isAnswerEssay);
 
@@ -418,8 +395,8 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                         }`}
                       >
                         {isMarking &&
-                          ((dataExam?.type_exam === "pg" && !isAnswerPg) ||
-                            (dataExam?.type_exam === "essay" &&
+                          ((dataExam?.type_exam === "PG" && !isAnswerPg) ||
+                            (dataExam?.type_exam === "ESSAY" &&
                               !isAnswerEssay)) && (
                             <Flag className="absolute left-1 top-1 size-2.5 text-amber-300 sm:size-3" />
                           )}
@@ -444,7 +421,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
           </aside>
 
           {/* Main */}
-          <main className="min-h-screen min-w-0 ml-0 lg:ml-[240px]">
+          <main className="min-h-screen min-w-0 ml-0 lg:ml-60">
             <div className="mx-auto w-full max-w-5xl p-0 sm:p-5 lg:p-8">
               {/* content */}
             </div>
@@ -471,16 +448,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                 <div className="flex shrink-0 items-center gap-2 md:hidden">
                   {formatedTime !== "NaN:NaN" && (
                     <div
-                      className={`
-                    flex items-center gap-1.5 rounded-lg px-2.5 py-2
-                    font-mono text-xs font-bold tabular-nums
-                    sm:gap-2 sm:rounded-xl sm:px-3 sm:text-sm
-                    ${
-                      minute === 0 && second <= 20
-                        ? "bg-red-50 text-red-600"
-                        : "bg-emerald-50 text-emerald-600"
-                    }
-                  `}
+                      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2 font-mono text-xs font-bold tabular-nums sm:gap-2 sm:rounded-xl sm:px-3 sm:text-sm ${minute === 0 && second <= 20 ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"}`}
                     >
                       <Timer className="size-4 sm:size-5" />
                       <span>{formatedTime}</span>
@@ -527,7 +495,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                   </div>
 
                   {/* PG */}
-                  {dataExam?.type_exam === "pg" ? (
+                  {dataExam?.type_exam === "PG" ? (
                     <div className="mt-5 space-y-2.5 sm:mt-6 sm:space-y-3">
                       {["a", "b", "c", "d", "e"].map((opt) => {
                         const choiceKey = `choice_${opt}`;
@@ -538,16 +506,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                         return (
                           <label
                             key={opt}
-                            className={`
-              flex cursor-pointer items-start
-              gap-2.5 rounded-xl border p-3
-              transition-all sm:gap-3 sm:p-4
-              ${
-                isSelected
-                  ? "border-blue-300 bg-blue-50 shadow-sm"
-                  : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
-              }
-            `}
+                            className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 transition-all sm:gap-3 sm:p-4 ${isSelected ? "border-blue-300 bg-blue-50 shadow-sm" : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"}`}
                           >
                             <Input
                               type="radio"
@@ -563,21 +522,12 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                             />
 
                             <span
-                              className={`
-                flex size-7 shrink-0 items-center
-                justify-center rounded-lg text-[11px]
-                font-bold sm:size-8 sm:text-xs
-                ${
-                  isSelected
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-500"
-                }
-              `}
+                              className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold sm:size-8 sm:text-xs ${isSelected ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"}`}
                             >
                               {opt.toUpperCase()}
                             </span>
 
-                            <span className="min-w-0 flex-1 break-words text-sm font-medium leading-6 text-slate-700 sm:text-base">
+                            <span className="min-w-0 flex-1 wrap-break-word text-sm font-medium leading-6 text-slate-700 sm:text-base">
                               {choiceText}
                             </span>
                           </label>
@@ -620,7 +570,6 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                       className={`h-9 rounded-lg px-3 text-xs sm:h-10 sm:rounded-xl sm:px-4 sm:text-sm ${markQuestions[item.id] ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100" : "border-slate-200"}`}
                       onClick={(e) => {
                         e.stopPropagation();
-
                         setMarkQuestions((prev) => ({
                           ...prev,
                           [item.id]: !prev[item.id],
