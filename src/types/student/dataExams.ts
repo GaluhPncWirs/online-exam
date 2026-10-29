@@ -29,9 +29,17 @@ export type ExamQuestions = {
 export type MultipleChoice = ExamQuestions & { multipleChoice: Choice };
 export type Essay = ExamQuestions;
 
-export type DataResultExam = {
-  answer_student: Record<string, string>;
-  exam_questions: MultipleChoice[] | Essay[];
+export type TypeExamQuestions = MultipleChoice[] | Essay[];
+
+export type Exam = {
+  idSubject: string;
+  exam_questions: TypeExamQuestions;
   name_exam: string;
   type_exam: string;
+  duration: number;
+};
+
+export type DataResultExam = {
+  exam: Exam;
+  answer_student: Record<string, string>;
 };

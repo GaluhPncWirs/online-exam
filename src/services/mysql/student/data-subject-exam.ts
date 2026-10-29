@@ -182,10 +182,10 @@ export async function handleGetExams(id_subject: string) {
   }
 
   try {
-    const [rows] = await pool.execute(query, [id_subject]);
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [id_subject]);
 
     return {
-      data: rows,
+      data: rows[0],
       success: true,
       message: "Berhasil mengambil data ujian",
     };
