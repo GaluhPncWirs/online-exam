@@ -365,7 +365,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                     return (
                       <button
                         type="button"
-                        key={item.id ?? i}
+                        key={item.id}
                         className={`relative aspect-square shadow-md shadow-slate-500 min-w-0 rounded-lg text-xs font-bold sm:rounded-xl sm:text-sm ${
                           isAnswered
                             ? "bg-emerald-500 text-white hover:bg-emerald-400"

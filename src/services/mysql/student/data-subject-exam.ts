@@ -163,14 +163,16 @@ export async function handleGetDataResultExam(
   }
 }
 
-export async function handleGetExams(id_subject: string) {
+export async function handleGetExams(id_subject: string, className: string) {
   const query = `
     SELECT 
-      me.duration_exam, me.id_subject, se.exam_questions, se.name_exam, se.type_exam
+      me.duration_exam, me.id_subject, me.class, se.exam_questions, se.name_exam, se.type_exam
     FROM manage_exams AS me
     JOIN subject_exam AS se
       ON me.id_subject = se.id_subject
-    WHERE me.id_subject = ?
+    WHERE 
+      me.id_subject = ? AND me.class = ?
+    LIMIT 1
   `;
 
   if (!id_subject) {
@@ -182,7 +184,10 @@ export async function handleGetExams(id_subject: string) {
   }
 
   try {
-    const [rows] = await pool.execute<RowDataPacket[]>(query, [id_subject]);
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      id_subject,
+      className,
+    ]);
 
     return {
       data: rows[0],

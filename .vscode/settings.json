@@ -42,7 +42,8 @@
         "sedang memperbaiki responsive halaman ujian",
         "selesai memperbaiki responsive halaman ujian",
         "memperbaiki proses simpan data ujian yang sudah selesai",
-        "selesai merefaktor code halaman ujian"
+        "selesai merefaktor code halaman ujian",
+        "memperbaiki bug ketika data jawaban ujian peserta yang sudah di masukkan ke dalam local storage selalu mengulang dari awal ketika di refresh"
     ],
     "sqltools.connections": [
         {
