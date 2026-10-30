@@ -48,6 +48,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
     upComingExamCard: false,
     statusBadge: false,
   });
+
   const [lateExam, setLateExam] = useState<ScheduleExams[]>([]);
   const savedLateExamIds = useRef<Set<string>>(new Set());
   const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
@@ -101,7 +102,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
           body: JSON.stringify(payload),
         });
 
-        const response = await request.json();
+        const response = await request.json().catch(() => null);
 
         if (!request.ok || !response.success) {
           // Izinkan percobaan ulang jika penyimpanan gagal

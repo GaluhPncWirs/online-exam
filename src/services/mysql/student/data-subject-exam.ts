@@ -75,6 +75,13 @@ export async function handleLateExam({
     )
   `;
 
+  const alreadySaved = {
+    success: true,
+    status: 200,
+    alreadySaved: true,
+    message: "Data sudah tersimpan sebelumnya",
+  };
+
   const generateIdHistoryExam = generateRandomId(7, "HIS");
 
   try {
@@ -91,17 +98,12 @@ export async function handleLateExam({
       id_subject,
     ]);
 
-    if (result.affectedRows === 0) {
-      return {
-        success: false,
-        status: 400,
-        message: "Data sudah tersimpan sebelumnya",
-      };
-    }
+    if (result.affectedRows === 0) return alreadySaved;
 
     return {
       success: true,
       status: 201,
+      alreadySaved: false,
       message: "Data berhasil tersimpan",
     };
   } catch (error) {
@@ -112,11 +114,7 @@ export async function handleLateExam({
       "code" in error &&
       error.code === "ER_DUP_ENTRY"
     ) {
-      return {
-        success: false,
-        status: 400,
-        message: "Data sudah tersimpan sebelumnya",
-      };
+      return alreadySaved;
     }
 
     console.error(error);

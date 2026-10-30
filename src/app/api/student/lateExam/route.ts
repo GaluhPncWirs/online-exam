@@ -4,6 +4,19 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    if (!body) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Data ujian tidak ada",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const { id_student, id_subject, result_exam, status_exam, className } =
       body;
 
