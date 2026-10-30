@@ -40,7 +40,8 @@
         "selesai memperbaiki masalah error ketika masuk ke dalam halaman ujian",
         "memperbaiki struktur code dan membedakan ujian pg dan essay",
         "sedang memperbaiki responsive halaman ujian",
-        "selesai memperbaiki responsive halaman ujian"
+        "selesai memperbaiki responsive halaman ujian",
+        "memperbaiki proses simpan data ujian yang sudah selesai"
     ],
     "sqltools.connections": [
         {

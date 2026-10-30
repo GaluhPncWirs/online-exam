@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -25,8 +25,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Flag, List, Timer, X } from "lucide-react";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
-import { SoalUjian } from "@/src/types/halamanUjian";
 import { Exam, TypeExamQuestions } from "@/src/types/student/dataExams";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -36,7 +34,6 @@ type BeginExamProps = {
 
 export default function BeginExam({ dataExam }: BeginExamProps) {
   const router = useRouter();
-  const getIdStudent = useGetIdUsers((state) => state.idUser);
   const [clickedAnswerPg, setClickedAnswerPg] = useState<{
     [questions: string]: string;
   }>({});
@@ -47,7 +44,9 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const [answerEssayExams, setAnswerEssayExams] = useState<{
     [questions: string]: string;
   }>({});
-  const [markQuestions, setMarkQuestions] = useState<any>({});
+  const [markQuestions, setMarkQuestions] = useState<Record<string, boolean>>(
+    {},
+  );
   const [timeOutDone, setTimeOutDone] = useState<boolean>(false);
   const [showInformationExam, setShowInformationExam] = useState<boolean>(true);
   const clickedOutsideCheked = useRef<HTMLInputElement | null>(null);
@@ -61,6 +60,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
       const savedMark = localStorage.getItem("markQuestions");
       const savedAnswerPg = localStorage.getItem("exam-answer-pg");
       if (savedAnswerPg && savedMark) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setClickedAnswerPg(JSON.parse(savedAnswerPg));
         setMarkQuestions(JSON.parse(savedMark));
       }
@@ -96,6 +96,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     if (dataExam?.exam_questions) {
       const savedQuestions = localStorage.getItem("random-number-exam");
       if (savedQuestions) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDataUjianRandom(JSON.parse(savedQuestions));
       } else {
         const questions = dataExam.exam_questions ?? [];
@@ -108,15 +109,16 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
 
   // timer exam
   useEffect(() => {
-    function initializedTime() {
+    const initializedTime = () => {
       const savedTimer = localStorage.getItem("timer");
       if (savedTimer) {
         const initialTime = JSON.parse(savedTimer);
         return initialTime > 0 ? initialTime : dataExam?.duration;
       }
       return dataExam?.duration;
-    }
+    };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTime(initializedTime());
   }, [dataExam?.duration]);
 
@@ -140,60 +142,6 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const minute = Math.floor(time! / 60);
   const second = time! % 60;
   const formatedTime = `${minute}:${String(second).padStart(2, "0")}`;
-
-  function handleSelectedAnswer(questionsId: string, answer: string) {
-    setClickedAnswerPg((prev) => ({
-      ...prev,
-      [questionsId]: answer,
-    }));
-  }
-
-  function handleAnswerEmpty() {
-    const idSoalYangSudah = Object.keys(clickedAnswerPg);
-    const dataUjian = dataUjianRandom.filter(
-      (data) => !idSoalYangSudah.includes(data.id),
-    );
-    return dataUjian.length === 0;
-  }
-
-  async function handleSendExam() {
-    const pilihanSiswa = Object.values(clickedAnswerPg);
-    const jawabanYangBenar = dataExam?.exam_questions
-      .flatMap((item) => item.correctAnswer)
-      .filter((jawabanBenar) => pilihanSiswa.includes(jawabanBenar));
-    const resultExam = Math.round(
-      (jawabanYangBenar.length / (dataExam?.exam_questions?.length ?? 0)) * 100,
-    );
-
-    const payload = {
-      id_student: getIdStudent,
-      id_subject: dataExam.idSubject,
-      answer_student:
-        dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
-      result_exam: dataExam?.type_exam === "PG" ? resultExam : "pending",
-      status_exam: true,
-      className: dataStudent?.classes,
-    };
-
-    const response = await fetch("/api/student/saveResultExam", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const res = await response.json();
-    if (res.success) {
-      toast("Berhasil ✅", { description: "Ujian Telah Selesai" });
-      localStorage.removeItem("timer");
-      localStorage.removeItem("exam-answer-pg");
-      localStorage.removeItem("exam-answer-essay");
-      localStorage.removeItem("markQuestions");
-      localStorage.removeItem("random-number-exam");
-      router.push("/Student/Dashboard");
-    } else {
-      toast("❌ Gagal", { description: "Gagal menyimpan data hasil ujian" });
-    }
-  }
 
   // useEffect(() => {
   //   const handleSelectStart = (e: Event) => {
@@ -259,10 +207,67 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
 
   useEffect(() => {
     if (isClosedContent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowInformationExam(false);
       setIsClosedContent(false);
     }
   }, [isClosedContent]);
+
+  const handleSelectedAnswer = (questionsId: string, answer: string) => {
+    setClickedAnswerPg((prev) => ({
+      ...prev,
+      [questionsId]: answer,
+    }));
+  };
+
+  const handleAnswerEmpty = () => {
+    const idSoalYangSudah = Object.keys(clickedAnswerPg);
+    const dataUjian = dataUjianRandom.filter(
+      (data) => !idSoalYangSudah.includes(data.id),
+    );
+    return dataUjian.length === 0;
+  };
+
+  const handleSendExam = async () => {
+    const pilihanSiswa = Object.values(clickedAnswerPg);
+    const jawabanYangBenar = dataExam?.exam_questions
+      .flatMap((item) => item.correctAnswer)
+      .filter((jawabanBenar) => pilihanSiswa.includes(jawabanBenar));
+    const resultExam = Math.round(
+      (jawabanYangBenar.length / (dataExam?.exam_questions?.length ?? 0)) * 100,
+    );
+
+    const payload = {
+      // id_student: getIdStudent,
+      id_subject: dataExam.idSubject,
+      answer_student:
+        dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
+      result_exam: dataExam?.type_exam === "PG" ? resultExam : "pending",
+      status_exam: true,
+      // className: dataStudent?.classes,
+    };
+
+    const response = await fetch("/api/student/saveResultExam", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await response.json();
+    if (res.success) {
+      toast.success("Berhasil", { description: "Ujian Telah Selesai" });
+      localStorage.removeItem("timer");
+      localStorage.removeItem("exam-answer-pg");
+      localStorage.removeItem("exam-answer-essay");
+      localStorage.removeItem("markQuestions");
+      localStorage.removeItem("random-number-exam");
+      router.push("/Student/Dashboard");
+    } else {
+      toast.error("Gagal", { description: "Gagal menyimpan data hasil ujian" });
+    }
+  };
+
+  console.log(dataUjianRandom);
 
   return (
     <div className="bg-slate-100">
