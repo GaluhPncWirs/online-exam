@@ -27,6 +27,13 @@ import {
 import { Flag, List, Timer, X } from "lucide-react";
 import { Exam, TypeExamQuestions } from "@/src/types/student/dataExams";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import {
+  clearExamStorage,
+  examKey,
+  readStorage,
+  shuffle,
+  writeStorage,
+} from "@/src/lib/utils/dataAnswerExam";
 
 type BeginExamProps = {
   dataExam: Exam;
@@ -54,90 +61,86 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const clickedMarkQuestions = useRef<HTMLButtonElement | null>(null);
   const clickedAnswerQuestions = useRef<HTMLInputElement | null>(null);
 
-  // save answer
+  const examId = dataExam?.id_subject;
+  const typeExam = dataExam.type_exam;
+
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hydrateExamId = useRef<string | null>(null);
+
+  // 1) HYDRATE: baca semua data dari localStorage, sekali per ujian
   useEffect(() => {
-    if (dataExam?.type_exam === "PG") {
-      const savedMark = localStorage.getItem("markQuestions");
-      const savedAnswerPg = localStorage.getItem("exam-answer-pg");
-      if (savedAnswerPg && savedMark) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setClickedAnswerPg(JSON.parse(savedAnswerPg));
-        setMarkQuestions(JSON.parse(savedMark));
-      }
+    if (!dataExam || hydrateExamId.current === dataExam.id_subject) return;
+    hydrateExamId.current = dataExam.id_subject;
+
+    const key = (name: string) => examKey(dataExam.id_subject, name);
+
+    const savedMark = readStorage(key("mark"));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (savedMark) setMarkQuestions(savedMark);
+
+    if (dataExam.type_exam === "PG") {
+      const saved = readStorage(key("answer-pg"));
+      if (saved) setClickedAnswerPg(saved);
     }
 
-    if (dataExam?.type_exam === "ESSAY") {
-      const savedMark = localStorage.getItem("markQuestions");
-      const savedAnswerEssay = localStorage.getItem("exam-answer-essay");
-      if (savedAnswerEssay && savedMark) {
-        setAnswerEssayExams(JSON.parse(savedAnswerEssay));
-        setMarkQuestions(JSON.parse(savedMark));
-      }
-    }
-  }, [dataExam?.type_exam]);
-
-  useEffect(() => {
-    if (dataExam?.type_exam === "PG") {
-      localStorage.setItem("markQuestions", JSON.stringify(markQuestions));
-      localStorage.setItem("exam-answer-pg", JSON.stringify(clickedAnswerPg));
+    if (dataExam.type_exam === "ESSAY") {
+      const saved = readStorage(key("answer-essay"));
+      if (saved) setAnswerEssayExams(saved);
     }
 
-    if (dataExam?.type_exam === "ESSAY") {
-      localStorage.setItem("markQuestions", JSON.stringify(markQuestions));
-      localStorage.setItem(
-        "exam-answer-essay",
-        JSON.stringify(answerEssayExams),
-      );
+    // urutan soal acak
+    const saveOrder = readStorage(key("random"));
+    if (saveOrder?.length) {
+      setDataUjianRandom(saveOrder);
+    } else {
+      const shuffled = shuffle(dataExam.exam_questions ?? []);
+      setDataUjianRandom(shuffled);
+      if (shuffled.length) writeStorage(key("random"), shuffled);
     }
-  }, [dataExam?.type_exam, clickedAnswerPg, markQuestions, answerEssayExams]);
 
-  // random exam number
-  useEffect(() => {
-    if (dataExam?.exam_questions) {
-      const savedQuestions = localStorage.getItem("random-number-exam");
-      if (savedQuestions) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDataUjianRandom(JSON.parse(savedQuestions));
-      } else {
-        const questions = dataExam.exam_questions ?? [];
-        const dataExams = [...questions].sort(() => 0.5 - Math.random());
-        setDataUjianRandom(dataExams);
-        localStorage.setItem("random-number-exam", JSON.stringify(dataExams));
-      }
-    }
+    // timer
+    const savedTime = readStorage(key("timer"));
+    setTime(typeof savedTime === "number" ? savedTime : dataExam.duration);
+
+    setIsHydrated(true);
   }, [dataExam]);
 
-  // timer exam
+  // 2) SAVE jawaban & tanda soal (hanya setelah hydrate)
   useEffect(() => {
-    const initializedTime = () => {
-      const savedTimer = localStorage.getItem("timer");
-      if (savedTimer) {
-        const initialTime = JSON.parse(savedTimer);
-        return initialTime > 0 ? initialTime : dataExam?.duration;
-      }
-      return dataExam?.duration;
-    };
+    if (!isHydrated || examId == null) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTime(initializedTime());
-  }, [dataExam?.duration]);
+    writeStorage(examKey(examId, "mark"), markQuestions);
+    if (typeExam === "PG") {
+      writeStorage(examKey(examId, "answer-pg"), clickedAnswerPg);
+    }
+    if (typeExam === "ESSAY") {
+      writeStorage(examKey(examId, "answer-essay"), answerEssayExams);
+    }
+  }, [
+    isHydrated,
+    examId,
+    typeExam,
+    markQuestions,
+    clickedAnswerPg,
+    answerEssayExams,
+  ]);
+
+  // 3) TIMER: interval dibuat sekali selama timer berjalan
+  const isRunning = isHydrated && time != null && time > 0;
 
   useEffect(() => {
-    if (time === undefined || time === null) return;
-    const timer = setInterval(() => {
-      setTime((prev) => {
-        if (prev! <= 0) {
-          clearInterval(timer);
-          setTimeOutDone(true);
-          return 0;
-        }
-        const newTime = prev! - 1;
-        localStorage.setItem("timer", JSON.stringify(time));
-        return newTime;
-      });
+    if (!isRunning) return;
+    const id = setInterval(() => {
+      setTime((prev) => (prev == null ? prev : Math.max(prev - 1, 0)));
     }, 1000);
-    return () => clearInterval(timer);
-  }, [time]);
+    return () => clearInterval(id);
+  }, [isRunning]);
+
+  // simpan sisa waktu
+  useEffect(() => {
+    if (!isHydrated || examId == null || time == null) return;
+    writeStorage(examKey(examId, "timer"), time);
+  }, [isHydrated, examId, time]);
 
   const minute = Math.floor(time! / 60);
   const second = time! % 60;
@@ -239,7 +242,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
 
     const payload = {
       // id_student: getIdStudent,
-      id_subject: dataExam.idSubject,
+      id_subject: dataExam.id_subject,
       answer_student:
         dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
       result_exam: dataExam?.type_exam === "PG" ? resultExam : "pending",
@@ -256,18 +259,12 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     const res = await response.json();
     if (res.success) {
       toast.success("Berhasil", { description: "Ujian Telah Selesai" });
-      localStorage.removeItem("timer");
-      localStorage.removeItem("exam-answer-pg");
-      localStorage.removeItem("exam-answer-essay");
-      localStorage.removeItem("markQuestions");
-      localStorage.removeItem("random-number-exam");
+      clearExamStorage(examId);
       router.push("/Student/Dashboard");
     } else {
       toast.error("Gagal", { description: "Gagal menyimpan data hasil ujian" });
     }
   };
-
-  console.log(dataUjianRandom);
 
   return (
     <div className="bg-slate-100">

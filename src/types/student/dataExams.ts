@@ -32,7 +32,7 @@ export type Essay = ExamQuestions;
 export type TypeExamQuestions = MultipleChoice[] | Essay[];
 
 export type Exam = {
-  idSubject: string;
+  id_subject: string;
   exam_questions: TypeExamQuestions;
   name_exam: string;
   type_exam: "PG" | "ESSAY";
