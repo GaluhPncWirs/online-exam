@@ -93,8 +93,8 @@ export async function handleLateExam({
 
     if (result.affectedRows === 0) {
       return {
-        success: true,
-        status: 200,
+        success: false,
+        status: 400,
         message: "Data sudah tersimpan sebelumnya",
       };
     }
@@ -113,8 +113,8 @@ export async function handleLateExam({
       error.code === "ER_DUP_ENTRY"
     ) {
       return {
-        success: true,
-        status: 200,
+        success: false,
+        status: 400,
         message: "Data sudah tersimpan sebelumnya",
       };
     }
@@ -193,6 +193,76 @@ export async function handleGetExams(id_subject: string) {
     return {
       success: false,
       message: "Gagal mengambil data ujian",
+    };
+  }
+}
+
+type PropsHandleSaveExam = {
+  id_student: string;
+  id_subject: string;
+  answer_student: Record<string, string>;
+  result_exam: string;
+  status_exam: boolean;
+  className: string;
+};
+
+export async function handleSaveResultExam({
+  id_student,
+  id_subject,
+  answer_student,
+  result_exam,
+  status_exam,
+  className,
+}: PropsHandleSaveExam) {
+  const query = `INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES ?,?,?,?,?,?,?`;
+
+  const generateIdHistoryExam = generateRandomId(7, "HIS");
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      generateIdHistoryExam,
+      id_student,
+      id_subject,
+      answer_student,
+      result_exam,
+      status_exam,
+      className,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        status: 400,
+        message: "Data sudah tersimpan sebelumnya",
+      };
+    }
+
+    return {
+      success: true,
+      status: 201,
+      message: "Data ujian berhasil tersimpan",
+    };
+  } catch (error) {
+    // Pengaman jika dua request masuk bersamaan (race condition)
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "ER_DUP_ENTRY"
+    ) {
+      return {
+        success: false,
+        status: 400,
+        message: "Data sudah tersimpan sebelumnya",
+      };
+    }
+
+    console.error(error);
+
+    return {
+      success: false,
+      status: 500,
+      message: "Error terhubung kedalam database",
     };
   }
 }

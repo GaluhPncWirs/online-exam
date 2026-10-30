@@ -28,6 +28,7 @@ import { Flag, List, Timer, X } from "lucide-react";
 import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
 import { SoalUjian } from "@/src/types/halamanUjian";
 import { Exam, TypeExamQuestions } from "@/src/types/student/dataExams";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type BeginExamProps = {
   dataExam: Exam;
@@ -41,7 +42,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   }>({});
   const [isClosedContent, setIsClosedContent] = useState<boolean>(false);
   const [dataUjianRandom, setDataUjianRandom] = useState<TypeExamQuestions>([]);
-  const [isSizeMobile, setIsSizeMobile] = useState<boolean>(false);
+  const isSizeMobile = useIsMobile(1024);
   const [time, setTime] = useState<number>(0);
   const [answerEssayExams, setAnswerEssayExams] = useState<{
     [questions: string]: string;
@@ -53,17 +54,6 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const handleClickedOutsideContent = useRef<HTMLDivElement | null>(null);
   const clickedMarkQuestions = useRef<HTMLButtonElement | null>(null);
   const clickedAnswerQuestions = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 1024px)");
-    function handler(e: MediaQueryListEvent | MediaQueryList) {
-      setIsSizeMobile(e.matches);
-    }
-
-    handler(mediaQuery);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
 
   // save answer
   useEffect(() => {
@@ -176,17 +166,16 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     );
 
     const payload = {
-      created_at: new Date().toISOString(),
-      student_id: getIdStudent,
-      exam_id: dataExam.idSubject,
+      id_student: getIdStudent,
+      id_subject: dataExam.idSubject,
       answer_student:
         dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
-      hasil_ujian: dataExam?.type_exam === "PG" ? resultExam : "pending",
+      result_exam: dataExam?.type_exam === "PG" ? resultExam : "pending",
       status_exam: true,
-      // kelas: dataStudent?.classes,
+      className: dataStudent?.classes,
     };
 
-    const response = await fetch("/api/examDone", {
+    const response = await fetch("/api/student/saveResultExam", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -277,19 +266,6 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
 
   return (
     <div className="bg-slate-100">
-      {/* ================= MOBILE OVERLAY ================= */}
-      {isSizeMobile && showInformationExam && (
-        <button
-          type="button"
-          aria-label="Tutup navigasi soal"
-          onClick={() => {
-            setShowInformationExam(false);
-            setIsClosedContent(true);
-          }}
-          className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[2px] md:hidden"
-        />
-      )}
-
       <div className="flex max-w-7xl mx-auto relative">
         {/* ================= SIDEBAR ================= */}
         <div className="lg:w-96 lg:shrink-0">
