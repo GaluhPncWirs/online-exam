@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getUpComingExam } from "@/hooks/getUpComingExam";
-import { ScheduleExams } from "@/src/types/student/dataExams";
+import { Exam, ScheduleExams } from "@/src/types/student/dataExams";
 import { toast } from "sonner";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import {
@@ -55,25 +55,23 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
   const upcomingExam = getUpComingExam(dataExams);
 
-  const filterScoreExams = dataExams.filter((exams) => {
-    if (!exams.status_exam) return false;
-    if (exams.result_exam === "pending" || exams.result_exam === "telat") {
-      return false;
-    }
+  const getAverageScore = (dataExams: ScheduleExams[]): number => {
+    const scores = dataExams
+      .filter(
+        (exam) =>
+          exam.status_exam &&
+          exam.result_exam !== "pending" &&
+          exam.result_exam !== "telat",
+      )
+      .map((exam) => Number(exam.result_exam))
+      .filter(Number.isFinite);
 
-    const score = Number(exams.result_exam);
+    if (scores.length === 0) return 0;
 
-    return Number.isFinite(score);
-  });
+    const total = scores.reduce((sum, score) => sum + score, 0);
 
-  const totalScore = filterScoreExams.reduce((total, result_exam) => {
-    return total + Number(result_exam);
-  }, 0);
-
-  const averageValue =
-    filterScoreExams.length > 0
-      ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
-      : 0;
+    return Math.round((total / scores.length) * 100) / 100;
+  };
 
   const lateExams = useCallback(
     async (idUjian: string) => {
@@ -205,8 +203,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {dataExams.filter((done) => done.status_exam !== 1)
-                      .length || 0}
+                    {isExamAvaible.length || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -229,7 +226,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {Math.round(averageValue) || 0}
+                    {getAverageScore(dataExams) || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -258,7 +255,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
               </h2>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
+            <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
               <div className="absolute -right-10 -top-10 size-40 rounded-full bg-amber-100/50 blur-2xl" />
 
               <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -355,21 +352,11 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
         {/* Available Exams */}
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Ujian Tersedia
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Daftar ujian yang tersedia untuk Anda.
-                </p>
-              </div>
-
-              <div className="hidden rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:block">
-                {dataExams.length} Ujian
-              </div>
-            </div>
+          <div className="border-b border-slate-200 p-5 sm:px-6">
+            <h2 className="text-xl font-bold text-slate-900">Ujian Tersedia</h2>
+            <p className="text-sm text-muted-foreground">
+              Daftar ujian yang tersedia untuk Anda.
+            </p>
           </div>
 
           <div className="overflow-x-auto">

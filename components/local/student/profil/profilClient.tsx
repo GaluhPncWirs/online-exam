@@ -150,7 +150,7 @@ export default function ProfilClient({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<InputUpdateData>({
     resolver: zodResolver(inputUpdateDataSchema),
     defaultValues: {
@@ -260,7 +260,6 @@ export default function ProfilClient({
                   >
                     Nama
                   </label>
-
                   <Input
                     type="text"
                     id="name"

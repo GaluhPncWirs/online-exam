@@ -10,6 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { User2 } from "lucide-react";
 import Image from "next/image";
@@ -144,7 +145,9 @@ export default function HeaderProfile({
             </span>
 
             <span className="text-sm font-medium text-slate-900 sm:col-span-2">
-              {dataUser?.created_at.toLocaleString() || "-"}
+              {dataUser?.created_at
+                ? formatDateToYYYYMMDD(new Date(dataUser.created_at))
+                : "-"}
             </span>
           </div>
 
