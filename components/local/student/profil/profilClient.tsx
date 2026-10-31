@@ -25,7 +25,7 @@ import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
-import { ScheduleExams } from "@/src/types/student/dataExams";
+import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
 import { useForm } from "react-hook-form";
 import {
   InputUpdateData,
@@ -38,22 +38,31 @@ import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
+  dataResultExam: ExamResult[];
 };
 
-type ClassGroup = {
+type StudentScores = {
   id_student: string;
   pointExams: number[];
 };
 
-export default function ProfilClient({ dataExams }: DataExamsStudent) {
+type ClassGroup = {
+  class: string;
+  resultExam: StudentScores[];
+};
+
+export default function ProfilClient({
+  dataExams,
+  dataResultExam,
+}: DataExamsStudent) {
   const dataUser = useGetDataUser((state) => state.dataUser);
 
   const rankingClasses = () => {
-    if (!dataExams?.length || !dataUser?.class) {
+    if (!dataResultExam?.length || !dataUser?.class) {
       return { ranking: 0, lenStudentPerClass: 0 };
     }
 
-    const normalizedResults = dataExams.map((item) => ({
+    const normalizedResults = dataResultExam.map((item) => ({
       ...item,
       result_exam:
         item.result_exam !== "telat" && item.result_exam !== "pending"
@@ -63,18 +72,32 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
 
     const groupedByClass = normalizedResults.reduce<ClassGroup[]>(
       (acc, cur) => {
-        const idStudentGroup = acc.find(
-          (group) => group.id_student === cur.id_student,
-        );
+        const classGroup = acc.find((group) => group.class === cur.class);
         const score = Number(cur.result_exam);
 
-        if (!idStudentGroup) {
+        if (!classGroup) {
           acc.push({
-            id_student: cur.id_student,
-            pointExams: [score],
+            class: cur.class,
+            resultExam: [
+              {
+                id_student: cur.id_student,
+                pointExams: [score],
+              },
+            ],
           });
         } else {
-          idStudentGroup.pointExams.push(score);
+          const studentItem = classGroup.resultExam.find(
+            (item) => item.id_student === cur.id_student,
+          );
+
+          if (studentItem) {
+            studentItem.pointExams.push(score);
+          } else {
+            classGroup.resultExam.push({
+              id_student: cur.id_student,
+              pointExams: [score],
+            });
+          }
         }
 
         return acc;
@@ -82,7 +105,16 @@ export default function ProfilClient({ dataExams }: DataExamsStudent) {
       [],
     );
 
-    const totalScores = groupedByClass.map((item) => ({
+    // Step 3: Calculate total scores for current class
+    const currentClassData = groupedByClass.find(
+      (group) => group.class === dataUser.class,
+    );
+
+    if (!currentClassData?.resultExam.length) {
+      return { ranking: 0, lenStudentPerClass: 0 };
+    }
+
+    const totalScores = currentClassData.resultExam.map((item) => ({
       ...item,
       pointExams: item.pointExams.reduce((sum, score) => sum + score, 0),
     }));

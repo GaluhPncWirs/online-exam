@@ -42,6 +42,30 @@ export async function handleGetDataSubjectExams(
   }
 }
 
+export async function handleGetDataResultExamPerClass(idStudent: string) {
+  const query = `
+  SELECT 
+    he.id_student, he.id_subject, he.result_exam, he.class 
+  FROM history_exams as he
+  WHERE he.id_student = ?
+  `;
+
+  try {
+    const [rows] = await pool.execute(query, [idStudent]);
+
+    return {
+      data: rows,
+      success: true,
+      message: "Berhasil mengambil data hasil ujian",
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Gagal mengambil data hasil ujian",
+    };
+  }
+}
+
 type PropsHandleLateExam = {
   id_student: string;
   id_subject: string;

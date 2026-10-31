@@ -44,7 +44,8 @@
         "memperbaiki proses simpan data ujian yang sudah selesai",
         "selesai merefaktor code halaman ujian",
         "memperbaiki bug ketika data jawaban ujian peserta yang sudah di masukkan ke dalam local storage selalu mengulang dari awal ketika di refresh",
-        "memperbaiki query yang kurang di bagian ambil data ujian untuk mulai ujian"
+        "memperbaiki query yang kurang di bagian ambil data ujian untuk mulai ujian",
+        "memperbaiki masalah untuk simpan data ujian jika sudah lewat batas waktu dan menghapus file yang tida di perlukan"
     ],
     "sqltools.connections": [
         {

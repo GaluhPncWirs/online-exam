@@ -26,6 +26,13 @@ export type ExamQuestions = {
   correctAnswer: string;
 };
 
+export type ExamResult = {
+  class: string;
+  id_student: string;
+  id_subject: string;
+  result_exam: string;
+};
+
 export type MultipleChoice = ExamQuestions & { multipleChoice: Choice[] };
 export type Essay = ExamQuestions;
 
