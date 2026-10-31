@@ -28,18 +28,15 @@ export default function MainContent({ children }: React.PropsWithChildren) {
   return (
     <div>
       {/* <DialogFormAddDataUser idUsers={idUsers} /> */}
-      <div className="min-h-screen">
+      <div className="relative mx-auto flex max-w-7xl">
         {/* Sidebar */}
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-slate-200 bg-white md:flex md:flex-col">
+        <aside className="sticky top-0 z-40 hidden h-screen w-72 shrink-0 overflow-y-auto border-x border-slate-200 bg-white md:flex md:flex-col">
           <ListSidebar />
         </aside>
 
         {/* Main Content */}
-        <main className="min-h-screen md:ml-64">
-          {/* Page Content */}
-          <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
-            {children}
-          </div>
+        <main className="min-w-0 flex-1 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {children}
         </main>
       </div>
     </div>

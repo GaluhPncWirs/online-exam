@@ -102,7 +102,7 @@ export default function ListSidebar() {
         </div>
 
         <Dialog>
-          <DialogTrigger className="flex items-center gap-3 text-sm font-semibold justify-center py-3 hover:bg-blue-100">
+          <DialogTrigger className="flex items-center border border-slate-200 rounded-md gap-3 text-sm font-semibold justify-center py-3 hover:bg-blue-100">
             <LogOut className="size-5" />
             Logout
           </DialogTrigger>
