@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getUpComingExam } from "@/hooks/getUpComingExam";
-import { Exam, ScheduleExams } from "@/src/types/student/dataExams";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 import { toast } from "sonner";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import {

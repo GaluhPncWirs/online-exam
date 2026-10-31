@@ -47,6 +47,8 @@ export type Exam = {
 };
 
 export type DataResultExam = {
-  exam: Exam;
   answer_student: Record<string, string>;
+  exam_questions: TypeExamQuestions;
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
 };

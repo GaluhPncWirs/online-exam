@@ -48,13 +48,11 @@ export default function ResultExamClient({
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <h2 className="text-lg font-semibold text-white sm:text-xl">
-              {dataResultExam.exam.name_exam}
+              {dataResultExam.name_exam}
             </h2>
 
             <span className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
-              {dataResultExam.exam.type_exam === "pg"
-                ? "Pilihan Ganda"
-                : "Essay"}
+              {dataResultExam.type_exam === "PG" ? "Pilihan Ganda" : "Essay"}
             </span>
           </div>
         </div>
@@ -75,101 +73,98 @@ export default function ResultExamClient({
             Periksa kembali jawaban yang telah Anda berikan pada setiap soal.
           </p>
         </div>
-        {dataResultExam.exam.type_exam === "PG" ? (
+        {dataResultExam.type_exam === "PG" ? (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {(dataResultExam.exam.exam_questions as MultipleChoice[]).map(
-              (item: MultipleChoice, i: number) => (
-                <div
-                  key={item.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
-                >
-                  {/* Question Header */}
-                  <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+            {dataResultExam.exam_questions.map((item, i: number) => (
+              <div
+                key={item.id}
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+              >
+                {/* Question Header */}
+                <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
 
-                      <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
-                        {item.questions}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Answers */}
-                  <div className="p-5">
-                    <ul className="flex flex-col gap-3">
-                      {["a", "b", "c", "d", "e"].map((opt) => {
-                        const choiceKey =
-                          `choice_${opt}` as keyof typeof item.multipleChoice;
-                        const choiceText = item.multipleChoice[choiceKey];
-
-                        return (
-                          <li
-                            key={opt}
-                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${correctAnswer(
-                              item.id,
-                              choiceText,
-                            )}`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs font-bold">
-                                {opt.toUpperCase()}
-                              </span>
-
-                              <span className="leading-6">{choiceText}</span>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                    <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
+                      {item.questions}
+                    </h3>
                   </div>
                 </div>
-              ),
-            )}
+
+                {/* Answers */}
+                <div className="p-5">
+                  <ul className="flex flex-col gap-3">
+                    {["a", "b", "c", "d", "e"].map((opt) => {
+                      const choiceKey = `choice_${opt}`;
+                      const choiceText = item.multipleChoice[choiceKey];
+
+                      return (
+                        <li
+                          key={opt}
+                          className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${correctAnswer(
+                            item.id,
+                            String(choiceText),
+                          )}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs font-bold">
+                              {opt.toUpperCase()}
+                            </span>
+
+                            <span className="leading-6">
+                              {String(choiceText ?? "")}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {dataResultExam.exam.exam_questions.map(
-              (item: Essay, i: number) => (
-                <div
-                  key={item.id ?? i}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-                >
-                  {/* Question */}
-                  <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+            {dataResultExam.exam_questions.map((item: Essay, i: number) => (
+              <div
+                key={item.id ?? i}
+                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+              >
+                {/* Question */}
+                <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
 
-                      <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
-                        {item.questions}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Student Answer */}
-                  <div className="p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="text-sm font-semibold text-slate-700">
-                        Jawaban Anda
-                      </label>
-
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
-                        Essay
-                      </span>
-                    </div>
-
-                    <Textarea
-                      disabled
-                      value={dataResultExam.answer_student?.[item.id] || ""}
-                      className="min-h-32 resize-none rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700"
-                    />
+                    <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
+                      {item.questions}
+                    </h3>
                   </div>
                 </div>
-              ),
-            )}
+
+                {/* Student Answer */}
+                <div className="p-5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="text-sm font-semibold text-slate-700">
+                      Jawaban Anda
+                    </label>
+
+                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+                      Essay
+                    </span>
+                  </div>
+
+                  <Textarea
+                    disabled
+                    value={dataResultExam.answer_student?.[item.id] || ""}
+                    className="min-h-32 resize-none rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>

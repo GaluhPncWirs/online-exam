@@ -35,9 +35,7 @@ async function ResultExamComponent({ params }: Props) {
 
   return (
     <MainContent>
-      <ResultExamClient
-        dataResultExam={dataExam?.data as unknown as DataResultExam}
-      />
+      <ResultExamClient dataResultExam={dataExam?.data as DataResultExam} />
     </MainContent>
   );
 }
