@@ -1,4 +1,4 @@
-export interface QuestionExam {
+export type QuestionExam = {
   id: string;
   questions: string;
   correctAnswer: string;
@@ -9,14 +9,14 @@ export interface QuestionExam {
     answer_d: string;
     answer_e: string;
   };
-}
+};
 
-export interface ExamData {
+export type ExamData = {
   nama_ujian: string;
   questions_exam: QuestionExam[];
-}
+};
 
-export interface SoalUjian {
+export type SoalUjian = {
   created_at: string;
   dibuat_tgl: string;
   exam_duration: number;
@@ -28,4 +28,4 @@ export interface SoalUjian {
   kelas: string;
   tenggat_waktu: string;
   tipe_ujian: string;
-}
+};

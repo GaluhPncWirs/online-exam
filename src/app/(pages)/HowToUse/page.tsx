@@ -9,7 +9,7 @@ const howToUseSteps = [
     title: "Login ke Akun Anda",
     description:
       "Masukkan email dan password Anda pada halaman login untuk mengakses sistem ujian.",
-    image: "/img/howToUse/login_tutor.png",
+    image: "/images/howToUse/login_tutor.png",
     alt: "Login ke akun",
   },
   {
@@ -17,7 +17,7 @@ const howToUseSteps = [
     title: "Pilih Ujian yang Tersedia",
     description:
       "Buka dashboard kemudian pilih ujian yang ingin Anda ikuti sesuai jadwal yang tersedia.",
-    image: "/img/howToUse/chooseExam_tutor.png",
+    image: "/images/howToUse/chooseExam_tutor.png",
     alt: "Pilih ujian",
   },
   {
@@ -25,7 +25,7 @@ const howToUseSteps = [
     title: "Baca Instruksi Ujian",
     description:
       "Pastikan Anda memahami aturan, jumlah soal, dan durasi sebelum memulai ujian.",
-    image: "/img/howToUse/readInstructions_tutor.png",
+    image: "/images/howToUse/readInstructions_tutor.png",
     alt: "Instruksi ujian",
   },
   {
@@ -33,7 +33,7 @@ const howToUseSteps = [
     title: "Kerjakan Soal",
     description:
       "Jawab seluruh soal dengan teliti dan manfaatkan waktu yang tersedia sebaik mungkin.",
-    image: "/img/howToUse/do_itExams_tutor.png",
+    image: "/images/howToUse/do_itExams_tutor.png",
     alt: "Mengerjakan ujian",
   },
   {
@@ -41,7 +41,7 @@ const howToUseSteps = [
     title: "Kumpulkan Jawaban",
     description:
       'Setelah selesai memeriksa jawaban, klik tombol "Submit" untuk mengakhiri ujian.',
-    image: "/img/howToUse/submitExam_tutor.png",
+    image: "/images/howToUse/submitExam_tutor.png",
     alt: "Mengumpulkan jawaban",
   },
 ];
@@ -49,7 +49,7 @@ const howToUseSteps = [
 export default function CaraPakaiSistemUjian() {
   return (
     <Homepage>
-      <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-blue-50">
+      <section className="relative overflow-hidden bg-linear-to-b from-white via-slate-50 to-blue-50">
         {/* Decorative Background */}
         <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-100/50 blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-1/2 h-96 w-96 rounded-full bg-sky-100/40 blur-3xl" />

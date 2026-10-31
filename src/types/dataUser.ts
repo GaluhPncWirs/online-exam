@@ -5,7 +5,7 @@ export type DataUser = {
   class?: string;
   email: string;
   type_account: string;
-  role: string;
+  role: "student" | "teacher";
   nis?: string;
   no_tlp: string;
   profil_img: string;

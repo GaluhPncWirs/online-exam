@@ -23,8 +23,10 @@ import {
 import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 import AlurUjian from "@/components/local/beranda/alurUjian/content";
 import Homepage from "@/src/layout/homepage/content";
+import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 
 export default function Introduction() {
+  const dataUser = useGetDataUser((state) => state.dataUser);
   return (
     <Homepage>
       <header className="relative flex items-center overflow-hidden">
@@ -39,10 +41,10 @@ export default function Introduction() {
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30" />
+        <div className="absolute inset-0 bg-linear-to-r from-white via-white/90 to-white/30" />
 
         {/* Soft Bottom Gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-white to-transparent" />
 
         {/* Hero Content */}
         <div className="relative z-10 w-full">
@@ -72,12 +74,11 @@ export default function Introduction() {
               <div className="mt-8 flex gap-4 items-center">
                 <Link
                   href={
-                    "/Auth/Login"
-                    // getidUsers.includes("pelajar")
-                    //   ? "/Student/Dashboard"
-                    //   : getidUsers.includes("pengajar")
-                    //     ? "/Teacher/dashboard"
-                    //     : "/Auth/Login"
+                    dataUser?.role.includes("")
+                      ? "/Student/Dashboard"
+                      : dataUser?.role.includes("pengajar")
+                        ? "/Teacher/dashboard"
+                        : "/Auth/Login"
                   }
                   className="group inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
                 >

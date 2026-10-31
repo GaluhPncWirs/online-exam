@@ -293,3 +293,35 @@ export async function handleSaveResultExam({
     };
   }
 }
+
+export async function handleValidateStartExam(
+  id_subject: string,
+  id_student: string,
+) {
+  const query = `
+    SELECT 
+      id_student, status_exam, result_exam
+    FROM history_exams
+    WHERE 
+      id_subject = ? AND id_student = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      id_subject,
+      id_student,
+    ]);
+
+    return {
+      data: rows[0],
+      success: true,
+      message: "Berhasil mengambil data ujian",
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Gagal mengambil data ujian",
+    };
+  }
+}

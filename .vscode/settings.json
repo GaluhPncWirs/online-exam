@@ -48,7 +48,8 @@
         "memperbaiki masalah untuk simpan data ujian jika sudah lewat batas waktu dan menghapus file yang tida di perlukan",
         "memperbaiki masalah pada proses menampilkna data untuk peringkat kelas di halaman profil",
         "menambahkan code untuk menghitung nilai rata rata di halaman dashboar dan juga beberapa code yang di refaktor",
-        "memperbaiki masalah render data result exam yang tidak muncul karena salah deklarasi dai halaman riwayat ujian"
+        "memperbaiki masalah render data result exam yang tidak muncul karena salah deklarasi dai halaman riwayat ujian",
+        "memperbaiki responsive di layout MainContent khususnya di ukuran layar terbesar"
     ],
     "sqltools.connections": [
         {

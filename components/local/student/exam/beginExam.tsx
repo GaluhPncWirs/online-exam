@@ -250,19 +250,31 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
       // className: dataStudent?.classes,
     };
 
-    const response = await fetch("/api/student/saveResultExam", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch("/api/student/saveResultExam", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const res = await response.json();
-    if (res.success) {
+      const res = await response.json();
+
+      if (!res.success) {
+        toast.error("Gagal", {
+          description: "Error menyimpan data hasil ujian",
+        });
+        return;
+      }
+
+      // jangan lupa hapus juga cookienya
+      //     const isStartExam = req.cookies.get("startExam")?.value;
+      // const token = req.cookies.get("tokenLogin")?.value;
+
       toast.success("Berhasil", { description: "Ujian Telah Selesai" });
       clearExamStorage(examId);
       router.push("/Student/Dashboard");
-    } else {
-      toast.error("Gagal", { description: "Gagal menyimpan data hasil ujian" });
+    } catch (error) {
+      console.error("Error, gagal terhubung ke dalam api", error);
     }
   };
 
