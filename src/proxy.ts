@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleValidateStartExam } from "./services/mysql/student/data-subject-exam";
 
 const ROUTES = {
-  home: "/",
+  home: "/Introduction",
   student: "/Student",
   studentDashboard: "/Student/Dashboard",
   startExam: "/Student/Exams/StartExam",
 } as const;
 
 const COOKIES = {
-  token: "tokenLogin",
+  token: "loginSession",
   startExam: "startExam",
   examId: "examId",
 } as const;
@@ -22,20 +22,21 @@ const EXAM_COOKIE_OPTIONS = {
 } as const;
 
 const ROLE_ROUTES = [
-  { prefix: "/Teacher", role: "pengajar", requireLogin: true },
-  { prefix: ROUTES.student, role: "pelajar", requireLogin: true },
+  { prefix: "/Teacher", role: "guru", requireLogin: true },
+  { prefix: ROUTES.student, role: "siswa", requireLogin: true },
 ] as const;
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
 type Session = {
   role?: string;
-  idStudent?: string;
+  idUser?: string;
 };
 
 const redirectTo = (req: NextRequest, path: string) =>
   NextResponse.redirect(new URL(path, req.url));
 
+// Verifikasi token sekali saja; token tidak valid/expired dianggap belum login.
 async function getSession(req: NextRequest): Promise<Session | null> {
   const token = req.cookies.get(COOKIES.token)?.value;
   if (!token) return null;
@@ -44,10 +45,10 @@ async function getSession(req: NextRequest): Promise<Session | null> {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     return {
       role: typeof payload.role === "string" ? payload.role : undefined,
-      idStudent:
-        typeof payload.idStudent === "string" ? payload.idStudent : undefined,
+      idUser: typeof payload.idUser === "string" ? payload.idUser : undefined,
     };
-  } catch {
+  } catch (error) {
+    console.error("[proxy] JWT verify gagal:", error);
     return null;
   }
 }
@@ -74,11 +75,11 @@ async function handleStartExam(
   if (!examId) return redirectTo(req, ROUTES.studentDashboard);
 
   if (session) {
-    if (!session.idStudent) return redirectTo(req, ROUTES.studentDashboard);
+    if (!session.idUser) return redirectTo(req, ROUTES.studentDashboard);
 
     const { data: history } = await handleValidateStartExam(
       examId,
-      session.idStudent,
+      session.idUser,
     );
 
     // Belum pernah ujian -> boleh mulai
@@ -87,8 +88,7 @@ async function handleStartExam(
 
     // Ujian sudah selesai (termasuk yang telat)
     const hasFinished =
-      history?.status_exam === true &&
-      history?.id_student === session.idStudent;
+      history?.status_exam === true && history?.id_student === session.idUser;
     if (hasFinished) return redirectTo(req, ROUTES.studentDashboard);
   }
 

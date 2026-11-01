@@ -45,7 +45,7 @@ export async function handleUserLogin({
            FROM account_students
            WHERE email = ? AND password = ?
            LIMIT 1`
-        : `SELECT id_teacher, type_account
+        : `SELECT id_teacher
            FROM account_teacher
            WHERE email = ? AND password = ?
            LIMIT 1`;
