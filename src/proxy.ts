@@ -1,114 +1,149 @@
 import { jwtVerify } from "jose";
-import { jwtDecode } from "jwt-decode";
 import { NextRequest, NextResponse } from "next/server";
 import { handleValidateStartExam } from "./services/mysql/student/data-subject-exam";
 
+const ROUTES = {
+  home: "/",
+  student: "/Student",
+  studentDashboard: "/Student/Dashboard",
+  startExam: "/Student/Exams/StartExam",
+} as const;
+
+const COOKIES = {
+  token: "tokenLogin",
+  startExam: "startExam",
+  examId: "examId",
+} as const;
+
+const EXAM_COOKIE_OPTIONS = {
+  path: "/",
+  httpOnly: true,
+  sameSite: "strict",
+} as const;
+
+const ROLE_ROUTES = [
+  { prefix: "/Teacher", role: "pengajar", requireLogin: true },
+  { prefix: ROUTES.student, role: "pelajar", requireLogin: true },
+] as const;
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+type Session = {
+  role?: string;
+  idStudent?: string;
+};
+
+const redirectTo = (req: NextRequest, path: string) =>
+  NextResponse.redirect(new URL(path, req.url));
+
+async function getSession(req: NextRequest): Promise<Session | null> {
+  const token = req.cookies.get(COOKIES.token)?.value;
+  if (!token) return null;
+
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return {
+      role: typeof payload.role === "string" ? payload.role : undefined,
+      idStudent:
+        typeof payload.idStudent === "string" ? payload.idStudent : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function allowExam(examId: string) {
+  const response = NextResponse.next();
+  response.cookies.set(COOKIES.startExam, "true", EXAM_COOKIE_OPTIONS);
+  response.cookies.set(COOKIES.examId, examId, EXAM_COOKIE_OPTIONS);
+  return response;
+}
+
+function getExamId(pathname: string) {
+  return pathname.slice(ROUTES.startExam.length).split("/")[1];
+}
+
+async function handleStartExam(
+  req: NextRequest,
+  session: Session | null,
+  isExamInProgress: boolean,
+) {
+  const { pathname, search } = req.nextUrl;
+  const examId = getExamId(pathname);
+
+  if (!examId) return redirectTo(req, ROUTES.studentDashboard);
+
+  if (session) {
+    if (!session.idStudent) return redirectTo(req, ROUTES.studentDashboard);
+
+    const { data: history } = await handleValidateStartExam(
+      examId,
+      session.idStudent,
+    );
+
+    // Belum pernah ujian -> boleh mulai
+    const hasNoHistory = !history?.status_exam && !history?.id_student;
+    if (hasNoHistory) return allowExam(examId);
+
+    // Ujian sudah selesai (termasuk yang telat)
+    const hasFinished =
+      history?.status_exam === true &&
+      history?.id_student === session.idStudent;
+    if (hasFinished) return redirectTo(req, ROUTES.studentDashboard);
+  }
+
+  if (!isExamInProgress) return allowExam(examId);
+
+  const expectedPath = `${ROUTES.startExam}/${examId}`;
+  const currentPath = pathname + search;
+
+  return currentPath === expectedPath
+    ? NextResponse.next()
+    : redirectTo(req, expectedPath);
+}
+
+// Saat ujian berlangsung, user tidak boleh pindah ke halaman Student lain.
+function redirectBackToExam(req: NextRequest) {
+  const examId = req.cookies.get(COOKIES.examId)?.value;
+
+  if (examId) {
+    return redirectTo(req, `${ROUTES.startExam}/${examId}`);
+  }
+
+  // Cookie tidak konsisten: reset agar tidak terjadi redirect loop
+  const response = redirectTo(req, ROUTES.studentDashboard);
+  response.cookies.delete(COOKIES.startExam);
+  return response;
+}
+
+// Return redirect jika akses ditolak, `null` jika diizinkan.
+function guardRoleRoute(req: NextRequest, session: Session | null) {
+  const rule = ROLE_ROUTES.find(({ prefix }) =>
+    req.nextUrl.pathname.startsWith(prefix),
+  );
+  if (!rule) return null;
+
+  const isAllowed = session ? session.role === rule.role : !rule.requireLogin;
+
+  return isAllowed ? null : redirectTo(req, ROUTES.home);
+}
+
 export async function proxy(req: NextRequest) {
-  const { pathname, searchParams } = req.nextUrl;
-  const isStartExam = req.cookies.get("startExam")?.value;
-  const token = req.cookies.get("tokenLogin")?.value;
+  const { pathname } = req.nextUrl;
+  const session = await getSession(req);
+  const isExamInProgress = req.cookies.get(COOKIES.startExam)?.value === "true";
 
-  if (pathname.startsWith("/Student/Exams/StartExam")) {
-    const examId = pathname.split("/")[4];
-
-    if (!examId) {
-      return NextResponse.redirect(new URL("/Student/Dashboard", req.url));
-    }
-
-    if (token) {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-      const { payload } = await jwtVerify(token, secret);
-      const idStudent = payload.idStudent;
-
-      // Cek apakah siswa sudah pernah ujian
-      const examHistory = await handleValidateStartExam(examId, idStudent);
-
-      // Jika belum ada history ujian maka set cookie untuk mulai
-      if (!examHistory.status_exam && !examHistory.id_student) {
-        const response = NextResponse.next();
-        response.cookies.set("startExam", "true", {
-          path: "/",
-          httpOnly: true,
-          sameSite: "strict",
-        });
-        response.cookies.set("examId", examId, {
-          path: "/",
-          httpOnly: true,
-          sameSite: "strict",
-        });
-        return response;
-      }
-
-      // Jika ujian sudah selesai atau telat
-      if (
-        examHistory.status_exam === true &&
-        examHistory.id_student === idStudent &&
-        (examHistory.result_exam === "telat" || true)
-      ) {
-        return NextResponse.redirect(new URL("/Student/Dashboard", req.url));
-      }
-    }
-
-    // Jika belum startExam set cookie
-    if (isStartExam !== "true") {
-      const response = NextResponse.next();
-      response.cookies.set("startExam", "true", {
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-      });
-      return response;
-    }
-
-    // Pastikan URL konsisten
-    const expectedUrl = `/Student/Exams/StartExam/${examId}`;
-    const currentUrl = pathname + req.nextUrl.search;
-    if (isStartExam === "true" && currentUrl !== expectedUrl) {
-      return NextResponse.redirect(new URL(expectedUrl, req.url));
-    }
-
-    return NextResponse.next();
+  if (pathname.startsWith(ROUTES.startExam)) {
+    return handleStartExam(req, session, isExamInProgress);
   }
 
-  // Blokir Navigasi Saat Ujian Sedang Berlangsung
-  if (
-    isStartExam === "true" &&
-    pathname.startsWith("/Student") &&
-    !pathname.startsWith("/Student/Exams/StartExam")
-  ) {
-    const examId = req.cookies.get("examId")?.value;
-
-    if (examId) {
-      return NextResponse.redirect(
-        new URL(`/Student/Exams/StartExam/${examId}`, req.url),
-      );
-    }
-
-    return NextResponse.redirect(new URL("/Student/Dashboard", req.url));
+  if (isExamInProgress && pathname.startsWith(ROUTES.student)) {
+    return redirectBackToExam(req);
   }
 
-  // proteksi halaman
-  if (token) {
-    // proteksi halaman guru
-    const decodeJWT: any = jwtDecode(token);
-    if (pathname.startsWith("/Teacher") && decodeJWT.role !== "pengajar") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-
-    //proteksi halaman pelajar
-    if (pathname.startsWith("/Student") && decodeJWT.role !== "pelajar") {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-  }
-
-  //proteksi jika belum login
-  if (pathname.startsWith("/Teacher") && !token) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  return NextResponse.next();
+  return guardRoleRoute(req, session) ?? NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/Teacher/:path*", "/Student/:path*", "/api/:path*"],
+  matcher: ["/Teacher/:path*", "/Student/:path*"],
 };

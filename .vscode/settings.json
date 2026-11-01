@@ -49,7 +49,8 @@
         "memperbaiki masalah pada proses menampilkna data untuk peringkat kelas di halaman profil",
         "menambahkan code untuk menghitung nilai rata rata di halaman dashboar dan juga beberapa code yang di refaktor",
         "memperbaiki masalah render data result exam yang tidak muncul karena salah deklarasi dai halaman riwayat ujian",
-        "memperbaiki responsive di layout MainContent khususnya di ukuran layar terbesar"
+        "memperbaiki responsive di layout MainContent khususnya di ukuran layar terbesar",
+        "sedang mengerjakan bagian middleware untuk menghandle routing halaman agar alurnya sesuai"
     ],
     "sqltools.connections": [
         {
