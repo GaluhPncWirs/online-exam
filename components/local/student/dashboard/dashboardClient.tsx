@@ -34,15 +34,15 @@ import {
 import HeaderDasboard from "../../forDasboard/content";
 import { DataUser } from "@/src/types/dataUser";
 
-type DataExamsStudent = {
+type DataDashboardStudent = {
   dataExams: ScheduleExams[];
   dataStudent: DataUser;
 };
 
-export default function DashboardClient({
+export default function DashboardClientStudent({
   dataExams,
   dataStudent,
-}: DataExamsStudent) {
+}: DataDashboardStudent) {
   const route = useRouter();
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<

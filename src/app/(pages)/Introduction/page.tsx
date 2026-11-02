@@ -27,6 +27,7 @@ import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 
 export default function Introduction() {
   const dataUser = useGetDataUser((state) => state.dataUser);
+  console.log(dataUser);
   return (
     <Homepage>
       <header className="relative flex items-center overflow-hidden">
@@ -74,9 +75,9 @@ export default function Introduction() {
               <div className="mt-8 flex gap-4 items-center">
                 <Link
                   href={
-                    dataUser?.role.includes("")
+                    dataUser?.role.includes("student")
                       ? "/Student/Dashboard"
-                      : dataUser?.role.includes("pengajar")
+                      : dataUser?.role.includes("teacher")
                         ? "/Teacher/dashboard"
                         : "/Auth/Login"
                   }

@@ -23,14 +23,15 @@ export default function ListSidebar() {
     setDataUser();
   }, []);
   const dataUser = useGetDataUser((state) => state.dataUser);
+
   const pathName = usePathname();
   return (
     <div className="flex flex-1 flex-col px-4 py-7">
       <Link
         href={
-          dataUser?.role.includes("siswa")
+          dataUser?.role.includes("student")
             ? "/Student/Dashboard"
-            : dataUser?.role.includes("guru")
+            : dataUser?.role.includes("teacher")
               ? "/Teacher/dashboard"
               : "/"
         }
@@ -50,9 +51,9 @@ export default function ListSidebar() {
         <div className="grid grid-cols-3 md:grid-cols-1 gap-3">
           <Link
             href={
-              dataUser?.role.includes("siswa")
+              dataUser?.role.includes("student")
                 ? "/Student/Dashboard"
-                : dataUser?.role.includes("guru")
+                : dataUser?.role.includes("teacher")
                   ? "/Teacher/dashboard"
                   : "/"
             }
@@ -71,9 +72,9 @@ export default function ListSidebar() {
 
           <Link
             href={
-              dataUser?.role.includes("siswa")
+              dataUser?.role.includes("student")
                 ? "/Student/Profile"
-                : dataUser?.role.includes("guru")
+                : dataUser?.role.includes("teacher")
                   ? "/Teacher/Profile"
                   : "/"
             }

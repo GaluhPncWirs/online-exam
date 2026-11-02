@@ -1,7 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { handleDecodeTokenJWT } from "@/src/services/mysql/student/data-student";
+import { handleDecodeTokenJWT } from "@/src/services/mysql/auth/login";
 
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();

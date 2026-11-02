@@ -1,4 +1,4 @@
-import DashboardClient from "@/components/local/student/dashboard/dashboardClient";
+import DashboardClientStudent from "@/components/local/student/dashboard/dashboardClient";
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
@@ -48,7 +48,7 @@ async function DashboardStudent() {
 
   return (
     <MainContent>
-      <DashboardClient
+      <DashboardClientStudent
         dataExams={dataExams.data as ScheduleExams[]}
         dataStudent={dataStudent.data as DataUser}
       />

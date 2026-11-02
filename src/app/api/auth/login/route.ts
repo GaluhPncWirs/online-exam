@@ -1,4 +1,4 @@
-import { handleUserLogin } from "@/src/services/mysql/student/data-student";
+import { handleUserLogin } from "@/src/services/mysql/auth/login";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {

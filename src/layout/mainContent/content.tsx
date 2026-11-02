@@ -1,11 +1,36 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import ListSidebar from "@/components/global/listSidebar/content";
+import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
+import { toast } from "sonner";
+import { useShallow } from "zustand/shallow";
+import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
+  const getDataUser = useGetDataUser((state) => state.setGetDataUsers);
+  const { isSuccess, message } = useGetDataUser(
+    useShallow((state) => ({
+      isSuccess: state.isSuccess,
+      message: state.message,
+    })),
+  );
+
+  useEffect(() => {
+    getDataUser();
+  }, []);
+
+  const dataUser = useGetDataUser((state) => state.dataUser);
+
+  if (!isSuccess) {
+    toast.error("Error", {
+      description: message,
+    });
+    return;
+  }
+
   return (
     <div>
-      {/* <DialogFormAddDataUser idUsers={idUsers} /> */}
+      {/* <DialogFormAddDataUser idUsers={dataUser.id_student} /> */}
       <div className="relative mx-auto flex max-w-7xl">
         {/* Sidebar */}
         <aside className="sticky top-0 z-40 hidden h-screen w-72 shrink-0 overflow-y-auto border-x border-slate-200 bg-white md:flex md:flex-col">

@@ -54,7 +54,8 @@
         "selesai memperbaiki middleware",
         "ada bug pada login akun selalu redirec ke halaman introduction karena salah nama cookie pada session login",
         "menghapus code dan file yang tidak perlu serta di bagian preview image di optimasi agar tidak terjadi memory leak",
-        "refaktor code bagian handle logout akun"
+        "refaktor code bagian handle logout akun",
+        "dengan ini sudah selesai untuk migrasi database dari supabase ke mysql khususnya di role siswa"
     ],
     "sqltools.connections": [
         {
