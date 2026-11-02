@@ -35,6 +35,13 @@ SELECT
 ALTER TABLE history_exams
   ADD CONSTRAINT uq_history_student_subject UNIQUE (id_subject, id_subject)
 
+SELECT he.created_at, he.id_student, he.id_subject, he.result_exam, he.status_exam, se.name_exam, se.type_exam, se.id_teacher
+FROM history_exams AS he
+INNER JOIN subject_exam AS se
+    ON he.id_subject = se.id_subject
+WHERE se.id_teacher = 'TCR-ar45dgU' AND he.result_exam = 'pending'
+ORDER BY he.created_at DESC
+
 INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES 
 ('HIS-uHnE3o', 'STD-aMClguF', 'SUB-rT6UeV', '{
   "EX-GEO16": "Energi surya",

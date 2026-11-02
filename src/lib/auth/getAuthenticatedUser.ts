@@ -1,4 +1,4 @@
-import { handleDecodeTokenJWT } from "@/src/services/mysql/student/data-student";
+import { handleDecodeTokenJWT } from "@/src/services/mysql/auth/login";
 import { cookies } from "next/headers";
 
 type AuthenticatedUser = {
