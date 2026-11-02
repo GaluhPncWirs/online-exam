@@ -47,8 +47,7 @@ async function getSession(req: NextRequest): Promise<Session | null> {
       role: typeof payload.role === "string" ? payload.role : undefined,
       idUser: typeof payload.idUser === "string" ? payload.idUser : undefined,
     };
-  } catch (error) {
-    console.error("[proxy] JWT verify gagal:", error);
+  } catch {
     return null;
   }
 }
@@ -110,7 +109,7 @@ function redirectBackToExam(req: NextRequest) {
     return redirectTo(req, `${ROUTES.startExam}/${examId}`);
   }
 
-  // Cookie tidak konsisten: reset agar tidak terjadi redirect loop
+  // Cookie tidak konsisten: direset agar tidak redirect loop
   const response = redirectTo(req, ROUTES.studentDashboard);
   response.cookies.delete(COOKIES.startExam);
   return response;

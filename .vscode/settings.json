@@ -51,7 +51,8 @@
         "memperbaiki masalah render data result exam yang tidak muncul karena salah deklarasi dai halaman riwayat ujian",
         "memperbaiki responsive di layout MainContent khususnya di ukuran layar terbesar",
         "sedang mengerjakan bagian middleware untuk menghandle routing halaman agar alurnya sesuai",
-        "selesai memperbaiki middleware"
+        "selesai memperbaiki middleware",
+        "ada bug pada login akun selalu redirec ke halaman introduction karena salah nama cookie pada session login"
     ],
     "sqltools.connections": [
         {

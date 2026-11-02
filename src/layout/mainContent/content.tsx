@@ -1,30 +1,8 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import ListSidebar from "@/components/global/listSidebar/content";
-import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
-import { toast } from "sonner";
-import { useShallow } from "zustand/shallow";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
-  const getDataUser = useGetDataUser((state) => state.setGetDataUsers);
-  const { isSuccess, message } = useGetDataUser(
-    useShallow((state) => ({
-      isSuccess: state.isSuccess,
-      message: state.message,
-    })),
-  );
-
-  useEffect(() => {
-    getDataUser();
-  }, []);
-
-  if (!isSuccess) {
-    toast.error("Error", {
-      description: message,
-    });
-    return;
-  }
-
   return (
     <div>
       {/* <DialogFormAddDataUser idUsers={idUsers} /> */}

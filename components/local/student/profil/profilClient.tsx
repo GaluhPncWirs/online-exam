@@ -24,7 +24,6 @@ import { Check, History, Trophy } from "lucide-react";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
-import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
 import { useForm } from "react-hook-form";
 import {
@@ -35,10 +34,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Loader from "@/components/global/loader/component";
 import { createPortal } from "react-dom";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
+import { DataUser } from "@/src/types/dataUser";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
   dataResultExam: ExamResult[];
+  dataStudent: DataUser;
 };
 
 type StudentScores = {
@@ -54,11 +55,10 @@ type ClassGroup = {
 export default function ProfilClient({
   dataExams,
   dataResultExam,
+  dataStudent,
 }: DataExamsStudent) {
-  const dataUser = useGetDataUser((state) => state.dataUser);
-
   const rankingClasses = () => {
-    if (!dataResultExam?.length || !dataUser?.class) {
+    if (!dataResultExam?.length || !dataStudent?.class) {
       return { ranking: 0, lenStudentPerClass: 0 };
     }
 
@@ -107,7 +107,7 @@ export default function ProfilClient({
 
     // Step 3: Calculate total scores for current class
     const currentClassData = groupedByClass.find(
-      (group) => group.class === dataUser.class,
+      (group) => group.class === dataStudent.class,
     );
 
     if (!currentClassData?.resultExam.length) {
@@ -138,7 +138,7 @@ export default function ProfilClient({
 
     // Step 6: Find current student's ranking
     const studentRanking = withRanking.find(
-      (item) => item.id_student === dataUser.id_student,
+      (item) => item.id_student === dataStudent.id_student,
     );
 
     return {
@@ -154,8 +154,8 @@ export default function ProfilClient({
   } = useForm<InputUpdateData>({
     resolver: zodResolver(inputUpdateDataSchema),
     defaultValues: {
-      name: dataUser?.fullname,
-      noTlp: dataUser?.no_tlp,
+      name: dataStudent?.fullname,
+      noTlp: dataStudent?.no_tlp,
       password: "",
     },
   });
@@ -178,7 +178,7 @@ export default function ProfilClient({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idStudent: dataUser?.id_student,
+          idStudent: dataStudent?.id_student,
           fieldInput: filteredPayload,
         }),
       });
@@ -217,16 +217,16 @@ export default function ProfilClient({
           {/* Identity */}
           <div className="flex-1 space-y-3">
             <h2 className="text-3xl font-extrabold capitalize">
-              {dataUser?.fullname || ""}
+              {dataStudent?.fullname || ""}
             </h2>
 
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
-                NIS. {dataUser?.nis || "-"}
+                NIS. {dataStudent?.nis || "-"}
               </span>
 
               <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
-                Kelas {dataUser?.class || "-"}
+                Kelas {dataStudent?.class || "-"}
               </span>
             </div>
           </div>

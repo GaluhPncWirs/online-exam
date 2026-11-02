@@ -8,6 +8,7 @@ import {
 } from "@/src/services/mysql/student/data-subject-exam";
 import ProfilClient from "@/components/local/student/profil/profilClient";
 import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
+import { DataUser } from "@/src/types/dataUser";
 
 export default function Loader() {
   return (
@@ -18,15 +19,15 @@ export default function Loader() {
 }
 
 async function Profil() {
-  const result = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser();
 
-  if (!result.success) {
-    return <h3>{result.message}</h3>;
+  if (!dataStudent.success) {
+    return <h3>{dataStudent.message}</h3>;
   }
 
   const dataExams = await handleGetDataSubjectExams(
-    result.data.class,
-    result.data.id_student,
+    dataStudent.data.class,
+    dataStudent.data.id_student,
   );
 
   if (!dataExams.success) {
@@ -34,7 +35,7 @@ async function Profil() {
   }
 
   const dataResultExam = await handleGetDataResultExamPerClass(
-    result.data.id_student,
+    dataStudent.data.id_student,
   );
 
   if (!dataResultExam.success) {
@@ -46,6 +47,7 @@ async function Profil() {
       <ProfilClient
         dataExams={dataExams.data as ScheduleExams[]}
         dataResultExam={dataResultExam.data as ExamResult[]}
+        dataStudent={dataStudent.data as DataUser}
       />
     </MainContent>
   );

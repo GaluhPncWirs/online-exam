@@ -14,7 +14,7 @@ import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { User2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function HeaderProfile({
   children,
@@ -31,6 +31,15 @@ export default function HeaderProfile({
       setPreviewImgProfil(URL.createObjectURL(file));
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (previewImgProfil?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewImgProfil);
+      }
+    };
+  }, [previewImgProfil]);
+
   return (
     <>
       {/* Profile */}

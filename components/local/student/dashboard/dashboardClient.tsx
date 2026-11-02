@@ -1,7 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 import {
   Table,
@@ -33,14 +32,18 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import HeaderDasboard from "../../forDasboard/content";
+import { DataUser } from "@/src/types/dataUser";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
+  dataStudent: DataUser;
 };
 
-export default function DashboardClient({ dataExams }: DataExamsStudent) {
+export default function DashboardClient({
+  dataExams,
+  dataStudent,
+}: DataExamsStudent) {
   const route = useRouter();
-  const dataUser = useGetDataUser((state) => state.dataUser);
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<
     Record<string, boolean>
@@ -75,7 +78,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
   const lateExams = useCallback(
     async (idUjian: string) => {
-      if (!dataUser?.id_student) return;
+      if (!dataStudent?.id_student) return;
 
       // Jika ujian sudah tersimpan, jangan panggil API lagi
       if (savedLateExamIds.current.has(idUjian)) return;
@@ -85,11 +88,11 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
 
       try {
         const payload = {
-          id_student: dataUser.id_student,
+          id_student: dataStudent.id_student,
           id_subject: idUjian,
           result_exam: "telat",
           status_exam: true,
-          className: dataUser.class,
+          className: dataStudent.class,
         };
 
         const request = await fetch("/api/student/lateExam", {
@@ -123,7 +126,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
         console.error(error);
       }
     },
-    [dataUser],
+    [dataStudent],
   );
 
   useEffect(() => {
@@ -172,7 +175,7 @@ export default function DashboardClient({ dataExams }: DataExamsStudent) {
     <div>
       <HeaderDasboard
         user="Siswa"
-        fullname={dataUser?.fullname ?? ""}
+        fullname={dataStudent?.fullname ?? ""}
         exams={dataExams}
       />
       <div className="space-y-8">
