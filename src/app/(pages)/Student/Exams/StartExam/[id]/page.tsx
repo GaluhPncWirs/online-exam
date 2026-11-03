@@ -27,7 +27,7 @@ async function StartExamPage({ params }: Props) {
     return <h3>{dataUser.message}</h3>;
   }
 
-  const dataExam = await handleGetExams(id, dataUser.data.class);
+  const dataExam = await handleGetExams(id, dataUser.data.class!);
 
   if (!dataExam.success) {
     return <h3>Error ambil data</h3>;

@@ -1,7 +1,7 @@
 import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
 
-export async function handleGetDataExams(id_teacher: string) {
+export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
         SELECT he.created_at, he.id_student, he.id_subject, he.result_exam, he.status_exam, se.name_exam, se.type_exam, se.id_teacher
         FROM history_exams AS he
@@ -29,7 +29,8 @@ export async function handleGetDataExams(id_teacher: string) {
       message: "Berhasil mengambil data user",
       data: rows,
     };
-  } catch {
+  } catch (error) {
+    console.error("Error handleGetDataResultExamsPending:", error);
     return {
       success: false,
       message: "Gagal mengambil data user",

@@ -23,12 +23,12 @@ import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { DataUser } from "@/src/types/dataUser";
 
 type DataDashboardTeacher = {
-  dataExams: any;
+  dataExamsPending: any;
   dataTeacher: DataUser;
 };
 
 export default function DashboardClientTeacher({
-  dataExams,
+  dataExamsPending,
   dataTeacher,
 }: DataDashboardTeacher) {
   const [dashboardButton, setDashboardButton] = useState({
@@ -37,6 +37,8 @@ export default function DashboardClientTeacher({
     viewResult: false,
     manageStudent: false,
   });
+
+  console.log(dataExamsPending);
 
   function handleClickItem(event: string) {
     setDashboardButton({
@@ -48,19 +50,18 @@ export default function DashboardClientTeacher({
   }
   const idTeacher = dataTeacher.id_student;
   const dataUser = useGetDataUser((state) => state.dataUser);
-  const pendingExamResults = usePendingExamResultsStudent(getidTeacher);
-  const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
-  const [page, setPage] = useState(1);
-  const { dataManageExams, totalData, isLoading, pageSize } =
-    useManageDataExams(getidTeacher, page);
-  const totalPages = Math.ceil(totalData / pageSize);
+  // const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
+  // const [page, setPage] = useState(1);
+  // const { dataManageExams, totalData, isLoading, pageSize } =
+  //   useManageDataExams(getidTeacher, page);
+  // const totalPages = Math.ceil(totalData / pageSize);
 
   return (
     <>
       <HeaderDasboard
         user="Pengajar"
         fullName={dataTeacher?.fullname ?? ""}
-        exams={pendingExamResults}
+        // exams={pendingExamResults}
       />
       <div className="space-y-8">
         {/* ================= SUMMARY ================= */}
@@ -114,7 +115,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {jumlahSiswa || 0}
+                    {/* {jumlahSiswa || 0} */}0
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -137,7 +138,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {Math.round(averageValueExam / jumlahSiswa) || 0}
+                    {/* {Math.round(averageValueExam / jumlahSiswa) || 0} */}0
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -227,7 +228,7 @@ export default function DashboardClientTeacher({
                     </TableRow>
                   </TableHeader>
 
-                  <TableBody>
+                  {/* <TableBody>
                     {isLoading ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-36 text-center">
@@ -305,24 +306,25 @@ export default function DashboardClientTeacher({
                         </TableCell>
                       </TableRow>
                     )}
-                  </TableBody>
+                  </TableBody> */}
                 </Table>
 
-                <PaginationUi
+                {/* <PaginationUi
                   currentPage={page}
                   totalPage={totalPages}
                   onPageChange={setPage}
                   isLoading={isLoading}
-                />
+                /> */}
               </div>
             </div>
-          ) : dashboardButton.createQuestions === true ? (
-            <CreateNewQuestions />
-          ) : dashboardButton.viewResult === true ? (
-            <ViewQuestions />
-          ) : dashboardButton.manageStudent === true ? (
-            <ManageStudent />
-          ) : null}
+          ) : // ) : dashboardButton.createQuestions === true ? (
+          //   <CreateNewQuestions />
+          // ) : dashboardButton.viewResult === true ? (
+          //   <ViewQuestions />
+          // ) : dashboardButton.manageStudent === true ? (
+          //   <ManageStudent />
+          // ) : null
+          null}
         </section>
       </div>
     </>

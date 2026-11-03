@@ -4,6 +4,7 @@ import { RowDataPacket } from "mysql2";
 import { handleGetDataUser } from "../student/data-student";
 import { pool } from "@/src/lib/db";
 import { connection } from "next/server";
+import { DataUser } from "@/src/types/dataUser";
 
 type PropsUserLogin = {
   role: "siswa" | "guru";

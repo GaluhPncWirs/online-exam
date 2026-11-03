@@ -4,6 +4,7 @@ import DashboardSkeletonTeacher from "@/components/local/teacher/dashboard/skele
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { DataUser } from "@/src/types/dataUser";
+import { handleGetDataResultExamsPending } from "@/src/services/mysql/teacher/data-teacher";
 
 export default function Loader() {
   return (
@@ -20,10 +21,18 @@ async function DashboardTeacher() {
     return <h3>{dataTeacher.message}</h3>;
   }
 
+  const dataResultExamPending = await handleGetDataResultExamsPending(
+    dataTeacher.data.id_teacher,
+  );
+
+  if (!dataResultExamPending.success) {
+    return <h3>{dataResultExamPending.message}</h3>;
+  }
+
   return (
     <MainContent>
       <DashboardClientTeacher
-        dataExams={}
+        dataExamsResultPending={dataResultExamPending.data}
         dataTeacher={dataTeacher.data as DataUser}
       />
     </MainContent>

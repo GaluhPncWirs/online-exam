@@ -78,7 +78,7 @@ export default function DashboardClientStudent({
 
   const lateExams = useCallback(
     async (idUjian: string) => {
-      if (!dataStudent?.id_student) return;
+      if (!dataStudent?.idUser) return;
 
       // Jika ujian sudah tersimpan, jangan panggil API lagi
       if (savedLateExamIds.current.has(idUjian)) return;
@@ -88,7 +88,7 @@ export default function DashboardClientStudent({
 
       try {
         const payload = {
-          id_student: dataStudent.id_student,
+          id_student: dataStudent.idUser,
           id_subject: idUjian,
           result_exam: "telat",
           status_exam: true,

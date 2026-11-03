@@ -27,7 +27,7 @@ async function ResultExamComponent({ params }: Props) {
   if (!result.success) {
     return <h3>{result.message}</h3>;
   }
-  const dataExam = await handleGetDataResultExam(id, result.data.id_student);
+  const dataExam = await handleGetDataResultExam(id, result.data.idUser);
 
   if (!dataExam.success) {
     return <h3>Error ambil data</h3>;

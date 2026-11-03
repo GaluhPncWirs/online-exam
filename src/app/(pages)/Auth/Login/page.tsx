@@ -55,7 +55,7 @@ export default function LoginAccount() {
       }
 
       if (dataLogin.tipe === "guru") {
-        push("/Teacher/dashboard");
+        push("/Teacher/Dashboard");
         toast.success("Berhasil", {
           description: dataLogin.message,
         });

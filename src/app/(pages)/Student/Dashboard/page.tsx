@@ -17,10 +17,23 @@ export default function Loader() {
 }
 
 async function DashboardStudent() {
-  const dataStudent = await getAuthenticatedUser();
+  const auth = await getAuthenticatedUser();
 
-  if (!dataStudent.success) {
-    return <h3>{dataStudent.message}</h3>;
+  if (!auth.success) {
+    return <h3>{auth.message}</h3>;
+  }
+
+  if (auth.data.role !== "student") {
+    return <h3>Halaman ini hanya untuk siswa</h3>;
+  }
+
+  const dataExams = await handleGetDataSubjectExams(
+    auth.data.class,
+    auth.data.id_student,
+  );
+
+  if (!dataExams.success) {
+    return <h3>Error mengambil data ujian</h3>;
   }
 
   // else{
@@ -37,20 +50,11 @@ async function DashboardStudent() {
   //   dataUser = session.user;
   // }
 
-  const dataExams = await handleGetDataSubjectExams(
-    dataStudent.data.class,
-    dataStudent.data.id_student,
-  );
-
-  if (!dataExams.success) {
-    return <h3>Error mengambil data ujian</h3>;
-  }
-
   return (
     <MainContent>
       <DashboardClientStudent
         dataExams={dataExams.data as ScheduleExams[]}
-        dataStudent={dataStudent.data as DataUser}
+        dataStudent={auth.data}
       />
     </MainContent>
   );

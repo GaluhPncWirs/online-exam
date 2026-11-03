@@ -56,7 +56,8 @@
         "menghapus code dan file yang tidak perlu serta di bagian preview image di optimasi agar tidak terjadi memory leak",
         "refaktor code bagian handle logout akun",
         "dengan ini sudah selesai untuk migrasi database dari supabase ke mysql khususnya di role siswa",
-        "memisahkan fungsi untuk autentikasi ke folder auth"
+        "memisahkan fungsi untuk autentikasi ke folder auth",
+        "sedang mengerjakan untuk mengambil data ujian di halaman dashboard teacher"
     ],
     "sqltools.connections": [
         {

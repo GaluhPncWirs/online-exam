@@ -26,8 +26,8 @@ async function Profil() {
   }
 
   const dataExams = await handleGetDataSubjectExams(
-    dataStudent.data.class,
-    dataStudent.data.id_student,
+    dataStudent.data.class!,
+    dataStudent.data.idUser,
   );
 
   if (!dataExams.success) {
@@ -35,7 +35,7 @@ async function Profil() {
   }
 
   const dataResultExam = await handleGetDataResultExamPerClass(
-    dataStudent.data.id_student,
+    dataStudent.data.idUser,
   );
 
   if (!dataResultExam.success) {

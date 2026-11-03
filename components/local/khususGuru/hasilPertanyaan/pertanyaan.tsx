@@ -1,3 +1,4 @@
+"use client";
 import PaginationUi from "@/components/global/pagination/content";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
