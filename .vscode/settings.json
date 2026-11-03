@@ -60,7 +60,8 @@
         "sedang mengerjakan untuk mengambil data ujian di halaman dashboard teacher",
         "lagi memperbaiki masalah pada pengambilan data di kedua user",
         "selesai memperbaiki fungsi untuk ambil data user dari token jwt",
-        "sedang mengerjakan untuk ambil berbagai data yang di butuhkan di halaman dashboard guru"
+        "sedang mengerjakan untuk ambil berbagai data yang di butuhkan di halaman dashboard guru",
+        "selesai membuat fungsi mengambil data ujian untuk halaman dashboard guru"
     ],
     "sqltools.connections": [
         {

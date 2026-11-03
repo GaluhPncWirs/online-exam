@@ -1,6 +1,5 @@
 import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
-import el from "zod/v4/locales/el.cjs";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -41,11 +40,82 @@ export async function handleGetDataResultExamsPending(id_teacher: string) {
   }
 }
 
-export async function handleGetStatisticsStudent() {
-  const query = `
-    SELECT class, 
+type ManagedClassRow = RowDataPacket & {
+  class: string;
+};
+
+type HistoryScoreRow = RowDataPacket & {
+  result_exam: string | number | null;
+};
+
+export async function handleGetStatisticsStudent(id_teacher: string) {
+  const queryManagedExams = `
+    SELECT DISTINCT class 
     FROM manage_exams
+    WHERE id_teacher = ?
   `;
+
+  const queryHistoryExams = `
+    SELECT he.result_exam
+    FROM history_exams AS he
+    INNER JOIN subject_exam as se
+      ON he.id_subject = se.id_subject
+    WHERE se.id_teacher = ?
+  `;
+
+  const queryStudent = `
+    SELECT DISTINCT id_student 
+    FROM account_students 
+    WHERE class IN (?)
+  `;
+
+  try {
+    const [[managedExams], [historyExams]] = await Promise.all([
+      pool.query<ManagedClassRow[]>(queryManagedExams, [id_teacher]),
+      pool.query<HistoryScoreRow[]>(queryHistoryExams, [id_teacher]),
+    ]);
+
+    const classes = managedExams.map((row) => row.class).filter(Boolean);
+
+    let jumlahSiswa = 0;
+
+    if (classes.length > 0) {
+      const [students] = await pool.query<StudentRow[]>(queryStudent, [
+        classes,
+      ]);
+      jumlahSiswa = students.length;
+    }
+
+    const examScores = historyExams
+      .map((item) => item.result_exam)
+      .filter(
+        (value) =>
+          value !== null &&
+          value !== "" &&
+          value !== "pending" &&
+          value !== "telat",
+      )
+      .map(Number)
+      .filter(Number.isFinite);
+
+    const averageValueExam =
+      examScores.length > 0
+        ? examScores.reduce((sum, val) => sum + val, 0) / examScores.length
+        : 0;
+
+    return {
+      success: true,
+      data: { jumlahSiswa, averageValueExam },
+    };
+  } catch (error) {
+    console.error("Error mengambil statistik:", error);
+
+    return {
+      success: false,
+      message: "Gagal mengambil statistik",
+      data: { jumlahSiswa: 0, averageValueExam: 0 },
+    };
+  }
 }
 
 type ManagedExamRow = RowDataPacket & {
@@ -110,26 +180,27 @@ export async function handleGetDataManageExams(
   const queryHistoryExams = `
     SELECT id_subject, id_student, class, result_exam
     FROM history_exams
-    WHERE id_subject IN ? AND class IN ?
+    WHERE id_subject IN (?) 
+      AND class IN (?)
   `;
 
   const queryStudent = `
     SELECT class, id_student 
     FROM account_students 
-    WHERE class IN ?
+    WHERE class IN (?)
   `;
 
   try {
     const [managedExams, countRows] = await Promise.all([
-      pool.execute<ManagedExamRow[]>(queryManageExams, [
+      queryRows<ManagedExamRow[]>(queryManageExams, [
         id_teacher,
         limit,
         offset,
       ]),
-      pool.execute<CountRow[]>(queryCountRows, [id_teacher]),
+      queryRows<CountRow[]>(queryCountRows, [id_teacher]),
     ]);
 
-    const total = Number(countRows[0]?.total ?? 0);
+    const total = Number(countRows?.[0]?.total ?? 0);
 
     if (!managedExams.length) {
       return { success: true, data: [], total };
