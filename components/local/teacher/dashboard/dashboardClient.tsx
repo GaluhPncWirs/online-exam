@@ -21,9 +21,10 @@ import { useManageDataExams } from "@/hooks/getManageDataExams";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { DataTeacher } from "@/src/types/dataUser";
+import { DataExamsPending } from "@/src/types/teacher/dataExam";
 
 type DataDashboardTeacher = {
-  dataExamsPending: any;
+  dataExamsPending: DataExamsPending[];
   dataTeacher: DataTeacher;
 };
 
@@ -38,8 +39,6 @@ export default function DashboardClientTeacher({
     manageStudent: false,
   });
 
-  console.log(dataExamsPending);
-
   function handleClickItem(event: string) {
     setDashboardButton({
       scheduleExams: event === "scheduleExams",
@@ -48,9 +47,9 @@ export default function DashboardClientTeacher({
       manageStudent: event === "manageStudent",
     });
   }
-  const idTeacher = dataTeacher.id_student;
-  const dataUser = useGetDataUser((state) => state.dataUser);
-  const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
+  // const idTeacher = dataTeacher.id_student;
+  // const dataUser = useGetDataUser((state) => state.dataUser);
+  // const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
   // const [page, setPage] = useState(1);
   // const { dataManageExams, totalData, isLoading, pageSize } =
   //   useManageDataExams(getidTeacher, page);
@@ -92,7 +91,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {dataManageExams.length || 0}
+                    {/* {dataManageExams.length || 0} */}0
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -228,7 +227,7 @@ export default function DashboardClientTeacher({
                     </TableRow>
                   </TableHeader>
 
-                  {/* <TableBody>
+                  <TableBody>
                     {isLoading ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-36 text-center">
@@ -306,7 +305,7 @@ export default function DashboardClientTeacher({
                         </TableCell>
                       </TableRow>
                     )}
-                  </TableBody> */}
+                  </TableBody>
                 </Table>
 
                 {/* <PaginationUi

@@ -18,6 +18,8 @@ SHOW CREATE TABLE account_students
 
 DESCRIBE account_students
 
+CREATE INDEX idx_account_student_classes ON account_students (class, id_student)
+
 INSERT INTO account_students (id_student, fullname, class, email, password, nis, no_tlp) VALUES 
 ('STD-aMClguF', 'Galuh panca wirasa', '3A', 'galuhpncwirs22@gmail.com', 'testPelajar123', '79704', '089782648264')
 

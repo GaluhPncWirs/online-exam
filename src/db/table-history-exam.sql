@@ -42,6 +42,8 @@ INNER JOIN subject_exam AS se
 WHERE se.id_teacher = 'TCR-ar45dgU' AND he.result_exam = 'pending'
 ORDER BY he.created_at DESC
 
+CREATE INDEX idx_history_subject_class_student ON history_exams (id_subject, class, id_student)
+
 INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES 
 ('HIS-uHnE3o', 'STD-aMClguF', 'SUB-rT6UeV', '{
   "EX-GEO16": "Energi surya",

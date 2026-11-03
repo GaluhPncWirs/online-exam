@@ -27,6 +27,8 @@ REFERENCES subject_exam(id_subject)
 
 ALTER TABLE manage_exams ADD COLUMN id_history_exam VARCHAR(10) NOT NULL
 
+CREATE INDEX idx_manage_exams_teacher_created ON manage_exams (id_teacher, created_at)
+
 ALTER TABLE manage_exams MODIFY COLUMN id_history_exam VARCHAR(10) NOT NULL AFTER id_subject
 
 ALTER TABLE manage_exams ADD CONSTRAINT fk_id_history_exam FOREIGN KEY(id_history_exam) REFERENCES history_exams (id_history_exam)
