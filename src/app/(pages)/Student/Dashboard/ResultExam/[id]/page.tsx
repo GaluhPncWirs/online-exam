@@ -21,13 +21,21 @@ export default function Loader({ params }: Props) {
 }
 
 async function ResultExamComponent({ params }: Props) {
-  const result = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser();
   const { id } = await params;
 
-  if (!result.success) {
-    return <h3>{result.message}</h3>;
+  if (!dataStudent.success) {
+    return <h3>{dataStudent.message}</h3>;
   }
-  const dataExam = await handleGetDataResultExam(id, result.data.idUser);
+
+  if (dataStudent.data.role !== "student") {
+    return <h3>Halaman ini hanya untuk siswa</h3>;
+  }
+
+  const dataExam = await handleGetDataResultExam(
+    id,
+    dataStudent.data.id_student,
+  );
 
   if (!dataExam.success) {
     return <h3>Error ambil data</h3>;

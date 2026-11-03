@@ -21,13 +21,17 @@ export default function Loader({ params }: Props) {
 
 async function StartExamPage({ params }: Props) {
   const { id } = await params;
-  const dataUser = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser();
 
-  if (!dataUser.success) {
-    return <h3>{dataUser.message}</h3>;
+  if (!dataStudent.success) {
+    return <h3>{dataStudent.message}</h3>;
   }
 
-  const dataExam = await handleGetExams(id, dataUser.data.class!);
+  if (dataStudent.data.role !== "student") {
+    return <h3>Halaman ini hanya untuk siswa</h3>;
+  }
+
+  const dataExam = await handleGetExams(id, dataStudent.data.class);
 
   if (!dataExam.success) {
     return <h3>Error ambil data</h3>;

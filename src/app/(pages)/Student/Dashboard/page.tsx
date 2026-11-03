@@ -3,7 +3,6 @@ import DashboardSkeletonStudent from "@/components/local/student/dashboard/skele
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
-import { DataUser } from "@/src/types/dataUser";
 
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { Suspense } from "react";
@@ -17,19 +16,19 @@ export default function Loader() {
 }
 
 async function DashboardStudent() {
-  const auth = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser();
 
-  if (!auth.success) {
-    return <h3>{auth.message}</h3>;
+  if (!dataStudent.success) {
+    return <h3>{dataStudent.message}</h3>;
   }
 
-  if (auth.data.role !== "student") {
+  if (dataStudent.data.role !== "student") {
     return <h3>Halaman ini hanya untuk siswa</h3>;
   }
 
   const dataExams = await handleGetDataSubjectExams(
-    auth.data.class,
-    auth.data.id_student,
+    dataStudent.data.class,
+    dataStudent.data.id_student,
   );
 
   if (!dataExams.success) {
@@ -54,7 +53,7 @@ async function DashboardStudent() {
     <MainContent>
       <DashboardClientStudent
         dataExams={dataExams.data as ScheduleExams[]}
-        dataStudent={auth.data}
+        dataStudent={dataStudent.data}
       />
     </MainContent>
   );

@@ -57,7 +57,8 @@
         "refaktor code bagian handle logout akun",
         "dengan ini sudah selesai untuk migrasi database dari supabase ke mysql khususnya di role siswa",
         "memisahkan fungsi untuk autentikasi ke folder auth",
-        "sedang mengerjakan untuk mengambil data ujian di halaman dashboard teacher"
+        "sedang mengerjakan untuk mengambil data ujian di halaman dashboard teacher",
+        "lagi memperbaiki masalah pada pengambilan data di kedua user"
     ],
     "sqltools.connections": [
         {

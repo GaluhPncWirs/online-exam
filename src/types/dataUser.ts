@@ -1,12 +1,12 @@
-export type DataUser = {
+export type BaseUser = {
   created_at: Date;
   fullname: string;
   email: string;
   no_tlp: string;
-  profil_img: string;
+  profil_img: string | null;
 };
 
-export type DataStudent = DataUser & {
+export type DataStudent = BaseUser & {
   role: "student";
   class: string;
   type_account: "default" | "google";
@@ -14,7 +14,7 @@ export type DataStudent = DataUser & {
   id_student: string;
 };
 
-export type DataTeacher = DataUser & {
+export type DataTeacher = BaseUser & {
   role: "teacher";
   teach_role: string;
   nisn: string;
