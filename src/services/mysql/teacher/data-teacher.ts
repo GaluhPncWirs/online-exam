@@ -17,23 +17,32 @@ export async function handleGetDataResultExamsPending(id_teacher: string) {
       "pending",
     ]);
 
-    if (rows.length === 0) {
-      return {
-        success: false,
-        message: "Data ujian tidak ditemukan",
-      };
-    }
+    // if (rows.length === 0) {
+    //   return {
+    //     success: false,
+    //     message: "Data ujian tidak ditemukan",
+    //   };
+    // }
 
     return {
       success: true,
-      message: "Berhasil mengambil data user",
+      message: rows.length
+        ? "Berhasil mengambil data ujian"
+        : "Belum ada ujian pending",
       data: rows,
     };
   } catch (error) {
     console.error("Error handleGetDataResultExamsPending:", error);
     return {
       success: false,
-      message: "Gagal mengambil data user",
+      message: "Gagal mengambil data guru",
     };
   }
+}
+
+export async function handleGetStatisticsStudent() {
+  const query = `
+    SELECT class, 
+    FROM manage_exams
+  `;
 }

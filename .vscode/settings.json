@@ -58,7 +58,8 @@
         "dengan ini sudah selesai untuk migrasi database dari supabase ke mysql khususnya di role siswa",
         "memisahkan fungsi untuk autentikasi ke folder auth",
         "sedang mengerjakan untuk mengambil data ujian di halaman dashboard teacher",
-        "lagi memperbaiki masalah pada pengambilan data di kedua user"
+        "lagi memperbaiki masalah pada pengambilan data di kedua user",
+        "selesai memperbaiki fungsi untuk ambil data user dari token jwt"
     ],
     "sqltools.connections": [
         {

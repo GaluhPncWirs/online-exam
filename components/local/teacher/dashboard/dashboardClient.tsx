@@ -20,11 +20,11 @@ import { useGetStatistics } from "@/hooks/getManageExamStatistik";
 import { useManageDataExams } from "@/hooks/getManageDataExams";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
-import { DataUser } from "@/src/types/dataUser";
+import { DataTeacher } from "@/src/types/dataUser";
 
 type DataDashboardTeacher = {
   dataExamsPending: any;
-  dataTeacher: DataUser;
+  dataTeacher: DataTeacher;
 };
 
 export default function DashboardClientTeacher({
@@ -50,7 +50,7 @@ export default function DashboardClientTeacher({
   }
   const idTeacher = dataTeacher.id_student;
   const dataUser = useGetDataUser((state) => state.dataUser);
-  // const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
+  const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
   // const [page, setPage] = useState(1);
   // const { dataManageExams, totalData, isLoading, pageSize } =
   //   useManageDataExams(getidTeacher, page);

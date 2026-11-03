@@ -3,7 +3,6 @@ import DashboardClientTeacher from "@/components/local/teacher/dashboard/dashboa
 import DashboardSkeletonTeacher from "@/components/local/teacher/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
-import { DataUser } from "@/src/types/dataUser";
 import { handleGetDataResultExamsPending } from "@/src/services/mysql/teacher/data-teacher";
 
 export default function Loader() {
@@ -21,6 +20,10 @@ async function DashboardTeacher() {
     return <h3>{dataTeacher.message}</h3>;
   }
 
+  if (dataTeacher.data.role !== "teacher") {
+    return <h3>Halaman ini hanya untuk guru</h3>;
+  }
+
   const dataResultExamPending = await handleGetDataResultExamsPending(
     dataTeacher.data.id_teacher,
   );
@@ -33,7 +36,7 @@ async function DashboardTeacher() {
     <MainContent>
       <DashboardClientTeacher
         dataExamsResultPending={dataResultExamPending.data}
-        dataTeacher={dataTeacher.data as DataUser}
+        dataTeacher={dataTeacher.data}
       />
     </MainContent>
   );
