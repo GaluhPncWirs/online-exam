@@ -2,12 +2,12 @@
 import Image from "next/image";
 import HeaderDashboard from "../headerDashboard/content";
 import { usePathname } from "next/navigation";
-import { ScheduleExams } from "@/src/types/student/dataExams";
+import { DataExamsPending } from "@/src/types/teacher/dataExam";
 
 type propsHeaderDahboard = {
   user: string;
   fullname: string;
-  exams?: ScheduleExams[];
+  exams?: DataExamsPending[];
 };
 
 export default function HeaderDasboard(props: propsHeaderDahboard) {
@@ -18,7 +18,7 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
     const examList = Array.isArray(exams) ? exams : [];
 
     if (pathName === "/Student/Dashboard") {
-      const filterSisaUjian = examList.filter((done) => done.status_exam !== 1);
+      const filterSisaUjian = examList.filter((done) => !done.status_exam);
 
       return (
         <HeaderDashboard

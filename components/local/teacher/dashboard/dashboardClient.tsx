@@ -45,6 +45,12 @@ export default function DashboardClientTeacher({
   const [totalData, setTotalData] = useState(0);
   const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
 
+  const formatExamDate = (value: string | Date | null | undefined) => {
+    if (!value) return "-";
+
+    return formatDateToYYYYMMDD(new Date(value));
+  };
+
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
 
   function handleClickItem(event: string) {
@@ -90,8 +96,8 @@ export default function DashboardClientTeacher({
     <>
       <HeaderDasboard
         user="Pengajar"
-        fullName={dataTeacher.fullname ?? ""}
-        // exams={dataManageExams}
+        fullname={dataTeacher.fullname ?? ""}
+        exams={dataExamsPending}
       />
       <div className="space-y-8">
         {/* ================= SUMMARY ================= */}
@@ -268,8 +274,8 @@ export default function DashboardClientTeacher({
                     ) : dataManageExams.length > 0 ? (
                       dataManageExams.map((item, i: number) => {
                         const examStatus = getExamStatus(
-                          item.deadline_exam,
-                          item.created_at,
+                          new Date(item.deadline_exam),
+                          new Date(item.created_at),
                         );
 
                         const totalStudents = item.lengthStudent?.length ?? 0;
@@ -302,8 +308,8 @@ export default function DashboardClientTeacher({
                             </TableCell>
 
                             <TableCell className="text-sm text-slate-500">
-                              {formatDateToYYYYMMDD(item.created_at)}{" "}
-                              {formatDateToYYYYMMDD(item.deadline_exam)}
+                              {formatExamDate(item.created_at)}{" "}
+                              {formatExamDate(item.deadline_exam)}
                             </TableCell>
 
                             <TableCell>

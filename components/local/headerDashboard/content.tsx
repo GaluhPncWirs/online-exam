@@ -1,13 +1,11 @@
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
-import { ScheduleExams } from "@/src/types/student/dataExams";
+import { DataExamsPending } from "@/src/types/teacher/dataExam";
 import { Bell } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 
 type PropsHeaderDashboard = {
-  remainder: ScheduleExams[] | string[];
+  remainder: DataExamsPending[];
   isLocationPage: string;
 };
 
