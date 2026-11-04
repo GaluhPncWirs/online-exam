@@ -1,6 +1,9 @@
 "server-only";
 import { pool } from "@/src/lib/db";
+import { TypeExamQuestions } from "@/src/types/dataExam";
 import { RowDataPacket } from "mysql2";
+import { randomUUID } from "crypto";
+import { ExamSchema } from "@/src/schemas/addDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -303,6 +306,77 @@ export async function handleGetDataExam(id_teacher: string) {
     return {
       success: false,
       message: "Gagal mengambil data ujian",
+    };
+  }
+}
+
+type PayloadDataExam = {
+  id_teacher: string;
+  exam_questions: TypeExamQuestions;
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
+};
+
+export async function handleAddDataExam({
+  id_teacher,
+  name_exam,
+  type_exam,
+  exam_questions,
+}: PayloadDataExam) {
+  const parsed = ExamSchema.safeParse({
+    id_teacher,
+    name_exam,
+    type_exam,
+    exam_questions,
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      status: 400,
+      message: "Data ujian tidak valid.",
+    };
+  }
+
+  const query = `
+    INSERT INTO subject_exam (id_subject, id_teacher, exam_questions, name_exam, type_exam)
+    VALUES (?,?,?,?,?)
+  `;
+  const idSubject = `SUB-${randomUUID()}`;
+
+  try {
+    await pool.execute(query, [
+      idSubject,
+      parsed.data.id_teacher,
+      JSON.stringify(parsed.data.exam_questions),
+      parsed.data.name_exam,
+      parsed.data.type_exam,
+    ]);
+
+    return {
+      success: true,
+      status: 201,
+      message: "Berhasil membuat soal ujian baru.",
+      data: { id_subject: idSubject },
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    if (error?.code === "ER_DUP_ENTRY") {
+      return { success: false, status: 409, message: "Soal ujian sudah ada." };
+    }
+    if (error?.code === "ER_NO_REFERENCED_ROW_2") {
+      return {
+        success: false,
+        status: 400,
+        message: "Data guru tidak ditemukan.",
+      };
+    }
+
+    console.error("Gagal membuat soal", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Terjadi kesalahan pada server.",
     };
   }
 }

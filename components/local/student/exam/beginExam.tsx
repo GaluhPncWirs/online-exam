@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Flag, List, Timer, X } from "lucide-react";
-import { Exam, TypeExamQuestions } from "@/src/types/student/dataExams";
+import { Exam } from "@/src/types/student/dataExams";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   clearExamStorage,
@@ -34,6 +34,7 @@ import {
   shuffle,
   writeStorage,
 } from "@/src/lib/utils/dataAnswerExam";
+import { TypeExamQuestions } from "@/src/types/dataExam";
 
 type BeginExamProps = {
   dataExam: Exam;

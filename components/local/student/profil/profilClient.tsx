@@ -34,12 +34,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Loader from "@/components/global/loader/component";
 import { createPortal } from "react-dom";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
-import { DataUser } from "@/src/types/dataUser";
+import { DataStudent } from "@/src/types/dataUser";
 
 type DataExamsStudent = {
   dataExams: ScheduleExams[];
   dataResultExam: ExamResult[];
-  dataStudent: DataUser;
+  dataStudent: DataStudent;
 };
 
 type StudentScores = {

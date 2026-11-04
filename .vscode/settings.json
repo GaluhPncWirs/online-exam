@@ -66,7 +66,8 @@
         "berhasil menghubungkan data ujian ke bagian frontend di halaman dashboard guru",
         "selesai menghubungkan fungsi dataStatisticsStudent ke frontend untuk menampilkan data statistik siswa",
         "selesai untuk merefaktor code di halaman dashboard guru",
-        "lagi mengerjakan halaman bagian buat soal ujian"
+        "lagi mengerjakan halaman bagian buat soal ujian",
+        "memperbaiki bug pada sesi login selesai selalu mengarah ke halaman introduction, karena data role yang dari response api tidak ada"
     ],
     "sqltools.connections": [
         {

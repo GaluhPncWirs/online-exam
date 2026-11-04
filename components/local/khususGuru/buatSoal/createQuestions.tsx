@@ -55,13 +55,13 @@ export default function CreateNewQuestions() {
 
       // pilihan ganda
       pilihanGanda: {
-        answer_a: "",
-        answer_b: "",
-        answer_c: "",
-        answer_d: "",
-        answer_e: "",
+        choice_a: "",
+        choice_b: "",
+        choice_c: "",
+        choice_d: "",
+        choice_e: "",
       },
-      jawabanYangBenar: "",
+      correctAnswer: "",
     },
   });
 
@@ -99,17 +99,14 @@ export default function CreateNewQuestions() {
 
   const selectedValueNameExam = watch("namaUjian");
 
-  const answer: Record<
-    "answer_a" | "answer_b" | "answer_c" | "answer_d" | "answer_e",
-    string
-  > = {
-    answer_a: watch("pilihanGanda.answer_a") ?? "",
-    answer_b: watch("pilihanGanda.answer_b") ?? "",
-    answer_c: watch("pilihanGanda.answer_c") ?? "",
-    answer_d: watch("pilihanGanda.answer_d") ?? "",
-    answer_e: watch("pilihanGanda.answer_e") ?? "",
+  const answer = {
+    choice_a: watch("pilihanGanda.choice_a") ?? "",
+    choice_b: watch("pilihanGanda.choice_b") ?? "",
+    choice_c: watch("pilihanGanda.choice_c") ?? "",
+    choice_d: watch("pilihanGanda.choice_d") ?? "",
+    choice_e: watch("pilihanGanda.choice_e") ?? "",
   };
-  const selectCorrectAnswer = watch("jawabanYangBenar");
+  const selectCorrectAnswer = watch("correctAnswer");
 
   async function onSubmit(dataNewExam: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
@@ -155,7 +152,7 @@ export default function CreateNewQuestions() {
     //           id: useRandomId(7, "EX"),
     //           questions: dataNewExam.pertanyaan,
     //           answerPg: dataNewExam.pilihanGanda,
-    //           correctAnswer: dataNewExam.jawabanYangBenar,
+    //           correctAnswer: dataNewExam.correctAnswer,
     //         }
     //       : {
     //           id: useRandomId(7, "EX"),
@@ -228,7 +225,7 @@ export default function CreateNewQuestions() {
     //         id: useRandomId(7, "EX"),
     //         questions: dataNewExam.pertanyaan,
     //         answerPg: dataNewExam.pilihanGanda,
-    //         correctAnswer: dataNewExam.jawabanYangBenar,
+    //         correctAnswer: dataNewExam.correctAnswer,
     //       }
     //     : {
     //         id: useRandomId(7, "EX"),
@@ -479,11 +476,11 @@ export default function CreateNewQuestions() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {examOptions.map((option: ExamOption) => {
-                  const answerKey = `answer_${option}` as keyof typeof answer;
-                  const optionField = `pilihanGanda.answer_${option}` as const;
+                  const answerKey = `choice_${option}` as keyof typeof answer;
+                  const optionField = `pilihanGanda.choice_${option}` as const;
                   const optionError =
                     errors.pilihanGanda?.[
-                      `answer_${option}` as keyof NonNullable<
+                      `choice_${option}` as keyof NonNullable<
                         typeof errors.pilihanGanda
                       >
                     ];
@@ -535,7 +532,7 @@ export default function CreateNewQuestions() {
 
                 <Controller
                   control={control}
-                  name="jawabanYangBenar"
+                  name="correctAnswer"
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
@@ -548,7 +545,7 @@ export default function CreateNewQuestions() {
                       <SelectContent className="rounded-xl bg-white">
                         {examOptions.map((option: ExamOption) => {
                           const answerKey =
-                            `answer_${option}` as keyof typeof answer;
+                            `choice_${option}` as keyof typeof answer;
 
                           return (
                             <SelectItem key={option} value={option}>
@@ -564,9 +561,9 @@ export default function CreateNewQuestions() {
                     </Select>
                   )}
                 />
-                {errors.jawabanYangBenar && (
+                {errors.correctAnswer && (
                   <p className="text-red-500 text-xs mt-0.5">
-                    {errors.jawabanYangBenar?.message}
+                    {errors.correctAnswer?.message}
                   </p>
                 )}
               </div>
@@ -616,7 +613,7 @@ export default function CreateNewQuestions() {
                       <div className="space-y-2">
                         {examOptions.map((option) => {
                           const answerKey =
-                            `answer_${option}` as keyof typeof answer;
+                            `choice_${option}` as keyof typeof answer;
 
                           return (
                             <div

@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const ExamSchema = z.object({
+  id_teacher: z.string().min(1).max(50),
+  name_exam: z.string().trim().min(3).max(150),
+  type_exam: z.enum(["PG", "ESSAY"]),
+  exam_questions: z.array(z.unknown()).min(1).max(200),
+});
+
 export const createExamSchema = z
   .object({
     typeUjian: z.enum(["PG", "ESSAY"], {
@@ -18,15 +25,15 @@ export const createExamSchema = z
 
     pilihanGanda: z
       .object({
-        answer_a: z.string(),
-        answer_b: z.string(),
-        answer_c: z.string(),
-        answer_d: z.string(),
-        answer_e: z.string(),
+        choice_a: z.string(),
+        choice_b: z.string(),
+        choice_c: z.string(),
+        choice_d: z.string(),
+        choice_e: z.string(),
       })
       .optional(),
 
-    jawabanYangBenar: z.string().optional(),
+    correctAnswer: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (
@@ -59,11 +66,11 @@ export const createExamSchema = z
         });
       } else {
         const opsi = [
-          ["answer_a", pilihan.answer_a],
-          ["answer_b", pilihan.answer_b],
-          ["answer_c", pilihan.answer_c],
-          ["answer_d", pilihan.answer_d],
-          ["answer_e", pilihan.answer_e],
+          ["choice_a", pilihan.choice_a],
+          ["choice_b", pilihan.choice_b],
+          ["choice_c", pilihan.choice_c],
+          ["choice_d", pilihan.choice_d],
+          ["choice_e", pilihan.choice_e],
         ] as const;
 
         opsi.forEach(([field, value]) => {
@@ -77,10 +84,10 @@ export const createExamSchema = z
         });
       }
 
-      if (!data.jawabanYangBenar || data.jawabanYangBenar.trim() === "") {
+      if (!data.correctAnswer || data.correctAnswer.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["jawabanYangBenar"],
+          path: ["correctAnswer"],
           message: "Pilih jawaban yang benar",
         });
       }
