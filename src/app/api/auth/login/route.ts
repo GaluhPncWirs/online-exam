@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       success: true,
       status: userLogin.status,
       tipe: userLogin.data?.type_account,
+      role: userLogin.role,
       message: userLogin.message,
     });
 

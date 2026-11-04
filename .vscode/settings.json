@@ -65,7 +65,8 @@
         "selesai membuat fungsi untuk mengambil data statistik siswa",
         "berhasil menghubungkan data ujian ke bagian frontend di halaman dashboard guru",
         "selesai menghubungkan fungsi dataStatisticsStudent ke frontend untuk menampilkan data statistik siswa",
-        "selesai untuk merefaktor code di halaman dashboard guru"
+        "selesai untuk merefaktor code di halaman dashboard guru",
+        "lagi mengerjakan halaman bagian buat soal ujian"
     ],
     "sqltools.connections": [
         {

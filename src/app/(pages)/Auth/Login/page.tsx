@@ -54,7 +54,7 @@ export default function LoginAccount() {
         return;
       }
 
-      if (dataLogin.tipe === "guru") {
+      if (dataLogin.role === "guru") {
         push("/Teacher/Dashboard");
         toast.success("Berhasil", {
           description: dataLogin.message,
@@ -62,7 +62,7 @@ export default function LoginAccount() {
         return;
       }
 
-      push("/Student/Dashboard");
+      // push("/Student/Dashboard");
       toast.success("Berhasil", {
         description: dataLogin.message,
       });
@@ -75,7 +75,7 @@ export default function LoginAccount() {
   }
 
   return (
-    <FormAuth formTitle={"Login"}>
+    <FormAuth formTitle="Login">
       {/* Form */}
       <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
         {/* Account Type */}

@@ -4,7 +4,6 @@ import { RowDataPacket } from "mysql2";
 import { handleGetDataUser } from "../student/data-student";
 import { pool } from "@/src/lib/db";
 import { connection } from "next/server";
-import { DataUser } from "@/src/types/dataUser";
 
 type PropsUserLogin = {
   role: "siswa" | "guru";
@@ -22,6 +21,7 @@ type ResultUserLogin = {
   success: boolean;
   message: string;
   status: number;
+  role: "siswa" | "guru" | undefined;
   data?: UserLoginRow;
   token?: string;
 };
@@ -58,6 +58,7 @@ export async function handleUserLogin({
         success: false,
         status: 401,
         message: "Email atau password salah",
+        role: undefined,
       };
     }
 
@@ -68,6 +69,7 @@ export async function handleUserLogin({
         success: false,
         status: 401,
         message: "Data akun tidak valid",
+        role: undefined,
       };
     }
 
@@ -86,6 +88,7 @@ export async function handleUserLogin({
       status: 200,
       message: "Berhasil masuk, Selamat datang kembali",
       data: user,
+      role,
       token: tokenJWT,
     };
   } catch (error) {
@@ -94,6 +97,7 @@ export async function handleUserLogin({
       success: false,
       status: 500,
       message: "Error terhubung kedalam database",
+      role: undefined,
     };
   }
 }
