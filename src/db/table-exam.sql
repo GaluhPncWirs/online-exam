@@ -28,6 +28,8 @@ ADD CONSTRAINT fk_subject_exam
 FOREIGN KEY (id_teacher)
 REFERENCES account_teacher(id_teacher)
 
+ALTER TABLE subject_exam ADD UNIQUE KEY uq_teacher_exam (id_teacher, name_exam)
+
 ALTER TABLE subject_exam ADD CONSTRAINT 
 
 INSERT INTO subject_exam(id_subject, id_teacher, exam_questions, name_exam, type_exam) VALUES 

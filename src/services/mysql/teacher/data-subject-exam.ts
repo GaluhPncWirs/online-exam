@@ -1,7 +1,7 @@
 "server-only";
 import { pool } from "@/src/lib/db";
 import { TypeExamQuestions } from "@/src/types/dataExam";
-import { RowDataPacket } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { randomUUID } from "crypto";
 import { ExamSchema } from "@/src/schemas/addDataExam";
 
@@ -341,17 +341,28 @@ export async function handleAddDataExam({
   const query = `
     INSERT INTO subject_exam (id_subject, id_teacher, exam_questions, name_exam, type_exam)
     VALUES (?,?,?,?,?)
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT 1 FROM subject_exam
+      WHERE id_teacher = ? AND name_exam = ?
+    )
   `;
   const idSubject = `SUB-${randomUUID()}`;
 
   try {
-    await pool.execute(query, [
+    const [result] = await pool.execute<ResultSetHeader>(query, [
       idSubject,
       parsed.data.id_teacher,
       JSON.stringify(parsed.data.exam_questions),
       parsed.data.name_exam,
       parsed.data.type_exam,
+      id_teacher,
+      name_exam,
     ]);
+
+    if (result.affectedRows === 0) {
+      return { success: false, status: 409, message: "Soal ujian sudah ada." };
+    }
 
     return {
       success: true,
