@@ -9,10 +9,12 @@ export type Choice = {
 export type ExamQuestions = {
   id: string;
   questions: string;
-  correctAnswer: string;
 };
 
-export type MultipleChoice = ExamQuestions & { multipleChoice: Choice[] };
+export type MultipleChoice = ExamQuestions & {
+  multipleChoice: Choice[];
+  correctAnswer: string;
+};
 export type Essay = ExamQuestions;
 
 export type TypeExamQuestions = MultipleChoice[] | Essay[];

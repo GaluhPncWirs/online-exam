@@ -356,7 +356,7 @@ export default function DashboardClientTeacher({
               </div>
             </div>
           ) : dashboardButton.createQuestions === true ? (
-            <CreateNewQuestions />
+            <CreateNewQuestions dataTeacher={dataTeacher} />
           ) : // ) : dashboardButton.viewResult === true ? (
           //   <ViewQuestions />
           // ) : dashboardButton.manageStudent === true ? (

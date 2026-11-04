@@ -26,6 +26,7 @@ import {
   CreateExamSchemaType,
 } from "@/src/schemas/addDataExam";
 import { getDataExam } from "@/src/actions/dataExams";
+import { DataTeacher } from "@/src/types/dataUser";
 
 const examOptions = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof examOptions)[number];
@@ -35,7 +36,13 @@ type ConfigExam = {
   type_exam: "PG" | "ESSAY";
 };
 
-export default function CreateNewQuestions() {
+type CreateNewQuestionsProps = {
+  dataTeacher: DataTeacher;
+};
+
+export default function CreateNewQuestions({
+  dataTeacher,
+}: CreateNewQuestionsProps) {
   const [openDialog, setOpenDialog] = useState(false);
   const [dataExam, setDataExam] = useState<ConfigExam[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,170 +115,138 @@ export default function CreateNewQuestions() {
   };
   const selectCorrectAnswer = watch("correctAnswer");
 
-  async function onSubmit(dataNewExam: CreateExamSchemaType) {
+  async function onSubmit(data: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
     const isMultipleChoice = isTypeExam === "PG";
 
-    // try {
-    //   // =========================================================
-    //   // 1. Jika membuat ujian baru, cek nama ujian terlebih dahulu
-    //   // =========================================================
+    try {
+      if (isNewExam) {
+        const payload = {
+          type_exam: data.typeUjian,
+          id_teacher: dataTeacher.id_teacher,
+          name_exam: data.namaUjian,
+          // exam_questions : data.,
+        };
 
-    //   if (isNewExam) {
-    //     const { data: existingExam, error: checkError } = await supabase
-    //       .from("exams")
-    //       .select("id")
-    //       .eq("nama_ujian", dataNewExam.namaUjianBaru)
-    //       .eq("idTeacher", idTeacher)
-    //       .maybeSingle();
+        const req = await fetch("/api/teacher/addDataExam", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-    //     if (checkError) {
-    //       console.error("Check exam error:", checkError);
+        // const { error: insertError } = await supabase.from("exams").insert({
+        //   created_at_exams: new Date().toISOString(),
+        //   nama_ujian: dataNewExam.namaUjianBaru,
+        //   questions_exam: [question],
+        //   idTeacher,
+        //   tipeUjian: dataNewExam.typeUjian,
+        // });
 
-    //       toast("Gagal ❌", {
-    //         description: "Gagal memeriksa nama ujian.",
-    //       });
+        // if (insertError) {
+        //   console.error("Insert exam error:", insertError);
 
-    //       return;
-    //     }
+        //   toast("Gagal ❌", {
+        //     description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
+        //   });
 
-    //     if (existingExam) {
-    //       toast("Gagal ❌", {
-    //         description: "Nama ujian tersebut sudah pernah dibuat.",
-    //       });
+        //   return;
+        // }
 
-    //       return;
-    //     }
+        // toast("Berhasil ✅", {
+        //   description: isMultipleChoice
+        //     ? "Soal pilihan ganda berhasil ditambahkan."
+        //     : "Soal essay berhasil ditambahkan.",
+        // });
 
-    //     // =======================================================
-    //     // 2. Buat question pertama
-    //     // =======================================================
+        // setOpenDialog(false);
+        // return;
+      }
 
-    //     const question = isMultipleChoice
-    //       ? {
-    //           id: useRandomId(7, "EX"),
-    //           questions: dataNewExam.pertanyaan,
-    //           answerPg: dataNewExam.pilihanGanda,
-    //           correctAnswer: dataNewExam.correctAnswer,
-    //         }
-    //       : {
-    //           id: useRandomId(7, "EX"),
-    //           questions: dataNewExam.pertanyaan,
-    //         };
+      // =========================================================
+      // 3. Tambahkan soal ke ujian yang sudah ada
+      // =========================================================
 
-    //     const { error: insertError } = await supabase.from("exams").insert({
-    //       created_at_exams: new Date().toISOString(),
-    //       nama_ujian: dataNewExam.namaUjianBaru,
-    //       questions_exam: [question],
-    //       idTeacher,
-    //       tipeUjian: dataNewExam.typeUjian,
-    //     });
+      // const { data: exam, error: examError } = await supabase
+      //   .from("exams")
+      //   .select("id, questions_exam, idTeacher")
+      //   .eq("nama_ujian", selectedValueNameExam)
+      //   .eq("idTeacher", idTeacher)
+      //   .maybeSingle();
 
-    //     if (insertError) {
-    //       console.error("Insert exam error:", insertError);
+      // if (examError) {
+      //   console.error("Get exam error:", examError);
 
-    //       toast("Gagal ❌", {
-    //         description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
-    //       });
+      //   toast("Gagal ❌", {
+      //     description: "Gagal mengambil data ujian.",
+      //   });
 
-    //       return;
-    //     }
+      //   return;
+      // }
 
-    //     toast("Berhasil ✅", {
-    //       description: isMultipleChoice
-    //         ? "Soal pilihan ganda berhasil ditambahkan."
-    //         : "Soal essay berhasil ditambahkan.",
-    //     });
+      // if (!exam) {
+      //   toast("Gagal ❌", {
+      //     description: "Ujian tidak ditemukan.",
+      //   });
 
-    //     setOpenDialog(false);
-    //     return;
-    //   }
+      //   return;
+      // }
 
-    //   // =========================================================
-    //   // 3. Tambahkan soal ke ujian yang sudah ada
-    //   // =========================================================
+      // // =========================================================
+      // // 4. Buat question baru
+      // // =========================================================
 
-    //   const { data: exam, error: examError } = await supabase
-    //     .from("exams")
-    //     .select("id, questions_exam, idTeacher")
-    //     .eq("nama_ujian", selectedValueNameExam)
-    //     .eq("idTeacher", idTeacher)
-    //     .maybeSingle();
+      // const newQuestion = isMultipleChoice
+      //   ? {
+      //       id: useRandomId(7, "EX"),
+      //       questions: dataNewExam.pertanyaan,
+      //       answerPg: dataNewExam.pilihanGanda,
+      //       correctAnswer: dataNewExam.correctAnswer,
+      //     }
+      //   : {
+      //       id: useRandomId(7, "EX"),
+      //       questions: dataNewExam.pertanyaan,
+      //     };
 
-    //   if (examError) {
-    //     console.error("Get exam error:", examError);
+      // const currentQuestions = Array.isArray(exam.questions_exam)
+      //   ? exam.questions_exam
+      //   : [];
 
-    //     toast("Gagal ❌", {
-    //       description: "Gagal mengambil data ujian.",
-    //     });
+      // const updatedQuestions = [...currentQuestions, newQuestion];
 
-    //     return;
-    //   }
+      // // =========================================================
+      // // 5. Update questions
+      // // =========================================================
 
-    //   if (!exam) {
-    //     toast("Gagal ❌", {
-    //       description: "Ujian tidak ditemukan.",
-    //     });
+      // const { error: updateError } = await supabase
+      //   .from("exams")
+      //   .update({
+      //     questions_exam: updatedQuestions,
+      //   })
+      //   .eq("id", exam.id)
+      //   .eq("idTeacher", idTeacher);
 
-    //     return;
-    //   }
+      // if (updateError) {
+      //   console.error("Update exam error:", updateError);
 
-    //   // =========================================================
-    //   // 4. Buat question baru
-    //   // =========================================================
+      //   toast("Gagal ❌", {
+      //     description: "Soal gagal ditambahkan. Periksa kembali data soal.",
+      //   });
 
-    //   const newQuestion = isMultipleChoice
-    //     ? {
-    //         id: useRandomId(7, "EX"),
-    //         questions: dataNewExam.pertanyaan,
-    //         answerPg: dataNewExam.pilihanGanda,
-    //         correctAnswer: dataNewExam.correctAnswer,
-    //       }
-    //     : {
-    //         id: useRandomId(7, "EX"),
-    //         questions: dataNewExam.pertanyaan,
-    //       };
+      //   return;
+      // }
 
-    //   const currentQuestions = Array.isArray(exam.questions_exam)
-    //     ? exam.questions_exam
-    //     : [];
+      // toast("Berhasil ✅", {
+      //   description: "Soal berhasil ditambahkan.",
+      // });
 
-    //   const updatedQuestions = [...currentQuestions, newQuestion];
+      // setOpenDialog(false);
+    } catch (error) {
+      console.error("Unexpected error:", error);
 
-    //   // =========================================================
-    //   // 5. Update questions
-    //   // =========================================================
-
-    //   const { error: updateError } = await supabase
-    //     .from("exams")
-    //     .update({
-    //       questions_exam: updatedQuestions,
-    //     })
-    //     .eq("id", exam.id)
-    //     .eq("idTeacher", idTeacher);
-
-    //   if (updateError) {
-    //     console.error("Update exam error:", updateError);
-
-    //     toast("Gagal ❌", {
-    //       description: "Soal gagal ditambahkan. Periksa kembali data soal.",
-    //     });
-
-    //     return;
-    //   }
-
-    //   toast("Berhasil ✅", {
-    //     description: "Soal berhasil ditambahkan.",
-    //   });
-
-    //   setOpenDialog(false);
-    // } catch (error) {
-    //   console.error("Unexpected error:", error);
-
-    //   toast("Gagal ❌", {
-    //     description: "Terjadi kesalahan. Silakan coba lagi.",
-    //   });
-    // }
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
   }
 
   return (

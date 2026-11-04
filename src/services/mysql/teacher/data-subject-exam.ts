@@ -311,16 +311,16 @@ export async function handleGetDataExam(id_teacher: string) {
 }
 
 type PayloadDataExam = {
+  type_exam: "PG" | "ESSAY";
   id_teacher: string;
   exam_questions: TypeExamQuestions;
   name_exam: string;
-  type_exam: "PG" | "ESSAY";
 };
 
 export async function handleAddDataExam({
+  type_exam,
   id_teacher,
   name_exam,
-  type_exam,
   exam_questions,
 }: PayloadDataExam) {
   const parsed = ExamSchema.safeParse({
