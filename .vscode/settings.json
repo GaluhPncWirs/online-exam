@@ -62,7 +62,8 @@
         "selesai memperbaiki fungsi untuk ambil data user dari token jwt",
         "sedang mengerjakan untuk ambil berbagai data yang di butuhkan di halaman dashboard guru",
         "selesai membuat fungsi mengambil data ujian untuk halaman dashboard guru",
-        "selesai membuat fungsi untuk mengambil data statistik siswa"
+        "selesai membuat fungsi untuk mengambil data statistik siswa",
+        "berhasil menghubungkan data ujian ke bagian frontend di halaman dashboard guru"
     ],
     "sqltools.connections": [
         {

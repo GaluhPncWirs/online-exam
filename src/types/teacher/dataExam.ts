@@ -19,3 +19,8 @@ export type ManageExamItem = {
   lengthStudentCompleteExams: string[];
   hasil_ujian: unknown[];
 };
+
+export type StatisticStudent = {
+  jumlahSiswa: number;
+  averageValueExam: number;
+};

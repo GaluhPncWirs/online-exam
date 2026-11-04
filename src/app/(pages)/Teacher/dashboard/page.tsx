@@ -3,7 +3,10 @@ import DashboardClientTeacher from "@/components/local/teacher/dashboard/dashboa
 import DashboardSkeletonTeacher from "@/components/local/teacher/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
-import { handleGetDataResultExamsPending } from "@/src/services/mysql/teacher/data-teacher";
+import {
+  handleGetDataResultExamsPending,
+  handleGetStatisticsStudent,
+} from "@/src/services/mysql/teacher/data-teacher";
 import { DataExamsPending } from "@/src/types/teacher/dataExam";
 
 export default function Loader() {
@@ -33,11 +36,20 @@ async function DashboardTeacher() {
     return <h3>{dataResultExamPending.message}</h3>;
   }
 
+  const dataStatisticsStudent = await handleGetStatisticsStudent(
+    dataTeacher.data.id_teacher,
+  );
+
+  if (!dataStatisticsStudent.success) {
+    return <h3>{dataStatisticsStudent.message}</h3>;
+  }
+
   return (
     <MainContent>
       <DashboardClientTeacher
         dataExamsPending={dataResultExamPending.data as DataExamsPending[]}
         dataTeacher={dataTeacher.data}
+        dataStatisticsStudent={dataStatisticsStudent.data}
       />
     </MainContent>
   );

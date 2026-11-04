@@ -1,7 +1,4 @@
 "use client";
-import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
-import ViewQuestions from "@/components/local/khususGuru/hasilPertanyaan/pertanyaan";
-import ManageStudent from "@/components/local/khususGuru/kelolaSiswa/manageStudent";
 import { useEffect, useState } from "react";
 import HeaderDasboard from "@/components/local/forDasboard/content";
 import FloatingBarDashboardTeacher from "@/components/local/khususGuru/navigasi/floatingBar";
@@ -14,26 +11,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import PaginationUi from "@/components/global/pagination/content";
-import { usePendingExamResultsStudent } from "@/hooks/getExamResultStudent";
-import { useGetStatistics } from "@/hooks/getManageExamStatistik";
-import { useManageDataExams } from "@/hooks/getManageDataExams";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
-import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { DataTeacher } from "@/src/types/dataUser";
-import { DataExamsPending, ManageExamItem } from "@/src/types/teacher/dataExam";
+import {
+  DataExamsPending,
+  ManageExamItem,
+  StatisticStudent,
+} from "@/src/types/teacher/dataExam";
 import { getManageExamsAction } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
+import PaginationUi from "@/components/global/pagination/content";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];
   dataTeacher: DataTeacher;
+  dataStatisticsStudent: StatisticStudent;
 };
 
 export default function DashboardClientTeacher({
   dataExamsPending,
   dataTeacher,
+  dataStatisticsStudent,
 }: DataDashboardTeacher) {
   const [dashboardButton, setDashboardButton] = useState({
     scheduleExams: true,
@@ -87,20 +86,12 @@ export default function DashboardClientTeacher({
     };
   }, [page]);
 
-  // const idTeacher = dataTeacher.id_student;
-  // const dataUser = useGetDataUser((state) => state.dataUser);
-  // const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
-  // const [page, setPage] = useState(1);
-  // const { dataManageExams, totalData, isLoading, pageSize } =
-  //   useManageDataExams(getidTeacher, page);
-  // const totalPages = Math.ceil(totalData / pageSize);
-
   return (
     <>
       <HeaderDasboard
         user="Pengajar"
-        fullName={dataTeacher?.fullname ?? ""}
-        // exams={pendingExamResults}
+        fullName={dataTeacher.fullname ?? ""}
+        // exams={dataManageExams}
       />
       <div className="space-y-8">
         {/* ================= SUMMARY ================= */}
@@ -131,7 +122,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {/* {dataManageExams.length || 0} */}0
+                    {dataManageExams.length || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -154,7 +145,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {/* {jumlahSiswa || 0} */}0
+                    {dataStatisticsStudent.jumlahSiswa || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -177,7 +168,7 @@ export default function DashboardClientTeacher({
                   </p>
 
                   <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                    {/* {Math.round(averageValueExam / jumlahSiswa) || 0} */}0
+                    {dataStatisticsStudent.averageValueExam || 0}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -349,12 +340,12 @@ export default function DashboardClientTeacher({
                   </TableBody>
                 </Table>
 
-                {/* <PaginationUi
+                <PaginationUi
                   currentPage={page}
                   totalPage={totalPages}
                   onPageChange={setPage}
                   isLoading={isLoading}
-                /> */}
+                />
               </div>
             </div>
           ) : // ) : dashboardButton.createQuestions === true ? (
