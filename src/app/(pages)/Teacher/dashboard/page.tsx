@@ -3,11 +3,11 @@ import DashboardClientTeacher from "@/components/local/teacher/dashboard/dashboa
 import DashboardSkeletonTeacher from "@/components/local/teacher/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
+import { DataExamsPending } from "@/src/types/teacher/dataExam";
 import {
   handleGetDataResultExamsPending,
   handleGetStatisticsStudent,
-} from "@/src/services/mysql/teacher/data-teacher";
-import { DataExamsPending } from "@/src/types/teacher/dataExam";
+} from "@/src/services/mysql/teacher/data-subject-exam";
 
 export default function Loader() {
   return (

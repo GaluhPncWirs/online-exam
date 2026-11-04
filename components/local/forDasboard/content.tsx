@@ -3,11 +3,14 @@ import Image from "next/image";
 import HeaderDashboard from "../headerDashboard/content";
 import { usePathname } from "next/navigation";
 import { DataExamsPending } from "@/src/types/teacher/dataExam";
+import { ScheduleExams } from "@/src/types/student/dataExams";
+
+type ExamItem = ScheduleExams | DataExamsPending;
 
 type propsHeaderDahboard = {
   user: string;
   fullname: string;
-  exams?: DataExamsPending[];
+  exams?: ExamItem[];
 };
 
 export default function HeaderDasboard(props: propsHeaderDahboard) {
@@ -15,10 +18,13 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
   const pathName = usePathname();
 
   function informExams() {
-    const examList = Array.isArray(exams) ? exams : [];
+    const examList: ExamItem[] = Array.isArray(exams) ? exams : [];
 
     if (pathName === "/Student/Dashboard") {
-      const filterSisaUjian = examList.filter((done) => !done.status_exam);
+      const filterSisaUjian = examList.filter(
+        (done): done is ScheduleExams =>
+          "status_exam" in done && !done.status_exam,
+      );
 
       return (
         <HeaderDashboard
@@ -28,11 +34,11 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
       );
     }
 
-    const filterNilaiSiswa = examList
-      .flatMap((exam) =>
-        Array.isArray(exam.result_exam) ? exam.result_exam : [],
-      )
-      .filter((result) => result.hasil_ujian === "pending");
+    const filterNilaiSiswa = examList.flatMap((exam) =>
+      "result_exam" in exam && Array.isArray(exam.result_exam)
+        ? exam.result_exam.filter((result) => result.hasil_ujian === "pending")
+        : [],
+    );
 
     return (
       <HeaderDashboard remainder={filterNilaiSiswa} isLocationPage={pathName} />

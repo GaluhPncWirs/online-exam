@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogClose,
@@ -20,118 +19,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
-import { useDataNameExams } from "@/hooks/getDataExams";
-
-const createExamSchema = z
-  .object({
-    typeUjian: z.string().min(1, "Pilih salah satu"),
-
-    namaUjian: z.string().min(1, "Pilih salah satu"),
-
-    namaUjianBaru: z
-      .string()
-      .min(5, "Minimal 5 karakter")
-      .optional()
-      .or(z.literal("")),
-
-    pertanyaan: z.string().min(5, "Minimal 5 karakter"),
-
-    pilihanGanda: z
-      .object({
-        answer_a: z.string(),
-        answer_b: z.string(),
-        answer_c: z.string(),
-        answer_d: z.string(),
-        answer_e: z.string(),
-      })
-      .optional(),
-
-    jawabanYangBenar: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    // ==========================================
-    // Nama ujian baru
-    // ==========================================
-
-    if (
-      data.namaUjian === "buatUjianBaru" &&
-      (!data.namaUjianBaru || data.namaUjianBaru.trim() === "")
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["namaUjianBaru"],
-        message: "Nama ujian baru harus diisi",
-      });
-    }
-
-    // ==========================================
-    // Pertanyaan
-    // ==========================================
-
-    if (!data.pertanyaan || data.pertanyaan.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["pertanyaan"],
-        message: "Pertanyaan harus diisi",
-      });
-    }
-
-    // ==========================================
-    // Pilihan Ganda
-    // ==========================================
-
-    if (data.typeUjian === "pg") {
-      const pilihan = data.pilihanGanda;
-
-      if (!pilihan) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["pilihanGanda"],
-          message: "Semua opsi jawaban harus diisi",
-        });
-      } else {
-        const opsi = [
-          ["answer_a", pilihan.answer_a],
-          ["answer_b", pilihan.answer_b],
-          ["answer_c", pilihan.answer_c],
-          ["answer_d", pilihan.answer_d],
-          ["answer_e", pilihan.answer_e],
-        ] as const;
-
-        opsi.forEach(([field, value]) => {
-          if (!value || value.trim().length < 3) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ["pilihanGanda", field],
-              message: "Minimal 3 karakter",
-            });
-          }
-        });
-      }
-
-      if (!data.jawabanYangBenar || data.jawabanYangBenar.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["jawabanYangBenar"],
-          message: "Pilih jawaban yang benar",
-        });
-      }
-    }
-  });
-
-type CreateExamSchemaType = z.infer<typeof createExamSchema>;
+import {
+  createExamSchema,
+  CreateExamSchemaType,
+} from "@/src/schemas/addDataExam";
+import { getDataExam } from "@/src/actions/dataExams";
 
 const examOptions = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof examOptions)[number];
 
+type ConfigExam = {
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
+};
+
 export default function CreateNewQuestions() {
-  const idTeacher = useGetIdUsers((state) => state.idUser);
-  const dataNameExam = useDataNameExams(idTeacher);
   const [openDialog, setOpenDialog] = useState(false);
+  const [dataExam, setDataExam] = useState<ConfigExam[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const {
     control,
     register,
@@ -141,7 +48,7 @@ export default function CreateNewQuestions() {
   } = useForm<CreateExamSchemaType>({
     resolver: zodResolver(createExamSchema),
     defaultValues: {
-      typeUjian: "",
+      typeUjian: "PG",
       namaUjian: "",
       namaUjianBaru: "",
       pertanyaan: "",
@@ -158,8 +65,38 @@ export default function CreateNewQuestions() {
     },
   });
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getDataExam();
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataExam(result.data as ConfigExam[]);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const isNewNameExam = watch("namaUjian");
   const isTypeExam = watch("typeUjian");
+
   const selectedValueNameExam = watch("namaUjian");
 
   const answer: Record<
@@ -176,7 +113,7 @@ export default function CreateNewQuestions() {
 
   async function onSubmit(dataNewExam: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
-    const isMultipleChoice = isTypeExam === "pg";
+    const isMultipleChoice = isTypeExam === "PG";
 
     // try {
     //   // =========================================================
@@ -401,8 +338,8 @@ export default function CreateNewQuestions() {
                       </SelectTrigger>
 
                       <SelectContent className="rounded-xl bg-white">
-                        <SelectItem value="pg">Pilihan Ganda</SelectItem>
-                        <SelectItem value="essay">Essay</SelectItem>
+                        <SelectItem value="PG">Pilihan Ganda</SelectItem>
+                        <SelectItem value="ESSAY">Essay</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -443,17 +380,17 @@ export default function CreateNewQuestions() {
                           + Buat Ujian Baru
                         </SelectItem>
 
-                        {dataNameExam.map((nameExam: any, i: number) => {
+                        {dataExam.map((nameExam, i: number) => {
                           const isCorrectType =
-                            nameExam.tipeUjian === isTypeExam;
+                            nameExam.type_exam === isTypeExam;
 
                           return (
                             isCorrectType && (
                               <SelectItem
                                 key={i}
-                                value={nameExam.nama_ujian || "Nama ujian"}
+                                value={nameExam.name_exam || "Nama ujian"}
                               >
-                                {nameExam.nama_ujian || "Nama Ujian"}
+                                {nameExam.name_exam || "Nama Ujian"}
                               </SelectItem>
                             )
                           );
@@ -528,7 +465,7 @@ export default function CreateNewQuestions() {
           </section>
 
           {/* ================= MULTIPLE CHOICE ================= */}
-          {isTypeExam === "pg" && (
+          {isTypeExam === "PG" && (
             <section className="border-t border-slate-100 pt-8">
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-slate-900">
@@ -643,13 +580,8 @@ export default function CreateNewQuestions() {
             </p>
 
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogTrigger>
-                <Button
-                  type="button"
-                  className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                >
-                  Buat Soal
-                </Button>
+              <DialogTrigger className="w-full text-slate-100 rounded-lg bg-blue-500 px-5 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">
+                Buat Soal
               </DialogTrigger>
 
               <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl sm:max-w-lg">
@@ -679,7 +611,7 @@ export default function CreateNewQuestions() {
                   </div>
 
                   {/* Multiple Choice Preview */}
-                  {isTypeExam === "pg" && (
+                  {isTypeExam === "PG" && (
                     <>
                       <div className="space-y-2">
                         {examOptions.map((option) => {
@@ -717,7 +649,7 @@ export default function CreateNewQuestions() {
                   )}
 
                   {/* Essay Preview */}
-                  {isTypeExam === "essay" && (
+                  {isTypeExam === "ESSAY" && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
                         Tipe Jawaban

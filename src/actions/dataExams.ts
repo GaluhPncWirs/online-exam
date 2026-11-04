@@ -2,7 +2,10 @@
 
 import { getAuthenticatedUser } from "../lib/auth/getAuthenticatedUser";
 import { PAGE_SIZE } from "../lib/constants";
-import { handleGetDataManageExams } from "../services/mysql/teacher/data-teacher";
+import {
+  handleGetDataExam,
+  handleGetDataManageExams,
+} from "../services/mysql/teacher/data-subject-exam";
 
 export async function getManageExamsAction(page: number) {
   const session = await getAuthenticatedUser();
@@ -24,4 +27,22 @@ export async function getManageExamsAction(page: number) {
   const to = from + PAGE_SIZE - 1;
 
   return handleGetDataManageExams(session.data.id_teacher, from, to);
+}
+
+export async function getDataExam() {
+  const session = await getAuthenticatedUser();
+
+  if (!session.success) {
+    return { success: false, message: "Error ambil data", data: [], total: 0 };
+  }
+
+  if (session.data.role !== "teacher") {
+    return { success: false, message: "Khusus role guru", data: [], total: 0 };
+  }
+
+  if (!session?.data.id_teacher) {
+    return { success: false, message: "Unauthorized", data: [], total: 0 };
+  }
+
+  return handleGetDataExam(session.data.id_teacher);
 }

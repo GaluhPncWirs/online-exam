@@ -276,3 +276,33 @@ export async function handleGetDataManageExams(
     };
   }
 }
+
+export async function handleGetDataExam(id_teacher: string) {
+  const query = `
+    SELECT name_exam, type_exam
+    FROM subject_exam
+    WHERE id_teacher = ?
+  `;
+
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [id_teacher]);
+
+    if (rows.length === 0) {
+      return {
+        success: false,
+        message: "Data ujian tidak ditemukan",
+      };
+    }
+
+    return {
+      success: true,
+      data: rows,
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    return {
+      success: false,
+      message: "Gagal mengambil data ujian",
+    };
+  }
+}
