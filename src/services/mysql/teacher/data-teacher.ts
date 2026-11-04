@@ -1,3 +1,4 @@
+"server-only";
 import { pool } from "@/src/lib/db";
 import { RowDataPacket } from "mysql2";
 

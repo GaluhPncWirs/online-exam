@@ -2,7 +2,7 @@
 import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
 import ViewQuestions from "@/components/local/khususGuru/hasilPertanyaan/pertanyaan";
 import ManageStudent from "@/components/local/khususGuru/kelolaSiswa/manageStudent";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HeaderDasboard from "@/components/local/forDasboard/content";
 import FloatingBarDashboardTeacher from "@/components/local/khususGuru/navigasi/floatingBar";
 import { BarChart3, ClipboardCheck, Layers } from "lucide-react";
@@ -21,7 +21,10 @@ import { useManageDataExams } from "@/hooks/getManageDataExams";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { DataTeacher } from "@/src/types/dataUser";
-import { DataExamsPending } from "@/src/types/teacher/dataExam";
+import { DataExamsPending, ManageExamItem } from "@/src/types/teacher/dataExam";
+import { getManageExamsAction } from "@/src/actions/dataExams";
+import { PAGE_SIZE } from "@/src/lib/constants";
+import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];
@@ -38,6 +41,12 @@ export default function DashboardClientTeacher({
     viewResult: false,
     manageStudent: false,
   });
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalData, setTotalData] = useState(0);
+  const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
+
+  const totalPages = Math.ceil(totalData / PAGE_SIZE);
 
   function handleClickItem(event: string) {
     setDashboardButton({
@@ -47,6 +56,37 @@ export default function DashboardClientTeacher({
       manageStudent: event === "manageStudent",
     });
   }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getManageExamsAction(page);
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataManageExams(result.data as ManageExamItem[]);
+        setTotalData(result.total);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
+
   // const idTeacher = dataTeacher.id_student;
   // const dataUser = useGetDataUser((state) => state.dataUser);
   // const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
@@ -235,10 +275,10 @@ export default function DashboardClientTeacher({
                         </TableCell>
                       </TableRow>
                     ) : dataManageExams.length > 0 ? (
-                      dataManageExams.map((item: any, i: number) => {
+                      dataManageExams.map((item, i: number) => {
                         const examStatus = getExamStatus(
-                          item.tenggat_waktu,
-                          item.dibuat_tgl,
+                          item.deadline_exam,
+                          item.created_at,
                         );
 
                         const totalStudents = item.lengthStudent?.length ?? 0;
@@ -259,19 +299,20 @@ export default function DashboardClientTeacher({
                             className="transition-colors hover:bg-slate-50"
                           >
                             <TableCell className="font-medium text-slate-500">
-                              {(page - 1) * pageSize + i + 1}
+                              {(page - 1) * PAGE_SIZE + i + 1}
                             </TableCell>
 
                             <TableCell className="font-semibold text-slate-800">
-                              {item.exams?.nama_ujian || "-"}
+                              {item.name_exam || "-"}
                             </TableCell>
 
                             <TableCell className="text-sm text-slate-600">
-                              {item.kelas || "-"}
+                              {item.class || "-"}
                             </TableCell>
 
                             <TableCell className="text-sm text-slate-500">
-                              {item.dibuat_tgl} {item.tenggat_waktu}
+                              {formatDateToYYYYMMDD(item.created_at)}{" "}
+                              {formatDateToYYYYMMDD(item.deadline_exam)}
                             </TableCell>
 
                             <TableCell>

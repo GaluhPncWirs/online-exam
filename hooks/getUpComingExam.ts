@@ -12,7 +12,7 @@ export function getUpComingExam(scheduleExams: ScheduleExams[]) {
 
   const upcomingExams = scheduleExams.filter((exam) => {
     // Ujian yang sudah dikerjakan tidak ditampilkan
-    if (exam.status_exam === true) {
+    if (exam.status_exam === 1) {
       return false;
     }
 

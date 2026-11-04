@@ -8,3 +8,14 @@ export type DataExamsPending = {
   status_exam: boolean;
   type_exam: "PG" | "essay";
 };
+
+export type ManageExamItem = {
+  created_at: string | Date;
+  class: string;
+  id_subject: string;
+  deadline_exam: string | Date;
+  name_exam: string | null;
+  lengthStudent: string[];
+  lengthStudentCompleteExams: string[];
+  hasil_ujian: unknown[];
+};

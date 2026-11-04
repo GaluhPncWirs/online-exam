@@ -3,7 +3,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { Open_Sans, Inter } from "next/font/google";
-import { cn } from "../lib/utils";
+import { cn } from "../lib/util";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

@@ -1,3 +1,4 @@
+"server-only";
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import { ResultSetHeader, RowDataPacket } from "mysql2";

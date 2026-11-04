@@ -32,11 +32,11 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import HeaderDasboard from "../../forDasboard/content";
-import { DataUser } from "@/src/types/dataUser";
+import { DataStudent } from "@/src/types/dataUser";
 
 type DataDashboardStudent = {
   dataExams: ScheduleExams[];
-  dataStudent: DataUser;
+  dataStudent: DataStudent;
 };
 
 export default function DashboardClientStudent({
@@ -78,7 +78,7 @@ export default function DashboardClientStudent({
 
   const lateExams = useCallback(
     async (idUjian: string) => {
-      if (!dataStudent?.idUser) return;
+      if (!dataStudent?.id_student) return;
 
       // Jika ujian sudah tersimpan, jangan panggil API lagi
       if (savedLateExamIds.current.has(idUjian)) return;
@@ -88,7 +88,7 @@ export default function DashboardClientStudent({
 
       try {
         const payload = {
-          id_student: dataStudent.idUser,
+          id_student: dataStudent.id_student,
           id_subject: idUjian,
           result_exam: "telat",
           status_exam: true,
