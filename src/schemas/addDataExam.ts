@@ -1,96 +1,118 @@
 import { z } from "zod";
 
-export const ExamSchema = z.object({
-  id_teacher: z.string().min(1).max(50),
-  name_exam: z.string().trim().min(3).max(150),
-  type_exam: z.enum(["PG", "ESSAY"]),
-  exam_questions: z.array(z.unknown()).min(1).max(200),
+const CHOICE_KEYS = [
+  "choice_a",
+  "choice_b",
+  "choice_c",
+  "choice_d",
+  "choice_e",
+] as const;
+
+export const ExamQuestion = z.object({
+  question: z
+    .string()
+    .trim()
+    .min(5, "Minimal 5 karakter")
+    .max(200, "Maksimal 200 karakter"),
+  multipleChoice: z
+    .object({
+      choice_a: z.string().trim(),
+      choice_b: z.string().trim(),
+      choice_c: z.string().trim(),
+      choice_d: z.string().trim(),
+      choice_e: z.string().trim(),
+    })
+    .optional(),
+  correctAnswer: z.string().trim().optional(),
 });
+
+type ExamQuestionInput = z.infer<typeof ExamQuestion>;
+
+function validateMultipleChoice(
+  q: ExamQuestionInput,
+  ctx: z.RefinementCtx,
+  basePath: (string | number)[] = [],
+) {
+  const pilihan = q.multipleChoice;
+
+  if (!pilihan) {
+    ctx.addIssue({
+      code: "custom",
+      path: [...basePath, "multipleChoice"],
+      message: "Semua opsi jawaban harus di isi",
+    });
+  } else {
+    CHOICE_KEYS.forEach((key) => {
+      if (pilihan[key].length < 3) {
+        ctx.addIssue({
+          code: "custom",
+          path: [...basePath, "multipleChoice", key],
+          message: "Minimal 3 karakter",
+        });
+      }
+    });
+  }
+
+  if (!q.correctAnswer) {
+    ctx.addIssue({
+      code: "custom",
+      path: [...basePath, "correctAnswer"],
+      message: "Pilih jawaban yang benar",
+    });
+  } else if (!(CHOICE_KEYS as readonly string[]).includes(q.correctAnswer)) {
+    ctx.addIssue({
+      code: "custom",
+      path: [...basePath, "correctAnswer"],
+      message: "Jawaban benar tidak valid",
+    });
+  }
+}
+
+export const ExamSchema = z
+  .object({
+    id_teacher: z.string().min(1).max(50),
+    name_exam: z.string().trim().min(3).max(150),
+    type_exam: z.enum(["PG", "ESSAY"]),
+    exam_questions: z.array(ExamQuestion).min(1).max(200),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type_exam !== "PG") return;
+
+    data.exam_questions.forEach((q, i) => {
+      validateMultipleChoice(q, ctx, ["exam_questions", i]);
+    });
+  });
 
 export const createExamSchema = z
   .object({
-    typeUjian: z.enum(["PG", "ESSAY"], {
+    type_exam: z.enum(["PG", "ESSAY"], {
       error: "Pilih salah satu",
     }),
-
-    namaUjian: z.string().min(1, "Pilih salah satu"),
-
-    namaUjianBaru: z
-      .string()
-      .min(5, "Minimal 5 karakter")
-      .optional()
-      .or(z.literal("")),
-
-    pertanyaan: z.string().min(5, "Minimal 5 karakter"),
-
-    pilihanGanda: z
-      .object({
-        choice_a: z.string(),
-        choice_b: z.string(),
-        choice_c: z.string(),
-        choice_d: z.string(),
-        choice_e: z.string(),
-      })
-      .optional(),
-
-    correctAnswer: z.string().optional(),
+    name_exam: z.string().trim().min(1, "Pilih salah satu"),
+    new_name_exam: z.string().trim().optional(),
+    ...ExamQuestion.shape,
   })
   .superRefine((data, ctx) => {
-    if (
-      data.namaUjian === "buatUjianBaru" &&
-      (!data.namaUjianBaru || data.namaUjianBaru.trim() === "")
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["namaUjianBaru"],
-        message: "Nama ujian baru harus diisi",
-      });
-    }
+    if (data.name_exam === "buatUjianBaru") {
+      const name = data.new_name_exam ?? "";
 
-    if (!data.pertanyaan || data.pertanyaan.trim() === "") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["pertanyaan"],
-        message: "Pertanyaan harus diisi",
-      });
-    }
-
-    if (data.typeUjian === "PG") {
-      const pilihan = data.pilihanGanda;
-
-      if (!pilihan) {
+      if (name === "") {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["pilihanGanda"],
-          message: "Semua opsi jawaban harus diisi",
+          code: "custom",
+          path: ["new_name_exam"],
+          message: "Nama ujian baru harus diisi",
         });
-      } else {
-        const opsi = [
-          ["choice_a", pilihan.choice_a],
-          ["choice_b", pilihan.choice_b],
-          ["choice_c", pilihan.choice_c],
-          ["choice_d", pilihan.choice_d],
-          ["choice_e", pilihan.choice_e],
-        ] as const;
-
-        opsi.forEach(([field, value]) => {
-          if (!value || value.trim().length < 3) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ["pilihanGanda", field],
-              message: "Minimal 3 karakter",
-            });
-          }
+      } else if (name.length < 5) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["new_name_exam"],
+          message: "Minimal 5 karakter",
         });
       }
+    }
 
-      if (!data.correctAnswer || data.correctAnswer.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["correctAnswer"],
-          message: "Pilih jawaban yang benar",
-        });
-      }
+    if (data.type_exam === "PG") {
+      validateMultipleChoice(data, ctx);
     }
   });
 

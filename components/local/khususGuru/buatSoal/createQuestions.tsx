@@ -27,6 +27,7 @@ import {
 } from "@/src/schemas/addDataExam";
 import { getDataExam } from "@/src/actions/dataExams";
 import { DataTeacher } from "@/src/types/dataUser";
+import { toast } from "sonner";
 
 const examOptions = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof examOptions)[number];
@@ -55,20 +56,10 @@ export default function CreateNewQuestions({
   } = useForm<CreateExamSchemaType>({
     resolver: zodResolver(createExamSchema),
     defaultValues: {
-      typeUjian: "PG",
-      namaUjian: "",
-      namaUjianBaru: "",
-      pertanyaan: "",
-
-      // pilihan ganda
-      pilihanGanda: {
-        choice_a: "",
-        choice_b: "",
-        choice_c: "",
-        choice_d: "",
-        choice_e: "",
-      },
-      correctAnswer: "",
+      type_exam: "PG",
+      name_exam: "",
+      new_name_exam: "",
+      question: "",
     },
   });
 
@@ -101,17 +92,17 @@ export default function CreateNewQuestions({
     };
   }, []);
 
-  const isNewNameExam = watch("namaUjian");
-  const isTypeExam = watch("typeUjian");
+  const isNewNameExam = watch("name_exam");
+  const isTypeExam = watch("type_exam");
 
-  const selectedValueNameExam = watch("namaUjian");
+  const selectedValueNameExam = watch("name_exam");
 
   const answer = {
-    choice_a: watch("pilihanGanda.choice_a") ?? "",
-    choice_b: watch("pilihanGanda.choice_b") ?? "",
-    choice_c: watch("pilihanGanda.choice_c") ?? "",
-    choice_d: watch("pilihanGanda.choice_d") ?? "",
-    choice_e: watch("pilihanGanda.choice_e") ?? "",
+    choice_a: watch("multipleChoice.choice_a") ?? "",
+    choice_b: watch("multipleChoice.choice_b") ?? "",
+    choice_c: watch("multipleChoice.choice_c") ?? "",
+    choice_d: watch("multipleChoice.choice_d") ?? "",
+    choice_e: watch("multipleChoice.choice_e") ?? "",
   };
   const selectCorrectAnswer = watch("correctAnswer");
 
@@ -122,9 +113,9 @@ export default function CreateNewQuestions({
     try {
       if (isNewExam) {
         const payload = {
-          type_exam: data.typeUjian,
+          type_exam: data.type_exam,
           id_teacher: dataTeacher.id_teacher,
-          name_exam: data.namaUjian,
+          name_exam: data.name_exam,
           // exam_questions : data.,
         };
 
@@ -136,10 +127,10 @@ export default function CreateNewQuestions({
 
         // const { error: insertError } = await supabase.from("exams").insert({
         //   created_at_exams: new Date().toISOString(),
-        //   nama_ujian: dataNewExam.namaUjianBaru,
+        //   nama_ujian: dataNewExam.name_examBaru,
         //   questions_exam: [question],
         //   idTeacher,
-        //   tipeUjian: dataNewExam.typeUjian,
+        //   tipeUjian: dataNewExam.type_exam,
         // });
 
         // if (insertError) {
@@ -198,13 +189,13 @@ export default function CreateNewQuestions({
       // const newQuestion = isMultipleChoice
       //   ? {
       //       id: useRandomId(7, "EX"),
-      //       questions: dataNewExam.pertanyaan,
-      //       answerPg: dataNewExam.pilihanGanda,
+      //       questions: dataNewExam.question,
+      //       answerPg: dataNewExam.multipleChoice,
       //       correctAnswer: dataNewExam.correctAnswer,
       //     }
       //   : {
       //       id: useRandomId(7, "EX"),
-      //       questions: dataNewExam.pertanyaan,
+      //       questions: dataNewExam.question,
       //     };
 
       // const currentQuestions = Array.isArray(exam.questions_exam)
@@ -263,7 +254,7 @@ export default function CreateNewQuestions({
           </h2>
 
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            Buat pertanyaan baru untuk ujian yang sudah tersedia atau buat ujian
+            Buat question baru untuk ujian yang sudah tersedia atau buat ujian
             baru sebelum menambahkan soal.
           </p>
         </div>
@@ -299,7 +290,7 @@ export default function CreateNewQuestions({
 
                 <Controller
                   control={control}
-                  name="typeUjian"
+                  name="type_exam"
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
@@ -316,9 +307,9 @@ export default function CreateNewQuestions({
                     </Select>
                   )}
                 />
-                {errors.typeUjian && (
+                {errors.type_exam && (
                   <p className="text-red-500 text-xs mt-0.5">
-                    {errors.typeUjian?.message}
+                    {errors.type_exam?.message}
                   </p>
                 )}
               </div>
@@ -334,7 +325,7 @@ export default function CreateNewQuestions({
 
                 <Controller
                   control={control}
-                  name="namaUjian"
+                  name="name_exam"
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger
@@ -371,9 +362,9 @@ export default function CreateNewQuestions({
                     </Select>
                   )}
                 />
-                {errors.namaUjian && (
+                {errors.name_exam && (
                   <p className="text-red-500 text-xs mt-0.5">
-                    {errors.namaUjian?.message}
+                    {errors.name_exam?.message}
                   </p>
                 )}
               </div>
@@ -391,13 +382,13 @@ export default function CreateNewQuestions({
 
                 <Input
                   id="nama_ujian"
-                  {...register("namaUjianBaru")}
+                  {...register("new_name_exam")}
                   className="h-12 rounded-xl border-slate-200 bg-white"
                   placeholder="Contoh: Ujian Matematika Semester 1"
                 />
-                {errors.namaUjianBaru && (
+                {errors.new_name_exam && (
                   <p className="text-red-500 text-xs mt-0.5">
-                    {errors.namaUjianBaru?.message}
+                    {errors.new_name_exam?.message}
                   </p>
                 )}
               </div>
@@ -407,10 +398,10 @@ export default function CreateNewQuestions({
           {/* ================= QUESTION ================= */}
           <section className="border-t border-slate-100">
             <div className="mb-4">
-              <h3 className="text-lg font-bold text-slate-900">Pertanyaan</h3>
+              <h3 className="text-lg font-bold text-slate-900">question</h3>
 
               <p className="text-sm text-slate-500">
-                Tulis pertanyaan yang akan diberikan kepada peserta.
+                Tulis question yang akan diberikan kepada peserta.
               </p>
             </div>
 
@@ -419,18 +410,18 @@ export default function CreateNewQuestions({
                 htmlFor="questions"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Isi Pertanyaan
+                Isi question
               </label>
 
               <Textarea
                 id="questions"
-                {...register("pertanyaan")}
-                placeholder="Tulis pertanyaan ujian di sini..."
+                {...register("question")}
+                placeholder="Tulis question ujian di sini..."
                 className="min-h-32 resize-y rounded-xl border-slate-200 bg-white p-4 text-sm leading-6"
               />
-              {errors.pertanyaan && (
+              {errors.question && (
                 <p className="text-red-500 text-xs mt-0.5">
-                  {errors.pertanyaan?.message}
+                  {errors.question?.message}
                 </p>
               )}
             </div>
@@ -452,11 +443,12 @@ export default function CreateNewQuestions({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {examOptions.map((option: ExamOption) => {
                   const answerKey = `choice_${option}` as keyof typeof answer;
-                  const optionField = `pilihanGanda.choice_${option}` as const;
+                  const optionField =
+                    `multipleChoice.choice_${option}` as const;
                   const optionError =
-                    errors.pilihanGanda?.[
+                    errors.multipleChoice?.[
                       `choice_${option}` as keyof NonNullable<
-                        typeof errors.pilihanGanda
+                        typeof errors.multipleChoice
                       >
                     ];
                   const optionErrorMessage =
@@ -563,7 +555,7 @@ export default function CreateNewQuestions({
                   </DialogTitle>
 
                   <DialogDescription className="pt-2 leading-6">
-                    Pastikan pertanyaan dan jawaban sudah benar sebelum
+                    Pastikan question dan jawaban sudah benar sebelum
                     menambahkan soal.
                   </DialogDescription>
                 </DialogHeader>
@@ -572,7 +564,7 @@ export default function CreateNewQuestions({
                   {/* Question Preview */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                      Pertanyaan
+                      question
                     </p>
 
                     <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
