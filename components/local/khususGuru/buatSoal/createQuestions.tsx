@@ -112,50 +112,44 @@ export default function CreateNewQuestions({
 
     try {
       if (isNewExam) {
-        const payload = {
+        const dataPayloadAddExam = {
           type_exam: data.type_exam,
           id_teacher: dataTeacher.id_teacher,
           name_exam: data.name_exam,
-          // exam_questions : data.,
+          exam_questions: isMultipleChoice
+            ? {
+                question: data.question,
+                multipleChoice: data.multipleChoice,
+                correctAnswer: data.correctAnswer,
+              }
+            : {
+                question: data.question,
+              },
         };
 
         const req = await fetch("/api/teacher/addDataExam", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(dataPayloadAddExam),
         });
 
-        // const { error: insertError } = await supabase.from("exams").insert({
-        //   created_at_exams: new Date().toISOString(),
-        //   nama_ujian: dataNewExam.name_examBaru,
-        //   questions_exam: [question],
-        //   idTeacher,
-        //   tipeUjian: dataNewExam.type_exam,
-        // });
+        const res = await req.json();
 
-        // if (insertError) {
-        //   console.error("Insert exam error:", insertError);
+        if (!res.success) {
+          toast.error("Error tambah data", {
+            description: res.message,
+          });
+          return;
+        }
 
-        //   toast("Gagal ❌", {
-        //     description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
-        //   });
+        toast("Berhasil ✅", {
+          description: isMultipleChoice
+            ? "Soal pilihan ganda berhasil ditambahkan."
+            : "Soal essay berhasil ditambahkan.",
+        });
 
-        //   return;
-        // }
-
-        // toast("Berhasil ✅", {
-        //   description: isMultipleChoice
-        //     ? "Soal pilihan ganda berhasil ditambahkan."
-        //     : "Soal essay berhasil ditambahkan.",
-        // });
-
-        // setOpenDialog(false);
-        // return;
+        setOpenDialog(false);
       }
-
-      // =========================================================
-      // 3. Tambahkan soal ke ujian yang sudah ada
-      // =========================================================
 
       // const { data: exam, error: examError } = await supabase
       //   .from("exams")
