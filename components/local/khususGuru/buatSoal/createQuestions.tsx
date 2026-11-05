@@ -29,6 +29,7 @@ import { getDataExam } from "@/src/actions/dataExams";
 import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
 import { randomUUID } from "crypto";
+import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 
 const examOptions = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof examOptions)[number];
@@ -95,6 +96,7 @@ export default function CreateNewQuestions({
 
   const isNewNameExam = watch("name_exam");
   const isTypeExam = watch("type_exam");
+  const question = watch("question");
 
   const selectedValueNameExam = watch("name_exam");
 
@@ -110,7 +112,7 @@ export default function CreateNewQuestions({
   async function onSubmit(data: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
     const isMultipleChoice = isTypeExam === "PG";
-    const idEveryQuestion = `EX-${randomUUID()}`;
+    const idEveryQuestion = generateRandomId(10, "EX");
 
     try {
       if (isNewExam) {
@@ -158,29 +160,33 @@ export default function CreateNewQuestions({
       const dataPayloadAddQuestion = {
         exam_questions: isMultipleChoice
           ? {
+              id: idEveryQuestion,
               question: data.question,
               multipleChoice: data.multipleChoice,
               correctAnswer: data.correctAnswer,
             }
           : {
+              id: idEveryQuestion,
               question: data.question,
             },
       };
 
-      const req = await fetch("/api/teacher/addDataQuestion", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataPayloadAddQuestion),
-      });
+      console.log(dataPayloadAddQuestion);
 
-      const res = await req.json();
+      // const req = await fetch("/api/teacher/addDataQuestion", {
+      //   method: "PATCH",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(dataPayloadAddQuestion),
+      // });
 
-      if (!res.success) {
-        toast.error("Error tambah data", {
-          description: res.message,
-        });
-        return;
-      }
+      // const res = await req.json();
+
+      // if (!res.success) {
+      //   toast.error("Error tambah data", {
+      //     description: res.message,
+      //   });
+      //   return;
+      // }
 
       toast.success("Soal berhasil ditambahkan.");
 
@@ -352,10 +358,10 @@ export default function CreateNewQuestions({
           {/* ================= QUESTION ================= */}
           <section className="border-t border-slate-100">
             <div className="mb-4">
-              <h3 className="text-lg font-bold text-slate-900">question</h3>
+              <h3 className="text-lg font-bold text-slate-900">Soal Ujian</h3>
 
               <p className="text-sm text-slate-500">
-                Tulis question yang akan diberikan kepada peserta.
+                Tulis soal yang akan diberikan kepada peserta.
               </p>
             </div>
 
@@ -364,13 +370,13 @@ export default function CreateNewQuestions({
                 htmlFor="questions"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Isi question
+                Isi Pertanyaan
               </label>
 
               <Textarea
                 id="questions"
                 {...register("question")}
-                placeholder="Tulis question ujian di sini..."
+                placeholder="Tulis soal ujian di sini..."
                 className="min-h-32 resize-y rounded-xl border-slate-200 bg-white p-4 text-sm leading-6"
               />
               {errors.question && (
@@ -508,24 +514,26 @@ export default function CreateNewQuestions({
                     Periksa Soal
                   </DialogTitle>
 
-                  <DialogDescription className="pt-2 leading-6">
+                  <DialogDescription>
                     Pastikan question dan jawaban sudah benar sebelum
                     menambahkan soal.
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="mt-4 space-y-4">
+                <div className="space-y-4">
                   {/* Question Preview */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                      question
-                    </p>
-
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
                       {isNewNameExam === "buatUjianBaru"
                         ? isNewNameExam
                         : selectedValueNameExam}
                     </p>
+
+                    <p className="text-base font-semibold text-slate-800">
+                      Pertanyaan
+                    </p>
+
+                    <p>{question}</p>
                   </div>
 
                   {/* Multiple Choice Preview */}
@@ -580,18 +588,13 @@ export default function CreateNewQuestions({
                   )}
                 </div>
 
-                <DialogFooter className="mt-5 gap-2">
-                  <DialogClose>
-                    <Button variant="outline" className="rounded-xl">
-                      Batal
-                    </Button>
-                  </DialogClose>
+                <DialogFooter className="space-x-1">
+                  <DialogClose>Batal</DialogClose>
 
                   <Button
                     type="submit"
                     form="create-exam-form"
-                    variant="default"
-                    className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     Simpan Soal
                   </Button>

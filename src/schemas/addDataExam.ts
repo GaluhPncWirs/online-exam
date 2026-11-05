@@ -26,12 +26,12 @@ export const ExamQuestionInput = z.object({
   correctAnswer: z.string().trim().optional(),
 });
 
-export const ExamQuestion = ExamQuestionInput.extend({
-  id: z.string().trim().min(1),
-});
+// export const ExamQuestion = ExamQuestionInput.extend({
+//   id: z.string().trim().min(1),
+// });
 
 export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
-export type ExamQuestionType = z.infer<typeof ExamQuestion>;
+// export type ExamQuestionType = z.infer<typeof ExamQuestion>;
 
 function validateMultipleChoice(
   q: ExamQuestionInputType,
@@ -48,11 +48,11 @@ function validateMultipleChoice(
     });
   } else {
     CHOICE_KEYS.forEach((key) => {
-      if (pilihan[key].length < 3) {
+      if (pilihan[key].length < 0) {
         ctx.addIssue({
           code: "custom",
           path: [...basePath, "multipleChoice", key],
-          message: "Minimal 3 karakter",
+          message: "Minimal 1 karakter",
         });
       }
     });
@@ -64,13 +64,14 @@ function validateMultipleChoice(
       path: [...basePath, "correctAnswer"],
       message: "Pilih jawaban yang benar",
     });
-  } else if (!(CHOICE_KEYS as readonly string[]).includes(q.correctAnswer)) {
-    ctx.addIssue({
-      code: "custom",
-      path: [...basePath, "correctAnswer"],
-      message: "Jawaban benar tidak valid",
-    });
   }
+  // else if (!(CHOICE_KEYS as readonly string[]).includes(q.correctAnswer)) {
+  //   ctx.addIssue({
+  //     code: "custom",
+  //     path: [...basePath, "correctAnswer"],
+  //     message: "Jawaban benar tidak valid",
+  //   });
+  // }
 }
 
 export const ExamSchema = z
@@ -78,7 +79,7 @@ export const ExamSchema = z
     id_teacher: z.string().min(1).max(50),
     name_exam: z.string().trim().min(3).max(150),
     type_exam: z.enum(["PG", "ESSAY"]),
-    exam_questions: z.array(ExamQuestion).min(1).max(200),
+    exam_questions: z.array(ExamQuestionInput).min(1).max(200),
   })
   .superRefine((data, ctx) => {
     if (data.type_exam !== "PG") return;
@@ -95,7 +96,7 @@ export const createExamSchema = z
     }),
     name_exam: z.string().trim().min(1, "Pilih salah satu"),
     new_name_exam: z.string().trim().optional(),
-    ...ExamQuestion.shape,
+    ...ExamQuestionInput.shape,
   })
   .superRefine((data, ctx) => {
     if (data.name_exam === "buatUjianBaru") {

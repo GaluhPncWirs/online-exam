@@ -71,7 +71,8 @@
         "selesai mengerjakan fungsi untuk tambah data ujian dengan tingkat keamanan yang cukup tinggi",
         "sedang mengerjakan bagian untuk buat data ujian",
         "memperbaiki schema zod di bagian buat ujian",
-        "selesai mengerjakan untuk implementasi penambahan data ujian"
+        "selesai mengerjakan untuk implementasi penambahan data ujian",
+        "selesai membuat fungsi untuk tambah data soal dan membuat api nya juga tinggal di gunakan saja dan di test"
     ],
     "sqltools.connections": [
         {

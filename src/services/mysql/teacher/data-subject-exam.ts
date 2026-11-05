@@ -3,7 +3,7 @@ import { pool } from "@/src/lib/db";
 import { TypeExamQuestions } from "@/src/types/dataExam";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { randomUUID } from "crypto";
-import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
+import { ExamQuestionInput, ExamSchema } from "@/src/schemas/addDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -397,8 +397,7 @@ export async function handleAddDataExamQuestion(
   id_subject: string,
   id_teacher: string,
 ) {
-  const parsed = ExamQuestion.safeParse(payloadAddDataQuestion);
-  const idEveryQuestion = `EX-${randomUUID()}`;
+  const parsed = ExamQuestionInput.safeParse(payloadAddDataQuestion);
 
   if (!parsed.success) {
     return {
@@ -412,11 +411,6 @@ export async function handleAddDataExamQuestion(
     };
   }
 
-  const question = {
-    id: idEveryQuestion,
-    questions: parsed.data,
-  };
-
   const query = `
     UPDATE subject_exam 
     SET exam_questions = JSON_ARRAY_APPEND(
@@ -427,7 +421,7 @@ export async function handleAddDataExamQuestion(
 
   try {
     const [result] = await pool.execute<ResultSetHeader>(query, [
-      JSON.stringify(question),
+      JSON.stringify(parsed.data),
       id_subject,
       id_teacher,
     ]);
@@ -440,7 +434,7 @@ export async function handleAddDataExamQuestion(
       success: true,
       status: 201,
       message: "Berhasil tambah soal ujian.",
-      data: { id: question.id },
+      // data: { id: payloadAddDataQuestion?.exam_questions.id },
     };
   } catch (error: unknown) {
     if (

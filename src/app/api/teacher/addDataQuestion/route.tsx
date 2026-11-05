@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest) {
       {
         success: result.success,
         message: result.message,
-        data: result.data,
+        // data: result.data,
       },
       {
         status: result.status,
