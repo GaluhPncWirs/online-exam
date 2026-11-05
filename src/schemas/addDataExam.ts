@@ -9,7 +9,7 @@ const CHOICE_KEYS = [
 ] as const;
 
 export const ExamQuestionInput = z.object({
-  question: z
+  questions: z
     .string()
     .trim()
     .min(5, "Minimal 5 karakter")
@@ -33,8 +33,8 @@ export const ExamQuestionInput = z.object({
 export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
 // export type ExamQuestionType = z.infer<typeof ExamQuestion>;
 
-function validateMultipleChoice(
-  q: ExamQuestionInputType,
+export function validateMultipleChoice(
+  q: z.infer<typeof ExamQuestionInput>,
   ctx: z.RefinementCtx,
   basePath: (string | number)[] = [],
 ) {
@@ -44,19 +44,31 @@ function validateMultipleChoice(
     ctx.addIssue({
       code: "custom",
       path: [...basePath, "multipleChoice"],
-      message: "Semua opsi jawaban harus di isi",
+      message: "Semua opsi jawaban harus diisi",
     });
-  } else {
-    CHOICE_KEYS.forEach((key) => {
-      if (pilihan[key].length < 0) {
-        ctx.addIssue({
-          code: "custom",
-          path: [...basePath, "multipleChoice", key],
-          message: "Minimal 1 karakter",
-        });
-      }
-    });
+    return;
   }
+
+  const values = CHOICE_KEYS.map((key) => pilihan[key]);
+
+  CHOICE_KEYS.forEach((key, i) => {
+    const value = pilihan[key];
+
+    if (value.length < 1) {
+      ctx.addIssue({
+        code: "custom",
+        path: [...basePath, "multipleChoice", key],
+        message: "Minimal 1 karakter",
+      });
+    } else if (values.indexOf(value) !== i) {
+      // sudah muncul di opsi sebelumnya
+      ctx.addIssue({
+        code: "custom",
+        path: [...basePath, "multipleChoice", key],
+        message: "Isi opsi tidak boleh sama dengan opsi lain",
+      });
+    }
+  });
 
   if (!q.correctAnswer) {
     ctx.addIssue({
@@ -64,14 +76,13 @@ function validateMultipleChoice(
       path: [...basePath, "correctAnswer"],
       message: "Pilih jawaban yang benar",
     });
+  } else if (!values.includes(q.correctAnswer)) {
+    ctx.addIssue({
+      code: "custom",
+      path: [...basePath, "correctAnswer"],
+      message: "Jawaban benar harus sesuai dengan salah satu opsi",
+    });
   }
-  // else if (!(CHOICE_KEYS as readonly string[]).includes(q.correctAnswer)) {
-  //   ctx.addIssue({
-  //     code: "custom",
-  //     path: [...basePath, "correctAnswer"],
-  //     message: "Jawaban benar tidak valid",
-  //   });
-  // }
 }
 
 export const ExamSchema = z
@@ -91,6 +102,7 @@ export const ExamSchema = z
 
 export const createExamSchema = z
   .object({
+    id_subject: z.string().trim().min(1, "Harus ada id ujian"),
     type_exam: z.enum(["PG", "ESSAY"], {
       error: "Pilih salah satu",
     }),

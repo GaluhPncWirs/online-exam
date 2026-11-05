@@ -282,7 +282,7 @@ export async function handleGetDataManageExams(
 
 export async function handleGetDataExam(id_teacher: string) {
   const query = `
-    SELECT name_exam, type_exam
+    SELECT id_subject, name_exam, type_exam
     FROM subject_exam
     WHERE id_teacher = ?
   `;

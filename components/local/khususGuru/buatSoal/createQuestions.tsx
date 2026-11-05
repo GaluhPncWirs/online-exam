@@ -28,13 +28,13 @@ import {
 import { getDataExam } from "@/src/actions/dataExams";
 import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
-import { randomUUID } from "crypto";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 
-const examOptions = ["a", "b", "c", "d", "e"] as const;
-type ExamOption = (typeof examOptions)[number];
+const OPTION_LABELS = ["a", "b", "c", "d", "e"] as const;
+type ExamOption = (typeof OPTION_LABELS)[number];
 
 type ConfigExam = {
+  id_subject: string;
   name_exam: string;
   type_exam: "PG" | "ESSAY";
 };
@@ -54,6 +54,7 @@ export default function CreateNewQuestions({
     register,
     watch,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateExamSchemaType>({
     resolver: zodResolver(createExamSchema),
@@ -61,7 +62,7 @@ export default function CreateNewQuestions({
       type_exam: "PG",
       name_exam: "",
       new_name_exam: "",
-      question: "",
+      questions: "",
     },
   });
 
@@ -94,20 +95,30 @@ export default function CreateNewQuestions({
     };
   }, []);
 
-  const isNewNameExam = watch("name_exam");
+  const selectedExamName = watch("name_exam");
   const isTypeExam = watch("type_exam");
-  const question = watch("question");
+  const question = watch("questions");
 
   const selectedValueNameExam = watch("name_exam");
 
-  const answer = {
-    choice_a: watch("multipleChoice.choice_a") ?? "",
-    choice_b: watch("multipleChoice.choice_b") ?? "",
-    choice_c: watch("multipleChoice.choice_c") ?? "",
-    choice_d: watch("multipleChoice.choice_d") ?? "",
-    choice_e: watch("multipleChoice.choice_e") ?? "",
-  };
+  const answer = watch("multipleChoice");
   const selectCorrectAnswer = watch("correctAnswer");
+
+  const seen = new Set<string>();
+  const options = OPTION_LABELS.flatMap((label) => {
+    const text = answer?.[`choice_${label}` as const]?.trim();
+    if (!text || seen.has(text)) return [];
+    seen.add(text);
+    return [{ label, text }];
+  });
+
+  const isStale =
+    !!selectCorrectAnswer &&
+    !options.some((option) => option.text === selectCorrectAnswer);
+
+  useEffect(() => {
+    if (isStale) setValue("correctAnswer", "");
+  }, [isStale, setValue]);
 
   async function onSubmit(data: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
@@ -123,13 +134,13 @@ export default function CreateNewQuestions({
           exam_questions: isMultipleChoice
             ? {
                 id: idEveryQuestion,
-                question: data.question,
+                question: data.questions,
                 multipleChoice: data.multipleChoice,
                 correctAnswer: data.correctAnswer,
               }
             : {
                 id: idEveryQuestion,
-                question: data.question,
+                question: data.questions,
               },
         };
 
@@ -161,32 +172,34 @@ export default function CreateNewQuestions({
         exam_questions: isMultipleChoice
           ? {
               id: idEveryQuestion,
-              question: data.question,
+              questions: data.questions,
               multipleChoice: data.multipleChoice,
               correctAnswer: data.correctAnswer,
             }
           : {
               id: idEveryQuestion,
-              question: data.question,
+              question: data.questions,
             },
       };
 
-      console.log(dataPayloadAddQuestion);
+      const req = await fetch("/api/teacher/addDataQuestion", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payloadAddDataQuestion: dataPayloadAddQuestion,
+          id_subject: data.id_subject,
+          id_teacher: dataTeacher.id_teacher,
+        }),
+      });
 
-      // const req = await fetch("/api/teacher/addDataQuestion", {
-      //   method: "PATCH",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(dataPayloadAddQuestion),
-      // });
+      const res = await req.json();
 
-      // const res = await req.json();
-
-      // if (!res.success) {
-      //   toast.error("Error tambah data", {
-      //     description: res.message,
-      //   });
-      //   return;
-      // }
+      if (!res.success) {
+        toast.error("Error tambah data", {
+          description: res.message,
+        });
+        return;
+      }
 
       toast.success("Soal berhasil ditambahkan.");
 
@@ -287,7 +300,17 @@ export default function CreateNewQuestions({
                   control={control}
                   name="name_exam"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(name) => {
+                        field.onChange(name);
+
+                        const exam = dataExam?.find(
+                          (e) => e.name_exam === name,
+                        );
+                        setValue("id_subject", exam?.id_subject ?? "");
+                      }}
+                      value={field.value}
+                    >
                       <SelectTrigger
                         id="exam-name"
                         className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
@@ -331,7 +354,7 @@ export default function CreateNewQuestions({
             </div>
 
             {/* New Exam Name */}
-            {isNewNameExam === "buatUjianBaru" && (
+            {selectedExamName === "buatUjianBaru" && (
               <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
                 <label
                   htmlFor="nama_ujian"
@@ -375,13 +398,13 @@ export default function CreateNewQuestions({
 
               <Textarea
                 id="questions"
-                {...register("question")}
+                {...register("questions")}
                 placeholder="Tulis soal ujian di sini..."
                 className="min-h-32 resize-y rounded-xl border-slate-200 bg-white p-4 text-sm leading-6"
               />
-              {errors.question && (
+              {errors.questions && (
                 <p className="text-red-500 text-xs mt-0.5">
-                  {errors.question?.message}
+                  {errors.questions?.message}
                 </p>
               )}
             </div>
@@ -401,7 +424,7 @@ export default function CreateNewQuestions({
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {examOptions.map((option: ExamOption) => {
+                {OPTION_LABELS.map((option: ExamOption) => {
                   const answerKey = `choice_${option}` as keyof typeof answer;
                   const optionField =
                     `multipleChoice.choice_${option}` as const;
@@ -461,29 +484,33 @@ export default function CreateNewQuestions({
                   control={control}
                   name="correctAnswer"
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                      disabled={options.length === 0}
+                    >
                       <SelectTrigger
                         id="correct-answer"
                         className="h-12 w-full rounded-xl border-slate-200 bg-white sm:w-1/2"
                       >
-                        <SelectValue placeholder="Pilih jawaban yang benar" />
+                        <SelectValue
+                          placeholder={
+                            options.length === 0
+                              ? "Isi opsi jawaban terlebih dahulu"
+                              : "Pilih jawaban yang benar"
+                          }
+                        />
                       </SelectTrigger>
 
                       <SelectContent className="rounded-xl bg-white">
-                        {examOptions.map((option: ExamOption) => {
-                          const answerKey =
-                            `choice_${option}` as keyof typeof answer;
-
-                          return (
-                            <SelectItem key={option} value={option}>
-                              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold uppercase text-blue-600">
-                                {option}
-                              </span>
-                              {answer[answerKey] ||
-                                `Opsi ${option.toUpperCase()}`}
-                            </SelectItem>
-                          );
-                        })}
+                        {options.map(({ label, text }) => (
+                          <SelectItem key={label} value={text}>
+                            <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold uppercase text-blue-600">
+                              {label}
+                            </span>
+                            {text}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   )}
@@ -524,8 +551,8 @@ export default function CreateNewQuestions({
                   {/* Question Preview */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                      {isNewNameExam === "buatUjianBaru"
-                        ? isNewNameExam
+                      {selectedExamName === "buatUjianBaru"
+                        ? selectedExamName
                         : selectedValueNameExam}
                     </p>
 
@@ -540,36 +567,30 @@ export default function CreateNewQuestions({
                   {isTypeExam === "PG" && (
                     <>
                       <div className="space-y-2">
-                        {examOptions.map((option) => {
-                          const answerKey =
-                            `choice_${option}` as keyof typeof answer;
+                        {options.map((option) => (
+                          <div
+                            key={option.label}
+                            className={`flex items-start gap-3 rounded-xl border p-3 ${
+                              selectCorrectAnswer === option.text
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-slate-200 bg-white"
+                            }`}
+                          >
+                            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold uppercase text-slate-600">
+                              {option.label}
+                            </span>
 
-                          return (
-                            <div
-                              key={option}
-                              className={`flex items-start gap-3 rounded-xl border p-3 ${
-                                selectCorrectAnswer === option
-                                  ? "border-emerald-200 bg-emerald-50"
-                                  : "border-slate-200 bg-white"
-                              }`}
-                            >
-                              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold uppercase text-slate-600">
-                                {option}
+                            <span className="text-sm leading-6 text-slate-700">
+                              {option.text}
+                            </span>
+
+                            {selectCorrectAnswer === option.text && (
+                              <span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-600">
+                                Benar
                               </span>
-
-                              <span className="text-sm leading-6 text-slate-700">
-                                {answer[answerKey] ||
-                                  `Opsi ${option.toUpperCase()}`}
-                              </span>
-
-                              {selectCorrectAnswer === option && (
-                                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-600">
-                                  Benar
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })}
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </>
                   )}
