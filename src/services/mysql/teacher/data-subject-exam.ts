@@ -3,7 +3,7 @@ import { pool } from "@/src/lib/db";
 import { TypeExamQuestions } from "@/src/types/dataExam";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { randomUUID } from "crypto";
-import { ExamSchema } from "@/src/schemas/addDataExam";
+import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -383,6 +383,78 @@ export async function handleAddDataExam({
       };
     }
 
+    console.error("Gagal membuat soal", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Terjadi kesalahan pada server.",
+    };
+  }
+}
+
+export async function handleAddDataExamQuestion(
+  payloadAddDataQuestion: unknown,
+  id_subject: string,
+  id_teacher: string,
+) {
+  const parsed = ExamQuestion.safeParse(payloadAddDataQuestion);
+  const idEveryQuestion = `EX-${randomUUID()}`;
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      status: 400,
+      message: "Data untuk edit ujian tidak valid.",
+      errors: parsed.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+    };
+  }
+
+  const question = {
+    id: idEveryQuestion,
+    questions: parsed.data,
+  };
+
+  const query = `
+    UPDATE subject_exam 
+    SET exam_questions = JSON_ARRAY_APPEND(
+      COALESCE(exam_questions, JSON_ARRAY()), '$', CAST(? AS JSON)
+    )
+    WHERE id_subject = ? AND id_teacher = ?
+  `;
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      JSON.stringify(question),
+      id_subject,
+      id_teacher,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return { success: false, status: 404, message: "Ujian tidak ditemukan." };
+    }
+
+    return {
+      success: true,
+      status: 201,
+      message: "Berhasil tambah soal ujian.",
+      data: { id: question.id },
+    };
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "ER_DUP_ENTRY"
+    ) {
+      return {
+        success: false,
+        status: 409,
+        message: "Soal ujian sudah ada.",
+      };
+    }
     console.error("Gagal membuat soal", error);
     return {
       success: false,

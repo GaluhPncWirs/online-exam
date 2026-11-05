@@ -8,7 +8,7 @@ const CHOICE_KEYS = [
   "choice_e",
 ] as const;
 
-export const ExamQuestion = z.object({
+export const ExamQuestionInput = z.object({
   question: z
     .string()
     .trim()
@@ -26,10 +26,15 @@ export const ExamQuestion = z.object({
   correctAnswer: z.string().trim().optional(),
 });
 
-type ExamQuestionInput = z.infer<typeof ExamQuestion>;
+export const ExamQuestion = ExamQuestionInput.extend({
+  id: z.string().trim().min(1),
+});
+
+export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
+export type ExamQuestionType = z.infer<typeof ExamQuestion>;
 
 function validateMultipleChoice(
-  q: ExamQuestionInput,
+  q: ExamQuestionInputType,
   ctx: z.RefinementCtx,
   basePath: (string | number)[] = [],
 ) {

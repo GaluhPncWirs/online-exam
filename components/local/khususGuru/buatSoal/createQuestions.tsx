@@ -28,6 +28,7 @@ import {
 import { getDataExam } from "@/src/actions/dataExams";
 import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
+import { randomUUID } from "crypto";
 
 const examOptions = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof examOptions)[number];
@@ -109,6 +110,7 @@ export default function CreateNewQuestions({
   async function onSubmit(data: CreateExamSchemaType) {
     const isNewExam = selectedValueNameExam === "buatUjianBaru";
     const isMultipleChoice = isTypeExam === "PG";
+    const idEveryQuestion = `EX-${randomUUID()}`;
 
     try {
       if (isNewExam) {
@@ -118,11 +120,13 @@ export default function CreateNewQuestions({
           name_exam: data.name_exam,
           exam_questions: isMultipleChoice
             ? {
+                id: idEveryQuestion,
                 question: data.question,
                 multipleChoice: data.multipleChoice,
                 correctAnswer: data.correctAnswer,
               }
             : {
+                id: idEveryQuestion,
                 question: data.question,
               },
         };
@@ -151,80 +155,36 @@ export default function CreateNewQuestions({
         setOpenDialog(false);
       }
 
-      // const { data: exam, error: examError } = await supabase
-      //   .from("exams")
-      //   .select("id, questions_exam, idTeacher")
-      //   .eq("nama_ujian", selectedValueNameExam)
-      //   .eq("idTeacher", idTeacher)
-      //   .maybeSingle();
+      const dataPayloadAddQuestion = {
+        exam_questions: isMultipleChoice
+          ? {
+              question: data.question,
+              multipleChoice: data.multipleChoice,
+              correctAnswer: data.correctAnswer,
+            }
+          : {
+              question: data.question,
+            },
+      };
 
-      // if (examError) {
-      //   console.error("Get exam error:", examError);
+      const req = await fetch("/api/teacher/addDataQuestion", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataPayloadAddQuestion),
+      });
 
-      //   toast("Gagal ❌", {
-      //     description: "Gagal mengambil data ujian.",
-      //   });
+      const res = await req.json();
 
-      //   return;
-      // }
+      if (!res.success) {
+        toast.error("Error tambah data", {
+          description: res.message,
+        });
+        return;
+      }
 
-      // if (!exam) {
-      //   toast("Gagal ❌", {
-      //     description: "Ujian tidak ditemukan.",
-      //   });
+      toast.success("Soal berhasil ditambahkan.");
 
-      //   return;
-      // }
-
-      // // =========================================================
-      // // 4. Buat question baru
-      // // =========================================================
-
-      // const newQuestion = isMultipleChoice
-      //   ? {
-      //       id: useRandomId(7, "EX"),
-      //       questions: dataNewExam.question,
-      //       answerPg: dataNewExam.multipleChoice,
-      //       correctAnswer: dataNewExam.correctAnswer,
-      //     }
-      //   : {
-      //       id: useRandomId(7, "EX"),
-      //       questions: dataNewExam.question,
-      //     };
-
-      // const currentQuestions = Array.isArray(exam.questions_exam)
-      //   ? exam.questions_exam
-      //   : [];
-
-      // const updatedQuestions = [...currentQuestions, newQuestion];
-
-      // // =========================================================
-      // // 5. Update questions
-      // // =========================================================
-
-      // const { error: updateError } = await supabase
-      //   .from("exams")
-      //   .update({
-      //     questions_exam: updatedQuestions,
-      //   })
-      //   .eq("id", exam.id)
-      //   .eq("idTeacher", idTeacher);
-
-      // if (updateError) {
-      //   console.error("Update exam error:", updateError);
-
-      //   toast("Gagal ❌", {
-      //     description: "Soal gagal ditambahkan. Periksa kembali data soal.",
-      //   });
-
-      //   return;
-      // }
-
-      // toast("Berhasil ✅", {
-      //   description: "Soal berhasil ditambahkan.",
-      // });
-
-      // setOpenDialog(false);
+      setOpenDialog(false);
     } catch (error) {
       console.error("Unexpected error:", error);
 

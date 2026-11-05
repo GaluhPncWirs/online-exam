@@ -70,7 +70,8 @@
         "memperbaiki bug pada sesi login selesai selalu mengarah ke halaman introduction, karena data role yang dari response api tidak ada",
         "selesai mengerjakan fungsi untuk tambah data ujian dengan tingkat keamanan yang cukup tinggi",
         "sedang mengerjakan bagian untuk buat data ujian",
-        "memperbaiki schema zod di bagian buat ujian"
+        "memperbaiki schema zod di bagian buat ujian",
+        "selesai mengerjakan untuk implementasi penambahan data ujian"
     ],
     "sqltools.connections": [
         {
