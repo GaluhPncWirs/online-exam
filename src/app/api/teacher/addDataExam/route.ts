@@ -17,14 +17,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { type_exam, id_teacher, name_exam, exam_questions } = body;
+    const { id_teacher, name_exam, type_exam, exam_questions } = body;
 
     const result = await handleAddDataExam({
-      type_exam,
       id_teacher,
       name_exam,
+      type_exam,
       exam_questions,
     });
+
+    console.log(result.errors);
 
     if (!result.success) {
       return NextResponse.json(

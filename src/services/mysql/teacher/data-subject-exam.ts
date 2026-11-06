@@ -8,6 +8,7 @@ import {
   ExamQuestionInput,
   ExamSchema,
 } from "@/src/schemas/addDataExam";
+import { parse } from "date-fns";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -315,16 +316,16 @@ export async function handleGetDataExam(id_teacher: string) {
 }
 
 type PayloadDataExam = {
-  type_exam: "PG" | "ESSAY";
   id_teacher: string;
-  exam_questions: TypeExamQuestions;
   name_exam: string;
+  type_exam: "PG" | "ESSAY";
+  exam_questions: TypeExamQuestions;
 };
 
 export async function handleAddDataExam({
-  type_exam,
   id_teacher,
   name_exam,
+  type_exam,
   exam_questions,
 }: PayloadDataExam) {
   const parsed = ExamSchema.safeParse({
@@ -339,6 +340,10 @@ export async function handleAddDataExam({
       success: false,
       status: 400,
       message: "Data ujian tidak valid.",
+      errors: parsed.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
     };
   }
 

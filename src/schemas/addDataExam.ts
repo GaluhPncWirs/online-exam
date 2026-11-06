@@ -90,7 +90,7 @@ export const ExamSchema = z
     id_teacher: z.string().min(1).max(50),
     name_exam: z.string().trim().min(3).max(150),
     type_exam: z.enum(["PG", "ESSAY"]),
-    exam_questions: z.array(ExamQuestionInput).min(1).max(200),
+    exam_questions: z.array(ExamQuestion).min(1).max(100),
   })
   .superRefine((data, ctx) => {
     if (data.type_exam !== "PG") return;
@@ -102,7 +102,7 @@ export const ExamSchema = z
 
 export const createExamSchema = z
   .object({
-    id_subject: z.string().trim().min(1, "Harus ada id ujian"),
+    id_subject: z.string().trim().optional(),
     type_exam: z.enum(["PG", "ESSAY"], {
       error: "Pilih salah satu",
     }),
@@ -111,7 +111,7 @@ export const createExamSchema = z
     ...ExamQuestionInput.shape,
   })
   .superRefine((data, ctx) => {
-    if (data.name_exam === "buatUjianBaru") {
+    if (data.name_exam === "+ Buat Ujian Baru") {
       const name = data.new_name_exam ?? "";
 
       if (name === "") {

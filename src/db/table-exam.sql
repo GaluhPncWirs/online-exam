@@ -278,3 +278,134 @@ UPDATE subject_exam
 SELECT JSON_SEARCH(exam_questions, 'one', 'Choose the correct word to complete the sentence: I have lived here \\_\\_\\_ 2020.', NULL, '$[*].questions') AS path
 FROM subject_exam
 WHERE id_subject = 'SUB-wPTu3V';
+
+-- {
+--   "id_subject": "SUB-rT6UeV",
+--   "id_teacher": "TCR-ar45dgU",
+--   "created_at": "2026-11-06 09:00:00",
+--   "exam_questions": [
+--     {
+--       "id": "EX-MTK1",
+--       "questions": "Hasil dari 25 × 12 adalah?",
+--       "correctAnswer": "300",
+--       "multipleChoice": {
+--         "choice_a": "250",
+--         "choice_b": "275",
+--         "choice_c": "300",
+--         "choice_d": "325",
+--         "choice_e": "350"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK2",
+--       "questions": "Hasil dari 144 ÷ 12 adalah?",
+--       "correctAnswer": "12",
+--       "multipleChoice": {
+--         "choice_a": "10",
+--         "choice_b": "11",
+--         "choice_c": "12",
+--         "choice_d": "13",
+--         "choice_e": "14"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK3",
+--       "questions": "Jika x + 15 = 30, berapakah nilai x?",
+--       "correctAnswer": "15",
+--       "multipleChoice": {
+--         "choice_a": "10",
+--         "choice_b": "12",
+--         "choice_c": "15",
+--         "choice_d": "20",
+--         "choice_e": "25"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK4",
+--       "questions": "Berapakah hasil dari 3² + 4²?",
+--       "correctAnswer": "25",
+--       "multipleChoice": {
+--         "choice_a": "7",
+--         "choice_b": "12",
+--         "choice_c": "16",
+--         "choice_d": "20",
+--         "choice_e": "25"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK5",
+--       "questions": "Sebuah persegi memiliki panjang sisi 8 cm. Berapakah luas persegi tersebut?",
+--       "correctAnswer": "64 cm²",
+--       "multipleChoice": {
+--         "choice_a": "16 cm²",
+--         "choice_b": "32 cm²",
+--         "choice_c": "48 cm²",
+--         "choice_d": "64 cm²",
+--         "choice_e": "80 cm²"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK6",
+--       "questions": "Hasil dari 3/4 + 1/2 adalah?",
+--       "correctAnswer": "5/4",
+--       "multipleChoice": {
+--         "choice_a": "1/4",
+--         "choice_b": "3/4",
+--         "choice_c": "4/4",
+--         "choice_d": "5/4",
+--         "choice_e": "6/4"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK7",
+--       "questions": "Sebuah segitiga memiliki alas 12 cm dan tinggi 10 cm. Berapakah luas segitiga tersebut?",
+--       "correctAnswer": "60 cm²",
+--       "multipleChoice": {
+--         "choice_a": "40 cm²",
+--         "choice_b": "50 cm²",
+--         "choice_c": "60 cm²",
+--         "choice_d": "100 cm²",
+--         "choice_e": "120 cm²"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK8",
+--       "questions": "Jika 2x - 6 = 14, berapakah nilai x?",
+--       "correctAnswer": "10",
+--       "multipleChoice": {
+--         "choice_a": "4",
+--         "choice_b": "6",
+--         "choice_c": "8",
+--         "choice_d": "10",
+--         "choice_e": "12"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK9",
+--       "questions": "Rata-rata dari bilangan 6, 8, 10, 12, dan 14 adalah?",
+--       "correctAnswer": "10",
+--       "multipleChoice": {
+--         "choice_a": "8",
+--         "choice_b": "9",
+--         "choice_c": "10",
+--         "choice_d": "11",
+--         "choice_e": "12"
+--       }
+--     },
+--     {
+--       "id": "EX-MTK10",
+--       "questions": "Sebuah lingkaran memiliki jari-jari 7 cm. Jika π = 22/7, berapakah keliling lingkaran tersebut?",
+--       "correctAnswer": "44 cm",
+--       "multipleChoice": {
+--         "choice_a": "22 cm",
+--         "choice_b": "33 cm",
+--         "choice_c": "44 cm",
+--         "choice_d": "77 cm",
+--         "choice_e": "154 cm"
+--       }
+--     }
+--   ],
+--   "name_exam": "Ujian Mata Pelajaran Matematika",
+--   "type_exam": "PG",
+--   "deleted_at": null
+-- }

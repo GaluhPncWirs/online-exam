@@ -95,12 +95,10 @@ export default function CreateNewQuestions({
     };
   }, []);
 
-  const selectedExamName = watch("name_exam");
+  const newNameExam = watch("new_name_exam");
   const isTypeExam = watch("type_exam");
   const question = watch("questions");
-
   const selectedValueNameExam = watch("name_exam");
-
   const answer = watch("multipleChoice");
   const selectCorrectAnswer = watch("correctAnswer");
 
@@ -121,33 +119,29 @@ export default function CreateNewQuestions({
   }, [isStale, setValue]);
 
   async function onSubmit(data: CreateExamSchemaType) {
-    const isNewExam = selectedValueNameExam === "buatUjianBaru";
+    const isNewExam = selectedValueNameExam === "+ Buat Ujian Baru";
     const isMultipleChoice = isTypeExam === "PG";
     const idEveryQuestion = generateRandomId(10, "EX");
+    const dataPayloadAddQuestion = {
+      id: idEveryQuestion,
+      questions: data.questions,
+      ...(isMultipleChoice && {
+        multipleChoice: data.multipleChoice,
+        correctAnswer: data.correctAnswer,
+      }),
+    };
 
     try {
       if (isNewExam) {
-        const dataPayloadAddExam = {
-          type_exam: data.type_exam,
-          id_teacher: dataTeacher.id_teacher,
-          name_exam: data.name_exam,
-          exam_questions: isMultipleChoice
-            ? {
-                id: idEveryQuestion,
-                question: data.questions,
-                multipleChoice: data.multipleChoice,
-                correctAnswer: data.correctAnswer,
-              }
-            : {
-                id: idEveryQuestion,
-                question: data.questions,
-              },
-        };
-
         const req = await fetch("/api/teacher/addDataExam", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dataPayloadAddExam),
+          body: JSON.stringify({
+            id_teacher: dataTeacher.id_teacher,
+            name_exam: newNameExam,
+            type_exam: data.type_exam,
+            exam_questions: [dataPayloadAddQuestion],
+          }),
         });
 
         const res = await req.json();
@@ -167,15 +161,6 @@ export default function CreateNewQuestions({
 
         setOpenDialog(false);
       }
-
-      const dataPayloadAddQuestion = {
-        id: idEveryQuestion,
-        questions: data.questions,
-        ...(isMultipleChoice && {
-          multipleChoice: data.multipleChoice,
-          correctAnswer: data.correctAnswer,
-        }),
-      };
 
       const req = await fetch("/api/teacher/addDataQuestion", {
         method: "PATCH",
@@ -315,7 +300,7 @@ export default function CreateNewQuestions({
 
                       <SelectContent className="rounded-xl bg-white p-1">
                         <SelectItem
-                          value="buatUjianBaru"
+                          value="+ Buat Ujian Baru"
                           className="rounded-lg bg-blue-50 font-semibold text-blue-600"
                         >
                           + Buat Ujian Baru
@@ -349,7 +334,7 @@ export default function CreateNewQuestions({
             </div>
 
             {/* New Exam Name */}
-            {selectedExamName === "buatUjianBaru" && (
+            {selectedValueNameExam === "+ Buat Ujian Baru" && (
               <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
                 <label
                   htmlFor="nama_ujian"
@@ -546,8 +531,8 @@ export default function CreateNewQuestions({
                   {/* Question Preview */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
-                      {selectedExamName === "buatUjianBaru"
-                        ? selectedExamName
+                      {selectedValueNameExam === "+ Buat Ujian Baru"
+                        ? newNameExam
                         : selectedValueNameExam}
                     </p>
 
