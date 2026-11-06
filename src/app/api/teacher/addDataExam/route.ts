@@ -26,8 +26,6 @@ export async function POST(req: NextRequest) {
       exam_questions,
     });
 
-    console.log(result.errors);
-
     if (!result.success) {
       return NextResponse.json(
         {

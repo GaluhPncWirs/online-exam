@@ -9,6 +9,8 @@ import {
   ExamSchema,
 } from "@/src/schemas/addDataExam";
 import { parse } from "date-fns";
+import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
+import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -347,16 +349,17 @@ export async function handleAddDataExam({
     };
   }
 
+  const idSubject = generateRandomId(6, "SUB");
+
   const query = `
     INSERT INTO subject_exam (id_subject, id_teacher, exam_questions, name_exam, type_exam)
-    VALUES (?,?,?,?,?)
+    SELECT ?, ?, CAST(? AS JSON), ?, ?
     FROM DUAL
     WHERE NOT EXISTS (
       SELECT 1 FROM subject_exam
       WHERE id_teacher = ? AND name_exam = ?
     )
   `;
-  const idSubject = `SUB-${randomUUID()}`;
 
   try {
     const [result] = await pool.execute<ResultSetHeader>(query, [
@@ -380,11 +383,13 @@ export async function handleAddDataExam({
       data: { id_subject: idSubject },
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    if (error?.code === "ER_DUP_ENTRY") {
+  } catch (error: unknown) {
+    const code = getMysqlErrorCode(error);
+
+    if (code === "ER_DUP_ENTRY") {
       return { success: false, status: 409, message: "Soal ujian sudah ada." };
     }
-    if (error?.code === "ER_NO_REFERENCED_ROW_2") {
+    if (code === "ER_NO_REFERENCED_ROW_2") {
       return {
         success: false,
         status: 400,
@@ -392,7 +397,7 @@ export async function handleAddDataExam({
       };
     }
 
-    console.error("Gagal membuat soal", error);
+    console.error("Gagal membuat ujian:", error);
     return {
       success: false,
       status: 500,
@@ -446,12 +451,9 @@ export async function handleAddDataExamQuestion(
       // data: { id: payloadAddDataQuestion?.exam_questions.id },
     };
   } catch (error: unknown) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "ER_DUP_ENTRY"
-    ) {
+    const code = getMysqlErrorCode(error);
+
+    if (code === "ER_DUP_ENTRY") {
       return {
         success: false,
         status: 409,
