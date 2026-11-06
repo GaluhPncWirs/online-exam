@@ -27,9 +27,13 @@ REFERENCES subject_exam(id_subject)
 
 ALTER TABLE manage_exams ADD COLUMN id_history_exam VARCHAR(10) NOT NULL
 
+ALTER TABLE manage_exams ADD COLUMN exam_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
 CREATE INDEX idx_manage_exams_teacher_created ON manage_exams (id_teacher, created_at)
 
 ALTER TABLE manage_exams MODIFY COLUMN id_history_exam VARCHAR(10) NOT NULL AFTER id_subject
+
+ALTER TABLE manage_exams MODIFY COLUMN deadline_exam JSON NOT NULL
 
 ALTER TABLE manage_exams ADD CONSTRAINT fk_id_history_exam FOREIGN KEY(id_history_exam) REFERENCES history_exams (id_history_exam)
 
@@ -41,8 +45,40 @@ UPDATE manage_exams SET id_history_exam = 'HIS-tY7cRq' WHERE id_manage_exam = 'M
 INSERT INTO manage_exams (id_manage_exam, id_teacher, id_subject, id_history_exam, class, deadline_exam, duration_exam, is_manage_exam) VALUES 
 ('MNG-Igr3nY', 'TCR-ar45dgU', 'SUB-rT6UeV', 'HIS-uRnH3o', '3A', '2026-10-15 07:44:32', 3000, TRUE)
 
-
-
 DELETE FROM manage_exams WHERE id_manage_exam = 'MNG-oxTG3r'
 
 SELECT * FROM manage_exams
+
+
+UPDATE manage_exams SET exam_start_at = '08:00' WHERE id_manage_exam = 'MNG-Igr3nY'
+
+UPDATE manage_exams SET exam_end_at = '10:30' WHERE id_manage_exam = 'MNG-Igr3nY'
+
+UPDATE manage_exams SET exam_start_at = '10:30' WHERE id_manage_exam = 'MNG-oxTG3r'
+
+UPDATE manage_exams SET exam_end_at = '12:00' WHERE id_manage_exam = 'MNG-oxTG3r'
+
+ALTER TABLE manage_exams DROP FOREIGN KEY fk_id_teacher;
+ALTER TABLE manage_exams DROP FOREIGN KEY fk_id_manage_subject_exam;
+ALTER TABLE manage_exams DROP FOREIGN KEY fk_id_history_exam;
+
+ALTER TABLE manage_exams
+CHANGE COLUMN deadline_exam exam_start_at TIME NOT NULL;
+
+ALTER TABLE manage_exams
+ADD COLUMN exam_end_at TIME NOT NULL AFTER exam_start_at;
+
+-- UPDATE manage_exams
+-- SET exam_end_at = DATE_ADD(exam_start_at, INTERVAL 90 MINUTE);
+
+ALTER TABLE manage_exams
+ADD CONSTRAINT fk_id_teacher
+FOREIGN KEY (id_teacher) REFERENCES account_teacher(id_teacher);
+
+ALTER TABLE manage_exams
+ADD CONSTRAINT fk_id_manage_subject_exam
+FOREIGN KEY (id_subject) REFERENCES subject_exam(id_subject);
+
+ALTER TABLE manage_exams
+ADD CONSTRAINT fk_id_history_exam
+FOREIGN KEY (id_history_exam) REFERENCES history_exams(id_history_exam);

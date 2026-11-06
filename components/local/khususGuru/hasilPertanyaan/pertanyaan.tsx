@@ -75,6 +75,7 @@ export default function ManageExams({ dataTeacher }: ManagedExamsProps) {
       exams: [],
     },
   });
+
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [openDialog, setOpenDialog] = useState({

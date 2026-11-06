@@ -77,7 +77,8 @@
         "selesai memperbaiki masalah error ketika tambah soal ujian ",
         "memperbaiki masalah error pada saat membuat ujian baru",
         "telah selesai memperbaiki masalah error pada query di bagian buat data ujian baru",
-        "sedang mengerjakan untuk refaktor di bagian kelola ujian"
+        "sedang mengerjakan untuk refaktor di bagian kelola ujian",
+        "memperbaiki schema zod untuk atur ujian"
     ],
     "sqltools.connections": [
         {

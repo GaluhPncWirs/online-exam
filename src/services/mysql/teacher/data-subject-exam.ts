@@ -5,6 +5,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { sendExamToStudentSchema } from "@/src/schemas/manageDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -460,4 +461,24 @@ export async function handleAddDataExamQuestion(
       message: "Terjadi kesalahan pada server.",
     };
   }
+}
+
+export async function handleInsertManagedExams(values: unknown) {
+  const parsed = sendExamToStudentSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      status: 400,
+      message: "Data untuk edit ujian tidak valid.",
+      errors: parsed.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+    };
+  }
+
+  const query = `
+    INSERT INTO manage_exams(exam_date,exam_start_at, exam_end_at, duration_exam,class)
+  `;
 }
