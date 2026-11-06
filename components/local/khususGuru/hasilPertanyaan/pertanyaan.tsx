@@ -33,9 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useManageExams } from "@/hooks/getDataManageExams";
-import { supabase } from "@/lib/supabase/data";
-import { useGetIdUsers } from "@/store/useGetIdUsers/state";
+import { getManageExamsAction } from "@/src/actions/dataExams";
+import { PAGE_SIZE } from "@/src/lib/constants";
+import { ManageExamItem } from "@/src/types/teacher/dataExam";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
@@ -163,15 +163,10 @@ export const sendExamToStudentSchema = z
 type SendExamToStudentSchemaType = z.infer<typeof sendExamToStudentSchema>;
 
 export default function ViewQuestions() {
-  const idTeacher = useGetIdUsers((state) => state.idUser);
   const [page, setPage] = useState(1);
-  const {
-    manageExams: dataManageExams,
-    totalData,
-    isLoading,
-    pageSize,
-  } = useManageExams(idTeacher, page);
-  const totalPages = Math.ceil(totalData / pageSize);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
+  const [totalData, setTotalData] = useState(0);
   const {
     control,
     register,
@@ -184,6 +179,7 @@ export default function ViewQuestions() {
       exams: [],
     },
   });
+  const totalPages = Math.ceil(totalData / PAGE_SIZE);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [openDialog, setOpenDialog] = useState({
     sendExam: false,
@@ -194,7 +190,7 @@ export default function ViewQuestions() {
     if (!dataManageExams?.length) return;
 
     reset({
-      exams: dataManageExams.map((exam: any) => ({
+      exams: dataManageExams.map((exam) => ({
         examId: String(exam.id),
         kelas: "",
         tanggalUjian: undefined,
@@ -204,6 +200,36 @@ export default function ViewQuestions() {
       })),
     });
   }, [dataManageExams, reset]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getManageExamsAction(page);
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataManageExams(result.data as ManageExamItem[]);
+        setTotalData(result.total);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
 
   async function onSubmit(data: SendExamToStudentSchemaType) {
     const selectedExams = data.exams.filter(
@@ -259,23 +285,23 @@ export default function ViewQuestions() {
     }
 
     try {
-      const { error } = await supabase
-        .from("exams")
-        .update({
-          deleted_at: new Date().toISOString(),
-        })
-        .eq("id", idExam)
-        .is("deleted_at", null);
+      // const { error } = await supabase
+      //   .from("exams")
+      //   .update({
+      //     deleted_at: new Date().toISOString(),
+      //   })
+      //   .eq("id", idExam)
+      //   .is("deleted_at", null);
 
-      if (error) {
-        console.error("Delete exam error:", error);
+      // if (error) {
+      //   console.error("Delete exam error:", error);
 
-        toast("Gagal ❌", {
-          description: "Ujian gagal dihapus.",
-        });
+      //   toast("Gagal ❌", {
+      //     description: "Ujian gagal dihapus.",
+      //   });
 
-        return;
-      }
+      //   return;
+      // }
 
       toast("Berhasil ✅", {
         description: "Ujian berhasil dihapus.",
@@ -295,7 +321,7 @@ export default function ViewQuestions() {
       <div className="border-b border-slate-200 px-5 py-5 sm:px-7">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">
               Exam Management
             </p>
 
@@ -309,8 +335,9 @@ export default function ViewQuestions() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
-            {dataManageExams.length} Ujian
+          <div className="text-sm font-semibold text-blue-600 space-x-2">
+            <span className="size-2 rounded-full bg-green-500 inline-block" />
+            <span>{dataManageExams.length} Ujian</span>
           </div>
         </div>
       </div>
@@ -353,9 +380,9 @@ export default function ViewQuestions() {
 
             <TableBody>
               {dataManageExams.length > 0 ? (
-                dataManageExams.map((data: any, i: number) => (
+                dataManageExams.map((data, i: number) => (
                   <TableRow
-                    key={data.id}
+                    key={data.id_subject}
                     className="align-top transition-colors hover:bg-slate-50"
                   >
                     {/* Number */}
@@ -367,11 +394,11 @@ export default function ViewQuestions() {
                     <TableCell className="pt-5 max-w-60">
                       <div>
                         <p className="font-bold text-slate-900 truncate">
-                          {data.nama_ujian}
+                          {data.name_exam}
                         </p>
 
-                        <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600">
-                          {data.tipeUjian === "pg" ? "Pilihan Ganda" : "Essay"}
+                        <span className="mt-1.5 inline-flex rounded-full text-[11px] font-semibold text-blue-600">
+                          {data.type_exam === "PG" ? "Pilihan Ganda" : "Essay"}
                         </span>
                       </div>
                     </TableCell>
@@ -550,7 +577,7 @@ export default function ViewQuestions() {
                     <TableCell className="pt-5">
                       <div className="flex flex-col gap-2">
                         <Link
-                          href={`/Teacher/dashboard/manageExams/${String(data.id)}`}
+                          href={`/Teacher/dashboard/manageExams/${String(data.id_subject)}`}
                           className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                         >
                           <PenLine className="size-5" />
@@ -560,7 +587,7 @@ export default function ViewQuestions() {
                           type="button"
                           variant="outline"
                           onClick={() =>
-                            getDataBeforeDelete(data.id, data.nama_ujian)
+                            getDataBeforeDelete(data.id_subject, data.name_exam)
                           }
                           className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
                         >

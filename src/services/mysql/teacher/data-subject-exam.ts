@@ -2,13 +2,7 @@
 import { pool } from "@/src/lib/db";
 import { TypeExamQuestions } from "@/src/types/dataExam";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { randomUUID } from "crypto";
-import {
-  ExamQuestion,
-  ExamQuestionInput,
-  ExamSchema,
-} from "@/src/schemas/addDataExam";
-import { parse } from "date-fns";
+import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 
@@ -173,7 +167,7 @@ export async function handleGetDataManageExams(
   const offset = from;
 
   const queryManageExams = `
-  SELECT me.created_at, me.class, me.id_subject, me.deadline_exam, se.name_exam
+  SELECT me.created_at, me.class, me.id_subject, me.deadline_exam, se.name_exam, se.type_exam
   FROM manage_exams as me
   LEFT JOIN subject_exam as se
     ON me.id_subject = se.id_subject
@@ -382,7 +376,6 @@ export async function handleAddDataExam({
       message: "Berhasil membuat soal ujian baru.",
       data: { id_subject: idSubject },
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: unknown) {
     const code = getMysqlErrorCode(error);
 

@@ -16,6 +16,7 @@ export type ManageExamItem = {
   deadline_exam: string | Date;
   name_exam: string | null;
   lengthStudent: string[];
+  type_exam: "PG" | "ESSAY";
   lengthStudentCompleteExams: string[];
   hasil_ujian: unknown[];
 };

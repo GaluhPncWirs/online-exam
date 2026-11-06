@@ -27,7 +27,6 @@ import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 
 export default function Introduction() {
   const dataUser = useGetDataUser((state) => state.dataUser);
-  console.log(dataUser);
   return (
     <Homepage>
       <header className="relative flex items-center overflow-hidden">

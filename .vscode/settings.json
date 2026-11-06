@@ -75,7 +75,8 @@
         "selesai membuat fungsi untuk tambah data soal dan membuat api nya juga tinggal di gunakan saja dan di test",
         "memperbaiki proses tambah data soal karena masalah schema zod",
         "selesai memperbaiki masalah error ketika tambah soal ujian ",
-        "memperbaiki masalah error pada saat membuat ujian baru"
+        "memperbaiki masalah error pada saat membuat ujian baru",
+        "telah selesai memperbaiki masalah error pada query di bagian buat data ujian baru"
     ],
     "sqltools.connections": [
         {
