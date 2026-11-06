@@ -23,7 +23,7 @@ import { PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
 import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
-import ViewQuestions from "../../khususGuru/hasilPertanyaan/pertanyaan";
+import ManageExams from "../../khususGuru/hasilPertanyaan/pertanyaan";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];
@@ -359,7 +359,7 @@ export default function DashboardClientTeacher({
           ) : dashboardButton.createQuestions === true ? (
             <CreateNewQuestions dataTeacher={dataTeacher} />
           ) : dashboardButton.viewResult === true ? (
-            <ViewQuestions />
+            <ManageExams dataTeacher={dataTeacher} />
           ) : // : dashboardButton.manageStudent === true ? (
           // //   <ManageStudent />
           // // ) : null

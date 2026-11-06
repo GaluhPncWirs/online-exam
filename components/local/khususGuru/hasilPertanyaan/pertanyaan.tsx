@@ -35,6 +35,11 @@ import {
 } from "@/components/ui/table";
 import { getManageExamsAction } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
+import {
+  sendExamToStudentSchema,
+  SendExamToStudentSchemaType,
+} from "@/src/schemas/manageDataExam";
+import { DataTeacher } from "@/src/types/dataUser";
 import { ManageExamItem } from "@/src/types/teacher/dataExam";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -48,121 +53,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
-const examScheduleSchema = z.object({
-  examId: z.string(),
-  kelas: z.string().optional(),
-  tanggalUjian: z.date().optional(),
-  mulai: z.string().optional(),
-  selesai: z.string().optional(),
-  durasi: z.string().optional(),
-});
+type ManagedExamsProps = {
+  dataTeacher: DataTeacher;
+};
 
-export const sendExamToStudentSchema = z
-  .object({
-    exams: z.array(examScheduleSchema),
-  })
-  .superRefine((data, ctx) => {
-    let selectedCount = 0;
-
-    data.exams.forEach((exam, index) => {
-      // examId bukan penentu apakah row digunakan.
-      // Kalau user belum mengisi apapun, row dianggap kosong.
-      const isConfigured =
-        !!exam.kelas ||
-        !!exam.tanggalUjian ||
-        !!exam.mulai ||
-        !!exam.selesai ||
-        !!exam.durasi;
-
-      // Row belum digunakan → abaikan
-      if (!isConfigured) {
-        return;
-      }
-
-      selectedCount++;
-
-      // ==============================
-      // Validasi row yang digunakan
-      // ==============================
-
-      if (!exam.kelas) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["exams", index, "kelas"],
-          message: "Pilih kelas",
-        });
-      }
-
-      if (!exam.tanggalUjian) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["exams", index, "tanggalUjian"],
-          message: "Pilih tanggal ujian",
-        });
-      }
-
-      if (!exam.mulai) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["exams", index, "mulai"],
-          message: "Tentukan waktu mulai",
-        });
-      }
-
-      if (!exam.selesai) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["exams", index, "selesai"],
-          message: "Tentukan waktu selesai",
-        });
-      }
-
-      if (!exam.durasi) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["exams", index, "durasi"],
-          message: "Pilih durasi",
-        });
-      }
-
-      // ==============================
-      // Validasi waktu
-      // ==============================
-
-      if (exam.mulai && exam.selesai) {
-        const [startHour, startMinute] = exam.mulai.split(":").map(Number);
-
-        const [endHour, endMinute] = exam.selesai.split(":").map(Number);
-
-        const startTime = startHour * 60 + startMinute;
-
-        const endTime = endHour * 60 + endMinute;
-
-        if (endTime <= startTime) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["exams", index, "selesai"],
-            message: "Waktu selesai harus lebih besar dari waktu mulai",
-          });
-        }
-      }
-    });
-
-    // Minimal satu ujian harus dipilih
-    if (selectedCount === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["exams"],
-        message: "Pilih minimal satu ujian",
-      });
-    }
-  });
-
-type SendExamToStudentSchemaType = z.infer<typeof sendExamToStudentSchema>;
-
-export default function ViewQuestions() {
+export default function ManageExams({ dataTeacher }: ManagedExamsProps) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
