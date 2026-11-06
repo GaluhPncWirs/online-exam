@@ -3,7 +3,11 @@ import { pool } from "@/src/lib/db";
 import { TypeExamQuestions } from "@/src/types/dataExam";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { randomUUID } from "crypto";
-import { ExamQuestionInput, ExamSchema } from "@/src/schemas/addDataExam";
+import {
+  ExamQuestion,
+  ExamQuestionInput,
+  ExamSchema,
+} from "@/src/schemas/addDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -397,7 +401,7 @@ export async function handleAddDataExamQuestion(
   id_subject: string,
   id_teacher: string,
 ) {
-  const parsed = ExamQuestionInput.safeParse(payloadAddDataQuestion);
+  const parsed = ExamQuestion.safeParse(payloadAddDataQuestion);
 
   if (!parsed.success) {
     return {

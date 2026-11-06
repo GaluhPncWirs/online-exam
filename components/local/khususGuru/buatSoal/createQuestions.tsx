@@ -169,17 +169,12 @@ export default function CreateNewQuestions({
       }
 
       const dataPayloadAddQuestion = {
-        exam_questions: isMultipleChoice
-          ? {
-              id: idEveryQuestion,
-              questions: data.questions,
-              multipleChoice: data.multipleChoice,
-              correctAnswer: data.correctAnswer,
-            }
-          : {
-              id: idEveryQuestion,
-              question: data.questions,
-            },
+        id: idEveryQuestion,
+        questions: data.questions,
+        ...(isMultipleChoice && {
+          multipleChoice: data.multipleChoice,
+          correctAnswer: data.correctAnswer,
+        }),
       };
 
       const req = await fetch("/api/teacher/addDataQuestion", {

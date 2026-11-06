@@ -26,9 +26,9 @@ export const ExamQuestionInput = z.object({
   correctAnswer: z.string().trim().optional(),
 });
 
-// export const ExamQuestion = ExamQuestionInput.extend({
-//   id: z.string().trim().min(1),
-// });
+export const ExamQuestion = ExamQuestionInput.extend({
+  id: z.string().trim().min(1),
+});
 
 export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
 // export type ExamQuestionType = z.infer<typeof ExamQuestion>;
