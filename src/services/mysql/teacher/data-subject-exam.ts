@@ -5,7 +5,11 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
-import { sendExamToStudentSchema } from "@/src/schemas/manageDataExam";
+import {
+  ExamScheduleInput,
+  sendExamToStudentSchema,
+} from "@/src/schemas/manageDataExam";
+import { Pool, PoolConnection } from "mysql2/promise";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -90,7 +94,9 @@ export async function handleGetStatisticsStudent(id_teacher: string) {
 
     const classes = managedExams
       .map((row) => row.class_id)
-      .filter((value): value is number => value !== null && value !== undefined);
+      .filter(
+        (value): value is number => value !== null && value !== undefined,
+      );
 
     let jumlahSiswa = 0;
 
@@ -239,7 +245,9 @@ export async function handleGetDataManageExams(
       ...new Set(
         managedExams
           .map((e) => e.class_id)
-          .filter((value): value is number => value !== null && value !== undefined),
+          .filter(
+            (value): value is number => value !== null && value !== undefined,
+          ),
       ),
     ];
 
@@ -488,6 +496,164 @@ export async function handleAddDataExamQuestion(
   }
 }
 
+export type ConflictInfo = {
+  examId: number;
+  subjectName: string;
+  teacherName: string;
+  startAt: Date;
+  endAt: Date;
+};
+
+export class ScheduleConflictError extends Error {
+  constructor(public readonly conflict: ConflictInfo) {
+    super("Jadwal ujian bentrok dengan ujian lain pada kelas yang sama");
+  }
+}
+
+const addMinutes = (d: Date, m: number) => new Date(d.getTime() + m * 60_000);
+
+async function withTransaction<T>(
+  pool: Pool,
+  fn: (c: PoolConnection) => Promise<T>,
+): Promise<T> {
+  const conn = await pool.getConnection();
+  try {
+    await conn.query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+    await conn.beginTransaction();
+    const result = await fn(conn);
+    await conn.commit();
+    return result;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release(); // wajib, kalau tidak pool akan habis
+  }
+}
+
+async function lockClasses(conn: PoolConnection, classIds: number[]) {
+  // Urut naik: dua transaksi yang mengunci kelas sama selalu dalam urutan sama → tidak deadlock
+  const ids = [...new Set(classIds)].sort((a, b) => a - b);
+  for (const id of ids) {
+    const [rows] = await conn.execute<RowDataPacket[]>(
+      "SELECT id FROM classes WHERE id = ? FOR UPDATE",
+      [id],
+    );
+    if (rows.length === 0) throw new Error(`Kelas ${id} tidak ditemukan`);
+  }
+}
+
+async function findConflict(
+  conn: PoolConnection,
+  classId: number,
+  startAt: Date,
+  endAt: Date,
+  excludeExamId?: number,
+): Promise<ConflictInfo | null> {
+  const [rows] = await conn.execute<RowDataPacket[]>(
+    `SELECT e.id, e.exam_start_at, e.exam_end_at,
+            s.name AS subject_name, t.name AS teacher_name
+       FROM manage_exams e
+       JOIN subjects s ON s.id = e.id_subject
+       JOIN teachers t ON t.id = e.id_teacher
+      WHERE e.class_id = ?
+        AND e.exam_start_at < ?      -- start lama < end baru
+        AND e.exam_end_at   > ?      -- end lama   > start baru
+        AND e.id <> ?                -- saat edit, abaikan ujian itu sendiri (id 0 tidak pernah ada)
+      LIMIT 1`,
+    [classId, endAt, startAt, excludeExamId ?? 0],
+  );
+  if (rows.length === 0) return null;
+  const r = rows[0];
+  return {
+    examId: r.id,
+    subjectName: r.subject_name,
+    teacherName: r.teacher_name,
+    startAt: r.exam_start_at,
+    endAt: r.exam_end_at,
+  };
+}
+
+export function createExam(
+  pool: Pool,
+  teacherId: number,
+  input: ExamScheduleInput,
+) {
+  const startAt = input.exam_start_at;
+  const endAt = addMinutes(startAt, input.duration);
+
+  return withTransaction(pool, async (conn) => {
+    await lockClasses(conn, [input.class]);
+
+    const conflict = await findConflict(conn, input.class, startAt, endAt);
+    if (conflict) throw new ScheduleConflictError(conflict);
+
+    const [res] = await conn.execute<ResultSetHeader>(
+      `INSERT INTO manage_exams
+         (id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        teacherId,
+        input.id_subject,
+        input.class,
+        startAt,
+        endAt,
+        input.duration,
+      ],
+    );
+    return res.insertId;
+  });
+}
+
+export function updateExam(
+  pool: Pool,
+  teacherId: number,
+  examId: number,
+  input: ExamScheduleInput,
+) {
+  const startAt = input.exam_start_at;
+  const endAt = addMinutes(startAt, input.duration);
+
+  return withTransaction(pool, async (conn) => {
+    // 1. Ketahui kelas lama agar bisa dikunci bersama kelas baru
+    const [cur] = await conn.execute<RowDataPacket[]>(
+      "SELECT class_id FROM manage_exams WHERE id = ? AND id_teacher = ?",
+      [examId, teacherId],
+    );
+    if (cur.length === 0)
+      throw new Error("Ujian tidak ditemukan atau bukan milik Anda");
+    const oldClassId = cur[0].class_id;
+
+    // 2. Kunci kelas lama dan baru (jika guru memindahkan ujian ke kelas lain)
+    await lockClasses(conn, [oldClassId, input.class]);
+
+    // 3. Pastikan ujian tidak dipindah kelas oleh transaksi lain sebelum lock didapat
+    const [again] = await conn.execute<RowDataPacket[]>(
+      "SELECT class_id FROM manage_exams WHERE id = ? FOR UPDATE",
+      [examId],
+    );
+    if (again[0]?.class_id !== oldClassId)
+      throw new Error("Data berubah, silakan coba lagi");
+
+    // 4. Cek bentrok dengan mengecualikan ujian ini sendiri
+    const conflict = await findConflict(
+      conn,
+      input.class,
+      startAt,
+      endAt,
+      examId,
+    );
+    if (conflict) throw new ScheduleConflictError(conflict);
+
+    await conn.execute(
+      `UPDATE manage_exams
+          SET id_subject = ?, class_id = ?, exam_start_at = ?, exam_end_at = ?, duration_exam = ?
+        WHERE id = ?`,
+      [input.id_subject, input.class, startAt, endAt, input.duration, examId],
+    );
+  });
+}
+
 export async function handleInsertManagedExams(values: unknown) {
   const parsed = sendExamToStudentSchema.safeParse(values);
 
@@ -527,9 +693,7 @@ export async function handleInsertManagedExams(values: unknown) {
     [classNames],
   );
 
-  const classMap = new Map(
-    classRows.map((row) => [row.name, Number(row.id)]),
-  );
+  const classMap = new Map(classRows.map((row) => [row.name, Number(row.id)]));
 
   const invalidClass = parsed.data.exams.find(
     (exam) => exam.kelas && !classMap.has(exam.kelas),

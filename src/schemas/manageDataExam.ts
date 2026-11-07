@@ -37,14 +37,14 @@ type RequiredField = keyof typeof REQUIRED_MESSAGES;
 // export type ExamScheduleInput = z.infer<typeof examScheduleSchema>;
 
 export const examScheduleSchema = z.object({
-  examId: z.string().trim(),
-  kelas: z.string().trim(),
+  id_subject: z.number().int().positive(),
+  class: z.number().int().positive(),
+  exam_start_at: z.coerce.date(),
   tanggalUjian: z.date().optional(),
-  mulai: z.string().trim(),
-  selesai: z.string().trim(),
-  durasi: z.string().trim(),
+  duration: z.number().int().min(1).max(480),
 });
 
+export type ExamScheduleInput = z.infer<typeof examScheduleSchema>;
 export type ExamSchedule = z.infer<typeof examScheduleSchema>;
 
 export const sendExamToStudentSchema = z
