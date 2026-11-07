@@ -80,7 +80,8 @@
         "sedang mengerjakan untuk refaktor di bagian kelola ujian",
         "memperbaiki schema zod untuk atur ujian",
         "menambahkan data kolom di database kelola ujian yaitu \"exam_start_at\" dan \"exam_end_at\"",
-        "memperbaiki masalah pada penamaan datetime di database dan meperbaiki format date"
+        "memperbaiki masalah pada penamaan datetime di database dan meperbaiki format date",
+        "sedang mengerjakan bagian untuk kirim soal ujian ke siswa. khususnya bagian proses insert data ke dalam tabel \"manage_exams\""
     ],
     "sqltools.connections": [
         {

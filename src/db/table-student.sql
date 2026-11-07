@@ -24,3 +24,14 @@ INSERT INTO account_students (id_student, fullname, class, email, password, nis,
 ('STD-aMClguF', 'Galuh panca wirasa', '3A', 'galuhpncwirs22@gmail.com', 'testPelajar123', '79704', '089782648264')
 
 SELECT * FROM account_students
+
+ALTER TABLE account_students
+    ADD COLUMN class_id INT UNSIGNED NULL,
+    ADD CONSTRAINT fk_student_class FOREIGN KEY (class_id) REFERENCES classes(id)
+
+UPDATE account_students AS s
+JOIN classes AS c ON c.name = s.class
+SET s.class_id = c.id
+WHERE s.role = "student"
+
+SELECT COUNT(*) FROM account_students WHERE role = 'student' AND class_id IS NULL;

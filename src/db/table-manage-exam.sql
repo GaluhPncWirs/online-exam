@@ -85,3 +85,15 @@ FOREIGN KEY (id_history_exam) REFERENCES history_exams(id_history_exam);
 
 ALTER TABLE manage_exams
 ADD UNIQUE KEY uq_exam_schedule (exam_date, exam_start_at, class);
+
+UPDATE manage_exams AS m
+JOIN classes AS c
+  ON c.name = m.class
+SET m.class_id = c.id;
+
+
+ALTER TABLE manage_exams
+  ADD COLUMN class_id INT UNSIGNED NOT NULL
+  ADD CONSTRAINT fk_exam_class FOREIGN KEY (class_id) REFERENCES classes(id)
+  ADD CONSTRAINT chk_exam_time CHECK (exam_end_at > exam_start_at),
+  ADD INDEX idx_exam_class_time (class_id, exam_start_at, exam_end_at);

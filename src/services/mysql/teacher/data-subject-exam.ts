@@ -56,7 +56,7 @@ type HistoryScoreRow = RowDataPacket & {
 
 export async function handleGetStatisticsStudent(id_teacher: string) {
   const queryManagedExams = `
-    SELECT DISTINCT class 
+    SELECT DISTINCT class_id 
     FROM manage_exams
     WHERE id_teacher = ?
   `;
