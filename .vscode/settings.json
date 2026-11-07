@@ -79,7 +79,8 @@
         "telah selesai memperbaiki masalah error pada query di bagian buat data ujian baru",
         "sedang mengerjakan untuk refaktor di bagian kelola ujian",
         "memperbaiki schema zod untuk atur ujian",
-        "menambahkan data kolom di database kelola ujian yaitu \"exam_start_at\" dan \"exam_end_at\""
+        "menambahkan data kolom di database kelola ujian yaitu \"exam_start_at\" dan \"exam_end_at\"",
+        "memperbaiki masalah pada penamaan datetime di database dan meperbaiki format date"
     ],
     "sqltools.connections": [
         {

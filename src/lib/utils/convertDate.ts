@@ -60,10 +60,6 @@ export function getCurrentTimeInMinutes(): number {
   return hour * 60 + minute;
 }
 
-/**
- * Mengubah format jam menjadi total menit.
- * Contoh: "08:30" menjadi 510.
- */
 export function toMinute(value: string): number {
   const [hour, minute] = value.split(":").map(Number);
 
