@@ -9,7 +9,11 @@ export async function handleGetDataSubjectExams(
 ) {
   const query = `
     SELECT
-      me.id_manage_exam, me.id_teacher, me.id_subject, me.id_history_exam, me.deadline_exam,
+      me.id_manage_exam,
+      me.id_teacher,
+      me.id_subject,
+      me.id_history_exam,
+      me.deadline_exam,
       account_teacher.fullname,
       subject_exam.name_exam,
       history_exams.id_student,
@@ -23,7 +27,9 @@ export async function handleGetDataSubjectExams(
       ON me.id_subject = subject_exam.id_subject
     JOIN history_exams
       ON me.id_history_exam = history_exams.id_history_exam
-    WHERE me.class = ?
+    JOIN classes AS c
+      ON c.id = me.class_id
+    WHERE c.name = ?
       AND history_exams.id_student = ?
   `;
 
@@ -45,10 +51,15 @@ export async function handleGetDataSubjectExams(
 
 export async function handleGetDataResultExamPerClass(idStudent: string) {
   const query = `
-  SELECT 
-    he.id_student, he.id_subject, he.result_exam, he.class 
-  FROM history_exams as he
-  WHERE he.id_student = ?
+    SELECT
+      he.id_student,
+      he.id_subject,
+      he.result_exam,
+      c.name AS class
+    FROM history_exams AS he
+    LEFT JOIN classes AS c
+      ON c.id = he.class_id
+    WHERE he.id_student = ?
   `;
 
   try {
@@ -89,15 +100,23 @@ export async function handleLateExam({
   className,
 }: PropsHandleLateExam) {
   const query = `
-    INSERT 
-      INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) 
-    SELECT ?, ?, ?, ?, ?, ?, ?
-    FROM DUAL
-    WHERE NOT EXISTS (
-      SELECT 1 
-      FROM history_exams
-      WHERE id_student = ? AND id_subject = ?
+    INSERT INTO history_exams (
+      id_history_exam,
+      id_student,
+      id_subject,
+      answer_student,
+      result_exam,
+      status_exam,
+      class_id
     )
+    SELECT ?, ?, ?, ?, ?, ?, c.id
+    FROM classes AS c
+    WHERE c.name = ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM history_exams
+        WHERE id_student = ? AND id_subject = ?
+      )
   `;
 
   const alreadySaved = {
@@ -118,7 +137,7 @@ export async function handleLateExam({
       result_exam,
       status_exam,
       className,
-      // parameter untuk NOT EXISTS
+      className,
       id_student,
       id_subject,
     ]);
@@ -188,13 +207,19 @@ export async function handleGetDataResultExam(
 
 export async function handleGetExams(id_subject: string, className: string) {
   const query = `
-    SELECT 
-      me.duration_exam, me.id_subject, me.class, se.exam_questions, se.name_exam, se.type_exam
+    SELECT
+      me.duration_exam,
+      me.id_subject,
+      c.name AS class,
+      se.exam_questions,
+      se.name_exam,
+      se.type_exam
     FROM manage_exams AS me
     JOIN subject_exam AS se
       ON me.id_subject = se.id_subject
-    WHERE 
-      me.id_subject = ? AND me.class = ?
+    JOIN classes AS c
+      ON c.id = me.class_id
+    WHERE me.id_subject = ? AND c.name = ?
     LIMIT 1
   `;
 
@@ -242,7 +267,20 @@ export async function handleSaveResultExam({
   status_exam,
   className,
 }: PropsHandleSaveExam) {
-  const query = `INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_student, result_exam, status_exam, class) VALUES ?,?,?,?,?,?,?`;
+  const query = `
+    INSERT INTO history_exams (
+      id_history_exam,
+      id_student,
+      id_subject,
+      answer_student,
+      result_exam,
+      status_exam,
+      class_id
+    )
+    SELECT ?, ?, ?, ?, ?, ?, c.id
+    FROM classes AS c
+    WHERE c.name = ?
+  `;
 
   const generateIdHistoryExam = generateRandomId(7, "HIS");
 

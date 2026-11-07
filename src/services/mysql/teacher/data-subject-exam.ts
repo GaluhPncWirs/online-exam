@@ -47,32 +47,39 @@ export async function handleGetDataResultExamsPending(id_teacher: string) {
 }
 
 type ManagedClassRow = RowDataPacket & {
-  class: string;
+  class_id: number;
 };
 
 type HistoryScoreRow = RowDataPacket & {
   result_exam: string | number | null;
 };
 
+type ClassRow = RowDataPacket & {
+  id: number;
+  name: string;
+};
+
 export async function handleGetStatisticsStudent(id_teacher: string) {
   const queryManagedExams = `
-    SELECT DISTINCT class_id 
-    FROM manage_exams
+    SELECT DISTINCT me.class_id 
+    FROM manage_exams AS me
+    INNER JOIN classes AS c
+      ON me.class_id = c.id
     WHERE id_teacher = ?
   `;
 
   const queryHistoryExams = `
     SELECT he.result_exam
     FROM history_exams AS he
-    INNER JOIN subject_exam as se
+    INNER JOIN subject_exam AS se
       ON he.id_subject = se.id_subject
     WHERE se.id_teacher = ?
   `;
 
   const queryStudent = `
-    SELECT DISTINCT id_student 
-    FROM account_students 
-    WHERE class IN (?)
+    SELECT DISTINCT a.id_student
+    FROM account_students AS a
+    WHERE a.class_id IN (?)
   `;
 
   try {
@@ -81,7 +88,9 @@ export async function handleGetStatisticsStudent(id_teacher: string) {
       pool.query<HistoryScoreRow[]>(queryHistoryExams, [id_teacher]),
     ]);
 
-    const classes = managedExams.map((row) => row.class).filter(Boolean);
+    const classes = managedExams
+      .map((row) => row.class_id)
+      .filter((value): value is number => value !== null && value !== undefined);
 
     let jumlahSiswa = 0;
 
@@ -127,6 +136,7 @@ export async function handleGetStatisticsStudent(id_teacher: string) {
 type ManagedExamRow = RowDataPacket & {
   created_at: Date;
   class: string;
+  class_id: number;
   id_subject: string;
   exam_date: Date;
   exam_start_at: string;
@@ -139,11 +149,12 @@ type HistoryExamRow = RowDataPacket & {
   id_subject: string;
   id_student: string;
   class: string;
-  exam_result: unknown;
+  result_exam: unknown;
 };
 
 type StudentRow = RowDataPacket & {
-  classes: string;
+  class: string;
+  class_id: number;
   id_student: string;
 };
 
@@ -171,13 +182,15 @@ export async function handleGetDataManageExams(
   const offset = from;
 
   const queryManageExams = `
-  SELECT me.created_at, me.class, me.id_subject, me.exam_date, me.exam_start_at, me.exam_end_at, se.name_exam, se.type_exam
-  FROM manage_exams as me
-  LEFT JOIN subject_exam as se
-    ON me.id_subject = se.id_subject
-  WHERE me.id_teacher = ?
-  ORDER BY me.created_at DESC
-  LIMIT ? OFFSET ?  
+    SELECT me.created_at, c.name AS class, me.class_id, me.id_subject, me.exam_date, me.exam_start_at, me.exam_end_at, se.name_exam, se.type_exam
+    FROM manage_exams AS me
+    LEFT JOIN classes AS c
+      ON c.id = me.class_id
+    LEFT JOIN subject_exam AS se
+      ON me.id_subject = se.id_subject
+    WHERE me.id_teacher = ?
+    ORDER BY me.created_at DESC
+    LIMIT ? OFFSET ?
   `;
 
   const queryCountRows = `
@@ -187,16 +200,20 @@ export async function handleGetDataManageExams(
   `;
 
   const queryHistoryExams = `
-    SELECT id_subject, id_student, class, result_exam
-    FROM history_exams
-    WHERE id_subject IN (?) 
-      AND class IN (?)
+    SELECT h.id_subject, h.id_student, c.name AS class, h.result_exam
+    FROM history_exams AS h
+    LEFT JOIN classes AS c
+      ON c.id = h.class_id
+    WHERE h.id_subject IN (?)
+      AND h.class_id IN (?)
   `;
 
   const queryStudent = `
-    SELECT class, id_student 
-    FROM account_students 
-    WHERE class IN (?)
+    SELECT c.name AS class, a.class_id, a.id_student
+    FROM account_students AS a
+    LEFT JOIN classes AS c
+      ON c.id = a.class_id
+    WHERE a.class_id IN (?)
   `;
 
   try {
@@ -218,17 +235,21 @@ export async function handleGetDataManageExams(
     const examIds = [
       ...new Set(managedExams.map((e) => e.id_subject).filter(Boolean)),
     ];
-    const classes = [
-      ...new Set(managedExams.map((e) => e.class).filter(Boolean)),
+    const classIds = [
+      ...new Set(
+        managedExams
+          .map((e) => e.class_id)
+          .filter((value): value is number => value !== null && value !== undefined),
+      ),
     ];
 
     const [historyExams, students] = await Promise.all([
       queryRows<HistoryExamRow[]>(
         queryHistoryExams,
-        [examIds, classes],
-        !examIds.length || !classes.length,
+        [examIds, classIds],
+        !examIds.length || !classIds.length,
       ),
-      queryRows<StudentRow[]>(queryStudent, [classes], !classes.length),
+      queryRows<StudentRow[]>(queryStudent, [classIds], !classIds.length),
     ]);
 
     const completeExamMap = new Map<
@@ -242,11 +263,11 @@ export async function handleGetDataManageExams(
 
       if (existing) {
         existing.studentIds.push(item.id_student);
-        existing.hasilUjian.push(item.exam_result);
+        existing.hasilUjian.push(item.result_exam);
       } else {
         completeExamMap.set(key, {
           studentIds: [item.id_student],
-          hasilUjian: [item.exam_result],
+          hasilUjian: [item.result_exam],
         });
       }
     });
@@ -254,9 +275,10 @@ export async function handleGetDataManageExams(
     const studentMap = new Map<string, string[]>();
 
     students.forEach((student) => {
-      const list = studentMap.get(student.classes) ?? [];
+      const key = student.class ?? String(student.class_id);
+      const list = studentMap.get(key) ?? [];
       list.push(student.id_student);
-      studentMap.set(student.classes, list);
+      studentMap.set(key, list);
     });
 
     const mergedData = managedExams.map((exam) => {
@@ -481,13 +503,99 @@ export async function handleInsertManagedExams(values: unknown) {
     };
   }
 
+  const idTeacher =
+    typeof (values as { id_teacher?: string })?.id_teacher === "string"
+      ? (values as { id_teacher?: string }).id_teacher
+      : undefined;
+
+  if (!idTeacher) {
+    return {
+      success: false,
+      status: 400,
+      message: "ID guru tidak ditemukan.",
+    };
+  }
+
+  const classNames = [...new Set(parsed.data.exams.map((exam) => exam.kelas))];
+
+  const [classRows] = await pool.query<ClassRow[]>(
+    `
+      SELECT id, name
+      FROM classes
+      WHERE name IN (?)
+    `,
+    [classNames],
+  );
+
+  const classMap = new Map(
+    classRows.map((row) => [row.name, Number(row.id)]),
+  );
+
+  const invalidClass = parsed.data.exams.find(
+    (exam) => exam.kelas && !classMap.has(exam.kelas),
+  );
+
+  if (invalidClass) {
+    return {
+      success: false,
+      status: 400,
+      message: `Kelas ${invalidClass.kelas} tidak ditemukan.`,
+    };
+  }
+
+  const rowsToInsert = parsed.data.exams
+    .filter((exam) => exam.kelas)
+    .map((exam) => {
+      const idManageExam = generateRandomId(8, "MNG");
+      const classId = classMap.get(exam.kelas)!;
+
+      return [
+        idManageExam,
+        idTeacher,
+        exam.examId,
+        classId,
+        exam.tanggalUjian ? new Date(exam.tanggalUjian) : new Date(),
+        exam.mulai,
+        exam.selesai,
+        Number(exam.durasi),
+      ];
+    });
+
+  if (!rowsToInsert.length) {
+    return {
+      success: false,
+      status: 400,
+      message: "Pilih minimal satu kelas untuk jadwal ujian.",
+    };
+  }
+
   const query = `
-    INSERT INTO manage_exams(exam_date,exam_start_at, exam_end_at, duration_exam,class)
-    SELECT ?, ?, ?, ?, ?
-    FROM DUAL
-    WHERE NOT EXISTS (
-      SELECT 1 FROM manage_exams
-      WHERE id_teacher = ? AND id_subject = ?
-    )
+    INSERT INTO manage_exams (
+      id_manage_exam,
+      id_teacher,
+      id_subject,
+      class_id,
+      exam_date,
+      exam_start_at,
+      exam_end_at,
+      duration_exam
+    ) VALUES ?
   `;
+
+  try {
+    await pool.query(query, [rowsToInsert]);
+
+    return {
+      success: true,
+      status: 201,
+      message: "Jadwal ujian berhasil disimpan.",
+    };
+  } catch (error) {
+    console.error("Gagal menyimpan jadwal ujian:", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Gagal menyimpan jadwal ujian.",
+    };
+  }
 }

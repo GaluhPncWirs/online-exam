@@ -35,3 +35,9 @@ SET s.class_id = c.id
 WHERE s.role = "student"
 
 SELECT COUNT(*) FROM account_students WHERE role = 'student' AND class_id IS NULL;
+
+ALTER TABLE account_students
+  MODIFY class_id INT UNSIGNED NOT NULL;
+
+ALTER TABLE account_students
+  DROP COLUMN class;

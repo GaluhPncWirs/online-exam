@@ -24,14 +24,35 @@ export async function handleUserRegister({
   email,
   password,
 }: PropsUserRegister): Promise<ResultUserRegister> {
-  const query = `
-  INSERT INTO account_students 
-    (id_student, fullname, class, email, password) 
-  VALUES (?,?,?,?,?)`;
   const idStudent = generateRandomId(7, "STD");
 
   try {
-    await pool.execute(query, [idStudent, fullName, classes, email, password]);
+    const queryClassId = `
+      SELECT id
+      FROM classes
+      WHERE name = ?
+      LIMIT 1
+    `;
+
+    const [classRows] = await pool.execute<RowDataPacket[]>(queryClassId, [classes]);
+
+    if (!classRows.length) {
+      return {
+        success: false,
+        status: 400,
+        message: "Kelas tidak ditemukan.",
+      };
+    }
+
+    const classId = classRows[0].id;
+
+    const query = `
+      INSERT INTO account_students
+        (id_student, fullname, class_id, email, password)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    await pool.execute(query, [idStudent, fullName, classId, email, password]);
 
     return {
       success: true,
@@ -69,17 +90,29 @@ export async function handleGetDataUser(
   const query =
     role === "siswa"
       ? `
-  SELECT 
-  id_student, created_at, fullname, class, email, type_account, role, nis, no_tlp, profil_img 
-    FROM account_students 
-  WHERE id_student = ? 
-  LIMIT 1`
+        SELECT 
+          a.id_student,
+          a.created_at,
+          a.fullname,
+          c.name AS class,
+          a.email,
+          a.type_account,
+          a.role,
+          a.nis,
+          a.no_tlp,
+          a.profil_img
+        FROM account_students AS a
+        LEFT JOIN classes AS c
+          ON c.id = a.class_id
+        WHERE a.id_student = ?
+        LIMIT 1
+      `
       : `
-  SELECT id_teacher, created_at, fullname, email, role, teach_role, nisn, no_tlp, profil_img 
-    FROM account_teacher 
-  WHERE id_teacher = ? 
-  LIMIT 1
-  `;
+        SELECT id_teacher, created_at, fullname, email, role, teach_role, nisn, no_tlp, profil_img 
+        FROM account_teacher 
+        WHERE id_teacher = ? 
+        LIMIT 1
+      `;
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(query, [idUser]);
 

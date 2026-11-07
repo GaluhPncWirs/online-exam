@@ -90,3 +90,25 @@ INSERT INTO history_exams (id_history_exam, id_student, id_subject, answer_stude
 UPDATE history_exams SET id_subject = "SUB-rT6UeV" WHERE id_history_exam = 'HIS-uRnH3o'
 
 SELECT * FROM history_exams
+
+
+ALTER TABLE history_exams
+  ADD COLUMN class_id INT UNSIGNED NULL;
+
+UPDATE history_exams AS h
+JOIN classes AS c ON c.name = h.class
+SET h.class_id = c.id;
+
+SELECT COUNT(*) AS belum_terhubung
+FROM history_exams
+WHERE class_id IS NULL;
+
+ALTER TABLE history_exams
+  MODIFY class_id INT UNSIGNED NOT NULL;
+
+ALTER TABLE history_exams
+  ADD CONSTRAINT fk_history_class
+  FOREIGN KEY (class_id) REFERENCES classes(id);
+
+ALTER TABLE history_exams
+  DROP COLUMN class;

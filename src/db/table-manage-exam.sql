@@ -97,3 +97,27 @@ ALTER TABLE manage_exams
   ADD CONSTRAINT fk_exam_class FOREIGN KEY (class_id) REFERENCES classes(id)
   ADD CONSTRAINT chk_exam_time CHECK (exam_end_at > exam_start_at),
   ADD INDEX idx_exam_class_time (class_id, exam_start_at, exam_end_at);
+
+ALTER TABLE manage_exams DROP FOREIGN KEY fk_exam_class;
+
+-- 3. manage_exams
+ALTER TABLE manage_exams
+  ADD COLUMN class_id INT UNSIGNED NULL;
+
+UPDATE manage_exams AS m
+JOIN classes AS c ON c.name = m.class
+SET m.class_id = c.id;
+
+SELECT COUNT(*) AS belum_terhubung
+FROM manage_exams
+WHERE class_id IS NULL;
+
+ALTER TABLE manage_exams
+  MODIFY class_id INT UNSIGNED NOT NULL;
+
+ALTER TABLE manage_exams
+  ADD CONSTRAINT fk_manage_exam_class
+  FOREIGN KEY (class_id) REFERENCES classes(id);
+
+ALTER TABLE manage_exams
+  DROP COLUMN class;
