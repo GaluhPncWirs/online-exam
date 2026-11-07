@@ -355,7 +355,11 @@ export default function DashboardClientTeacher({
           ) : dashboardButton.createQuestions === true ? (
             <CreateNewQuestions dataTeacher={dataTeacher} />
           ) : dashboardButton.viewResult === true ? (
-            <ManageExams dataTeacher={dataTeacher} />
+            <ManageExams
+              dataTeacher={dataTeacher}
+              totalData={totalData}
+              dataManageExams={dataManageExams}
+            />
           ) : // : dashboardButton.manageStudent === true ? (
           // //   <ManageStudent />
           // // ) : null

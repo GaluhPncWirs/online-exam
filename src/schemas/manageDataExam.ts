@@ -28,10 +28,18 @@ export const isScheduleConfigured = (exam: ExamSchedule) =>
 
 type RequiredField = keyof typeof REQUIRED_MESSAGES;
 
+// export const examScheduleSchema = z.object({
+//   idSubject: z.number().int().positive(),
+//   classId: z.number().int().positive(),
+//   examStartAt: z.coerce.date(),
+//   durationMinutes: z.number().int().min(1).max(480),
+// });
+// export type ExamScheduleInput = z.infer<typeof examScheduleSchema>;
+
 export const examScheduleSchema = z.object({
   examId: z.string().trim(),
   kelas: z.string().trim(),
-  tanggalUjian: z.date().optional(), // optional supaya row kosong tidak gagal di tahap tipe
+  tanggalUjian: z.date().optional(),
   mulai: z.string().trim(),
   selesai: z.string().trim(),
   durasi: z.string().trim(),

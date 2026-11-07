@@ -56,13 +56,17 @@ import { toast } from "sonner";
 
 type ManagedExamsProps = {
   dataTeacher: DataTeacher;
+  dataManageExams: ManageExamItem[];
+  totalData: number;
 };
 
-export default function ManageExams({ dataTeacher }: ManagedExamsProps) {
+export default function ManageExams({
+  dataTeacher,
+  dataManageExams,
+  totalData,
+}: ManagedExamsProps) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
-  const [totalData, setTotalData] = useState(0);
   const {
     control,
     register,
@@ -82,21 +86,6 @@ export default function ManageExams({ dataTeacher }: ManagedExamsProps) {
     sendExam: false,
     deleteExam: false,
   });
-
-  useEffect(() => {
-    if (!dataManageExams?.length) return;
-
-    reset({
-      exams: dataManageExams.map((exam) => ({
-        examId: String(exam.id),
-        kelas: "",
-        tanggalUjian: undefined,
-        mulai: "",
-        selesai: "",
-        durasi: "",
-      })),
-    });
-  }, [dataManageExams, reset]);
 
   useEffect(() => {
     let isMounted = true;

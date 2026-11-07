@@ -82,3 +82,6 @@ FOREIGN KEY (id_subject) REFERENCES subject_exam(id_subject);
 ALTER TABLE manage_exams
 ADD CONSTRAINT fk_id_history_exam
 FOREIGN KEY (id_history_exam) REFERENCES history_exams(id_history_exam);
+
+ALTER TABLE manage_exams
+ADD UNIQUE KEY uq_exam_schedule (exam_date, exam_start_at, class);

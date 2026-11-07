@@ -483,5 +483,11 @@ export async function handleInsertManagedExams(values: unknown) {
 
   const query = `
     INSERT INTO manage_exams(exam_date,exam_start_at, exam_end_at, duration_exam,class)
+    SELECT ?, ?, ?, ?, ?
+    FROM DUAL
+    WHERE NOT EXISTS (
+      SELECT 1 FROM manage_exams
+      WHERE id_teacher = ? AND id_subject = ?
+    )
   `;
 }
