@@ -128,6 +128,9 @@ type ManagedExamRow = RowDataPacket & {
   created_at: Date;
   class: string;
   id_subject: string;
+  exam_date: Date;
+  exam_start_at: string;
+  exam_end_at: string;
   deadline_exam: Date;
   name_exam: string | null;
 };
@@ -168,7 +171,7 @@ export async function handleGetDataManageExams(
   const offset = from;
 
   const queryManageExams = `
-  SELECT me.created_at, me.class, me.id_subject, me.deadline_exam, se.name_exam, se.type_exam
+  SELECT me.created_at, me.class, me.id_subject, me.exam_date, me.exam_start_at, me.exam_end_at, se.name_exam, se.type_exam
   FROM manage_exams as me
   LEFT JOIN subject_exam as se
     ON me.id_subject = se.id_subject

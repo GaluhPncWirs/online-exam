@@ -20,7 +20,7 @@ import {
 } from "@/src/types/teacher/dataExam";
 import { getManageExamsAction } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
-import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
+import { formatDateToYYYYMMDD, toMinute } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
 import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
 import ManageExams from "../../khususGuru/hasilPertanyaan/pertanyaan";
@@ -276,7 +276,7 @@ export default function DashboardClientTeacher({
                     ) : dataManageExams.length > 0 ? (
                       dataManageExams.map((item, i: number) => {
                         const examStatus = getExamStatus(
-                          new Date(item.deadline_exam),
+                          { start: item.exam_start_at, end: item.exam_end_at },
                           new Date(item.created_at),
                         );
 
@@ -310,8 +310,8 @@ export default function DashboardClientTeacher({
                             </TableCell>
 
                             <TableCell className="text-sm text-slate-500">
-                              {formatExamDate(item.created_at)}{" "}
-                              {formatExamDate(item.deadline_exam)}
+                              {formatDateToYYYYMMDD(item.exam_date)}{" "}
+                              {item.exam_start_at} {" - "} {item.exam_end_at}
                             </TableCell>
 
                             <TableCell>

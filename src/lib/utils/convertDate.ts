@@ -65,8 +65,7 @@ export function getCurrentTimeInMinutes(): number {
  * Contoh: "08:30" menjadi 510.
  */
 export function toMinute(value: string): number {
-  const normalize = value.trim().replace(".", ":");
-  const [hour, minute] = normalize.split(":").map(Number);
+  const [hour, minute] = value.split(":").map(Number);
 
   if (
     Number.isNaN(hour) ||
@@ -82,10 +81,6 @@ export function toMinute(value: string): number {
   return hour * 60 + minute;
 }
 
-/**
- * Mengubah rentang waktu menjadi total menit.
- * Contoh: "08:00 - 10:00".
- */
 export function convertToNumber(tenggatWaktu: string) {
   const [startValue, endValue] = tenggatWaktu
     .split("-")
@@ -97,7 +92,12 @@ export function convertToNumber(tenggatWaktu: string) {
   };
 }
 
-export function formatDateToYYYYMMDD(date: Date): string {
+type DatePart = "year" | "month" | "day" | "hour" | "minute";
+
+export function formatDateToYYYYMMDD(
+  date: Date,
+  selectedPart: DatePart[] = ["year", "month", "day"],
+): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
     year: "numeric",
@@ -110,5 +110,5 @@ export function formatDateToYYYYMMDD(date: Date): string {
   const getPart = (type: string) =>
     parts.find((part) => part.type === type)?.value;
 
-  return `${getPart("year")}-${getPart("month")}-${getPart("day")}-${getPart("hour")}-${getPart("minute")}`;
+  return selectedPart.map(getPart).join("-");
 }

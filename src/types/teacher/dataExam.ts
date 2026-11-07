@@ -10,11 +10,13 @@ export type DataExamsPending = {
 };
 
 export type ManageExamItem = {
-  created_at: string | Date;
+  created_at: Date;
   class: string;
   id_subject: string;
-  deadline_exam: string | Date;
+  exam_date: Date;
   name_exam: string | null;
+  exam_start_at: string;
+  exam_end_at: string;
   lengthStudent: string[];
   type_exam: "PG" | "ESSAY";
   lengthStudentCompleteExams: string[];

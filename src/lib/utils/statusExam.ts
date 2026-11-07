@@ -1,4 +1,4 @@
-import { convertToNumber, getCurrentTimeInMinutes } from "./convertDate";
+import { getCurrentTimeInMinutes, toMinute } from "./convertDate";
 
 const MONTHS_ID: Record<string, number> = {
   Januari: 0,
@@ -128,11 +128,17 @@ export function getTodayIndonesia(): ParsedDate {
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
 
+type TenggatWaktu = {
+  start: string;
+  end: string;
+};
+
 export function getExamStatus(
-  tenggatWaktu: Date,
+  tenggatWaktu: TenggatWaktu,
   tglUjian: DateInput,
 ): ExamStatus {
-  const { start, end } = convertToNumber(tenggatWaktu.toISOString());
+  const start = toMinute(tenggatWaktu.start ?? "");
+  const end = toMinute(tenggatWaktu.end ?? "");
 
   const examDate = parseIndonesianDate(tglUjian);
   const today = getTodayIndonesia();
