@@ -557,9 +557,9 @@ async function findConflict(
        JOIN subjects s ON s.id = e.id_subject
        JOIN teachers t ON t.id = e.id_teacher
       WHERE e.class_id = ?
-        AND e.exam_start_at < ?      -- start lama < end baru
-        AND e.exam_end_at   > ?      -- end lama   > start baru
-        AND e.id <> ?                -- saat edit, abaikan ujian itu sendiri (id 0 tidak pernah ada)
+        AND e.exam_start_at < ?     
+        AND e.exam_end_at   > ?      
+        AND e.id <> ?               
       LIMIT 1`,
     [classId, endAt, startAt, excludeExamId ?? 0],
   );
@@ -580,12 +580,12 @@ export function createExam(
   input: ExamScheduleInput,
 ) {
   const startAt = input.exam_start_at;
-  const endAt = addMinutes(startAt, input.duration);
+  const endAt = addMinutes(startAt, input.exam_duration);
 
   return withTransaction(pool, async (conn) => {
-    await lockClasses(conn, [input.class]);
+    await lockClasses(conn, [input.class_id]);
 
-    const conflict = await findConflict(conn, input.class, startAt, endAt);
+    const conflict = await findConflict(conn, input.class_id, startAt, endAt);
     if (conflict) throw new ScheduleConflictError(conflict);
 
     const [res] = await conn.execute<ResultSetHeader>(
@@ -595,10 +595,10 @@ export function createExam(
       [
         teacherId,
         input.id_subject,
-        input.class,
+        input.class_id,
         startAt,
         endAt,
-        input.duration,
+        input.exam_duration,
       ],
     );
     return res.insertId;
@@ -612,7 +612,7 @@ export function updateExam(
   input: ExamScheduleInput,
 ) {
   const startAt = input.exam_start_at;
-  const endAt = addMinutes(startAt, input.duration);
+  const endAt = addMinutes(startAt, input.exam_duration);
 
   return withTransaction(pool, async (conn) => {
     // 1. Ketahui kelas lama agar bisa dikunci bersama kelas baru
@@ -625,7 +625,7 @@ export function updateExam(
     const oldClassId = cur[0].class_id;
 
     // 2. Kunci kelas lama dan baru (jika guru memindahkan ujian ke kelas lain)
-    await lockClasses(conn, [oldClassId, input.class]);
+    await lockClasses(conn, [oldClassId, input.class_id]);
 
     // 3. Pastikan ujian tidak dipindah kelas oleh transaksi lain sebelum lock didapat
     const [again] = await conn.execute<RowDataPacket[]>(
@@ -638,7 +638,7 @@ export function updateExam(
     // 4. Cek bentrok dengan mengecualikan ujian ini sendiri
     const conflict = await findConflict(
       conn,
-      input.class,
+      input.class_id,
       startAt,
       endAt,
       examId,
@@ -649,117 +649,124 @@ export function updateExam(
       `UPDATE manage_exams
           SET id_subject = ?, class_id = ?, exam_start_at = ?, exam_end_at = ?, duration_exam = ?
         WHERE id = ?`,
-      [input.id_subject, input.class, startAt, endAt, input.duration, examId],
+      [
+        input.id_subject,
+        input.class_id,
+        startAt,
+        endAt,
+        input.exam_duration,
+        examId,
+      ],
     );
   });
 }
 
-export async function handleInsertManagedExams(values: unknown) {
-  const parsed = sendExamToStudentSchema.safeParse(values);
+// export async function handleInsertManagedExams(values: unknown) {
+//   const parsed = sendExamToStudentSchema.safeParse(values);
 
-  if (!parsed.success) {
-    return {
-      success: false,
-      status: 400,
-      message: "Data untuk edit ujian tidak valid.",
-      errors: parsed.error.issues.map((issue) => ({
-        path: issue.path.join("."),
-        message: issue.message,
-      })),
-    };
-  }
+//   if (!parsed.success) {
+//     return {
+//       success: false,
+//       status: 400,
+//       message: "Data untuk edit ujian tidak valid.",
+//       errors: parsed.error.issues.map((issue) => ({
+//         path: issue.path.join("."),
+//         message: issue.message,
+//       })),
+//     };
+//   }
 
-  const idTeacher =
-    typeof (values as { id_teacher?: string })?.id_teacher === "string"
-      ? (values as { id_teacher?: string }).id_teacher
-      : undefined;
+//   const idTeacher =
+//     typeof (values as { id_teacher?: string })?.id_teacher === "string"
+//       ? (values as { id_teacher?: string }).id_teacher
+//       : undefined;
 
-  if (!idTeacher) {
-    return {
-      success: false,
-      status: 400,
-      message: "ID guru tidak ditemukan.",
-    };
-  }
+//   if (!idTeacher) {
+//     return {
+//       success: false,
+//       status: 400,
+//       message: "ID guru tidak ditemukan.",
+//     };
+//   }
 
-  const classNames = [...new Set(parsed.data.exams.map((exam) => exam.kelas))];
+//   const classNames = [...new Set(parsed.data.exams.map((exam) => exam.kelas))];
 
-  const [classRows] = await pool.query<ClassRow[]>(
-    `
-      SELECT id, name
-      FROM classes
-      WHERE name IN (?)
-    `,
-    [classNames],
-  );
+//   const [classRows] = await pool.query<ClassRow[]>(
+//     `
+//       SELECT id, name
+//       FROM classes
+//       WHERE name IN (?)
+//     `,
+//     [classNames],
+//   );
 
-  const classMap = new Map(classRows.map((row) => [row.name, Number(row.id)]));
+//   const classMap = new Map(classRows.map((row) => [row.name, Number(row.id)]));
 
-  const invalidClass = parsed.data.exams.find(
-    (exam) => exam.kelas && !classMap.has(exam.kelas),
-  );
+//   const invalidClass = parsed.data.exams.find(
+//     (exam) => exam.kelas && !classMap.has(exam.kelas),
+//   );
 
-  if (invalidClass) {
-    return {
-      success: false,
-      status: 400,
-      message: `Kelas ${invalidClass.kelas} tidak ditemukan.`,
-    };
-  }
+//   if (invalidClass) {
+//     return {
+//       success: false,
+//       status: 400,
+//       message: `Kelas ${invalidClass.kelas} tidak ditemukan.`,
+//     };
+//   }
 
-  const rowsToInsert = parsed.data.exams
-    .filter((exam) => exam.kelas)
-    .map((exam) => {
-      const idManageExam = generateRandomId(8, "MNG");
-      const classId = classMap.get(exam.kelas)!;
+//   const rowsToInsert = parsed.data.exams
+//     .filter((exam) => exam.kelas)
+//     .map((exam) => {
+//       const idManageExam = generateRandomId(8, "MNG");
+//       const classId = classMap.get(exam.kelas)!;
 
-      return [
-        idManageExam,
-        idTeacher,
-        exam.examId,
-        classId,
-        exam.tanggalUjian ? new Date(exam.tanggalUjian) : new Date(),
-        exam.mulai,
-        exam.selesai,
-        Number(exam.durasi),
-      ];
-    });
+//       return [
+//         idManageExam,
+//         idTeacher,
+//         exam.examId,
+//         classId,
+//         exam.tanggalUjian ? new Date(exam.tanggalUjian) : new Date(),
+//         exam.mulai,
+//         exam.selesai,
+//         Number(exam.durasi),
+//       ];
+//     });
 
-  if (!rowsToInsert.length) {
-    return {
-      success: false,
-      status: 400,
-      message: "Pilih minimal satu kelas untuk jadwal ujian.",
-    };
-  }
+//   if (!rowsToInsert.length) {
+//     return {
+//       success: false,
+//       status: 400,
+//       message: "Pilih minimal satu kelas untuk jadwal ujian.",
+//     };
+//   }
 
-  const query = `
-    INSERT INTO manage_exams (
-      id_manage_exam,
-      id_teacher,
-      id_subject,
-      class_id,
-      exam_date,
-      exam_start_at,
-      exam_end_at,
-      duration_exam
-    ) VALUES ?
-  `;
+//   const query = `
+//     INSERT INTO manage_exams (
+//       id_manage_exam,
+//       id_teacher,
+//       id_subject,
+//       class_id,
+//       exam_date,
+//       exam_start_at,
+//       exam_end_at,
+//       duration_exam
+//     ) VALUES ?
+//   `;
 
-  try {
-    await pool.query(query, [rowsToInsert]);
+//   try {
+//     await pool.query(query, [rowsToInsert]);
 
-    return {
-      success: true,
-      status: 201,
-      message: "Jadwal ujian berhasil disimpan.",
-    };
-  } catch (error) {
-    console.error("Gagal menyimpan jadwal ujian:", error);
-    return {
-      success: false,
-      status: 500,
-      message: "Gagal menyimpan jadwal ujian.",
-    };
-  }
-}
+//     return {
+//       success: true,
+//       status: 201,
+//       message: "Jadwal ujian berhasil disimpan.",
+//     };
+//   } catch (error) {
+//     console.error("Gagal menyimpan jadwal ujian:", error);
+//     return {
+//       success: false,
+//       status: 500,
+//       message: "Gagal menyimpan jadwal ujian.",
+//     };
+//   }
+// }

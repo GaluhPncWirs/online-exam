@@ -4,11 +4,12 @@ export type DateInput = Date | string | number;
 
 export const getCurrentDate = (): Date => new Date();
 
-/**
- * Mengubah Date atau timestamp menjadi key tanggal
- * berdasarkan zona waktu Asia/Jakarta.
- * Format hasil: YYYY-MM-DD
- */
+export const addMinutes = (d: Date, m: number) =>
+  new Date(d.getTime() + m * 60_000);
+
+export const todayWIB = () =>
+  new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+
 export function getDateKey(date: DateInput): string | null {
   const value = date instanceof Date ? date : new Date(date);
 
