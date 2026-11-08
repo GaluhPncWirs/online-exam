@@ -33,7 +33,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getManageExamsAction } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
 import {
   sendExamToStudentSchema,
@@ -50,7 +49,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -87,46 +86,7 @@ export default function ManageExams({
     deleteExam: false,
   });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function getDataManageExams() {
-      setIsLoading(true);
-      try {
-        const result = await getManageExamsAction(page);
-        if (!isMounted) return;
-
-        if (!result.success) {
-          console.error(result.message);
-          return;
-        }
-
-        setDataManageExams(result.data as ManageExamItem[]);
-        setTotalData(result.total);
-      } catch (error) {
-        console.error("Gagal mengambil data manage exams:", error);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    getDataManageExams();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [page]);
-
   async function onSubmit(data: SendExamToStudentSchemaType) {
-    const selectedExams = data.exams.filter(
-      (exam) =>
-        exam.kelas &&
-        exam.tanggalUjian &&
-        exam.mulai &&
-        exam.selesai &&
-        exam.durasi,
-    );
-
     try {
       const { error } = await supabase
         .from("managed_exams")
@@ -297,7 +257,7 @@ export default function ManageExams({
 
                       <Controller
                         control={control}
-                        name={`exams.${i}.kelas`}
+                        name={`exams.${i}.class_id`}
                         render={({ field, fieldState }) => (
                           <>
                             <Select
@@ -339,52 +299,64 @@ export default function ManageExams({
 
                           <Controller
                             control={control}
-                            name={`exams.${i}.tanggalUjian`}
-                            render={({ field, fieldState }) => (
-                              <div className="space-y-1">
-                                <Popover>
-                                  <PopoverTrigger>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      className="h-10 w-full justify-between rounded-xl border-slate-200 font-medium text-slate-700"
-                                    >
-                                      {field.value
-                                        ? field.value.toLocaleDateString(
-                                            "id-ID",
-                                            {
-                                              day: "numeric",
-                                              month: "short",
-                                              year: "numeric",
-                                            },
-                                          )
-                                        : "Pilih Tanggal"}
-                                      <ChevronDownIcon className="size-4 text-slate-400" />
-                                    </Button>
-                                  </PopoverTrigger>
+                            name={`exams.${i}.exam_date`}
+                            render={({ field, fieldState }) => {
+                              const selectedDate = field.value
+                                ? new Date(field.value)
+                                : undefined;
 
-                                  <PopoverContent className="w-auto overflow-hidden rounded-xl p-0">
-                                    <Calendar
-                                      mode="single"
-                                      selected={field.value}
-                                      captionLayout="dropdown"
-                                      onSelect={field.onChange}
-                                      disabled={(date) =>
-                                        date <
-                                        new Date(
-                                          new Date().setHours(0, 0, 0, 0),
-                                        )
-                                      }
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                                {fieldState.error && (
-                                  <p className="mt-0.5 text-xs text-red-500">
-                                    {fieldState.error.message}
-                                  </p>
-                                )}
-                              </div>
-                            )}
+                              return (
+                                <div className="space-y-1">
+                                  <Popover>
+                                    <PopoverTrigger>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-10 w-full justify-between rounded-xl border-slate-200 font-medium text-slate-700"
+                                      >
+                                        {selectedDate
+                                          ? selectedDate.toLocaleDateString(
+                                              "id-ID",
+                                              {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                              },
+                                            )
+                                          : "Pilih Tanggal"}
+                                        <ChevronDownIcon className="size-4 text-slate-400" />
+                                      </Button>
+                                    </PopoverTrigger>
+
+                                    <PopoverContent className="w-auto overflow-hidden rounded-xl p-0">
+                                      <Calendar
+                                        mode="single"
+                                        selected={selectedDate}
+                                        captionLayout="dropdown"
+                                        onSelect={(date) =>
+                                          field.onChange(
+                                            date
+                                              ? date.toISOString()
+                                              : undefined,
+                                          )
+                                        }
+                                        disabled={(date) =>
+                                          date <
+                                          new Date(
+                                            new Date().setHours(0, 0, 0, 0),
+                                          )
+                                        }
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                  {fieldState.error && (
+                                    <p className="mt-0.5 text-xs text-red-500">
+                                      {fieldState.error.message}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            }}
                           />
                         </div>
 
@@ -397,7 +369,7 @@ export default function ManageExams({
 
                             <Input
                               type="time"
-                              {...register(`exams.${i}.mulai`)}
+                              {...register(`exams.${i}.exam_start_at`)}
                               className="h-10 rounded-xl border-slate-200 px-3"
                             />
                           </div>
@@ -409,7 +381,7 @@ export default function ManageExams({
 
                             <Input
                               type="time"
-                              {...register(`exams.${i}.selesai`)}
+                              {...register(`exams.${i}.exam_end_at`)}
                               className="h-10 rounded-xl border-slate-200 px-3"
                             />
                           </div>
@@ -425,7 +397,7 @@ export default function ManageExams({
 
                       <Controller
                         control={control}
-                        name={`exams.${i}.durasi`}
+                        name={`exams.${i}.exam_duration`}
                         render={({ field, fieldState }) => (
                           <>
                             <Select
@@ -437,15 +409,15 @@ export default function ManageExams({
                               </SelectTrigger>
 
                               <SelectContent className="rounded-xl bg-white">
-                                <SelectItem value="600">10 Menit</SelectItem>
-                                <SelectItem value="900">15 Menit</SelectItem>
-                                <SelectItem value="1200">20 Menit</SelectItem>
-                                <SelectItem value="1500">25 Menit</SelectItem>
-                                <SelectItem value="1800">30 Menit</SelectItem>
-                                <SelectItem value="2400">40 Menit</SelectItem>
-                                <SelectItem value="2700">45 Menit</SelectItem>
-                                <SelectItem value="3000">50 Menit</SelectItem>
-                                <SelectItem value="3600">60 Menit</SelectItem>
+                                <SelectItem value="10">10 Menit</SelectItem>
+                                <SelectItem value="15">15 Menit</SelectItem>
+                                <SelectItem value="20">20 Menit</SelectItem>
+                                <SelectItem value="25">25 Menit</SelectItem>
+                                <SelectItem value="30">30 Menit</SelectItem>
+                                <SelectItem value="40">40 Menit</SelectItem>
+                                <SelectItem value="45">45 Menit</SelectItem>
+                                <SelectItem value="50">50 Menit</SelectItem>
+                                <SelectItem value="60">60 Menit</SelectItem>
                               </SelectContent>
                             </Select>
 

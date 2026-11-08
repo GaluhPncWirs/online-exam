@@ -522,12 +522,11 @@ async function withTransaction<T>(
     await conn.rollback();
     throw err;
   } finally {
-    conn.release(); // wajib, kalau tidak pool akan habis
+    conn.release();
   }
 }
 
 async function lockClasses(conn: PoolConnection, classIds: number[]) {
-  // Urut naik: dua transaksi yang mengunci kelas sama selalu dalam urutan sama → tidak deadlock
   const ids = [...new Set(classIds)].sort((a, b) => a - b);
   for (const id of ids) {
     const [rows] = await conn.execute<RowDataPacket[]>(
