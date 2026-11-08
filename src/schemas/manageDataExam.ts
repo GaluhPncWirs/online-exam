@@ -1,28 +1,25 @@
 import { z } from "zod";
 import { todayWIB } from "../lib/utils/convertDate";
-import { addMinutes } from "date-fns";
 
-const WIB_OFFSET = "+07:00"; // WIB tidak punya DST, offset-nya tetap
+const WIB_OFFSET = "+07:00";
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/; // HH:mm
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
 const MAX_DURATION = 480; // menit
+const MAX_ADVANCE_DAYS = 90;
 
 const REQUIRED_MESSAGES = {
   id_subject: "Ujian tidak valid",
   class_id: "Pilih kelas",
   exam_date: "Pilih tanggal ujian",
   exam_start_at: "Tentukan waktu mulai",
+  exam_end_at: "Tentukan waktu selesai",
   exam_duration: "Pilih durasi",
 } as const;
 
 type RequiredField = keyof typeof REQUIRED_MESSAGES;
 
-export const isScheduleConfigured = (exam: ExamScheduleInput) =>
-  Boolean(
-    exam.class_id || exam.exam_date || exam.exam_start_at || exam.exam_duration,
-  );
-
-export const toStartDateTime = (date: string, time: string): Date | null => {
+/** "YYYY-MM-DD" + "HH:mm" (WIB) → Date. Null jika tidak valid. */
+export const toDateTime = (date: string, time: string): Date | null => {
   if (!DATE_REGEX.test(date) || !TIME_REGEX.test(time)) return null;
   const d = new Date(`${date}T${time}:00${WIB_OFFSET}`);
   if (Number.isNaN(d.getTime())) return null;
@@ -33,18 +30,92 @@ export const toStartDateTime = (date: string, time: string): Date | null => {
   return backToWIB === date ? d : null;
 };
 
-const examScheduleSchema = z.object({
+type TimingField =
+  | "exam_date"
+  | "exam_start_at"
+  | "exam_end_at"
+  | "exam_duration";
+type TimingResult = {
+  issues: { field: TimingField; message: string }[];
+  start: Date | null;
+  end: Date | null;
+};
+
+/** Satu-satunya tempat aturan waktu didefinisikan (dipakai form dan API). */
+export const checkTiming = (
+  date: string,
+  startTime: string,
+  endTime: string,
+  duration?: number | null,
+): TimingResult => {
+  const issues: TimingResult["issues"] = [];
+  const add = (field: TimingField, message: string) =>
+    issues.push({ field, message });
+
+  const startFmtOk = TIME_REGEX.test(startTime);
+  const endFmtOk = TIME_REGEX.test(endTime);
+  if (!startFmtOk) add("exam_start_at", "Format waktu tidak valid (HH:mm)");
+  if (!endFmtOk) add("exam_end_at", "Format waktu tidak valid (HH:mm)");
+
+  const durationOk =
+    duration == null ||
+    (Number.isInteger(duration) && duration >= 1 && duration <= MAX_DURATION);
+  if (!durationOk) add("exam_duration", `Durasi harus 1-${MAX_DURATION} menit`);
+
+  if (!startFmtOk || !endFmtOk) return { issues, start: null, end: null };
+
+  const start = toDateTime(date, startTime);
+  const end = toDateTime(date, endTime);
+  if (!start || !end) {
+    add("exam_date", "Tanggal tidak valid");
+    return { issues, start: null, end: null };
+  }
+
+  if (date < todayWIB()) {
+    add("exam_date", "Tanggal ujian tidak boleh sebelum hari ini");
+  } else if (start <= new Date()) {
+    add("exam_start_at", "Waktu mulai sudah lewat");
+  } else if (start.getTime() - Date.now() > MAX_ADVANCE_DAYS * 86_400_000) {
+    add(
+      "exam_date",
+      `Ujian maksimal dijadwalkan ${MAX_ADVANCE_DAYS} hari ke depan`,
+    );
+  }
+
+  const windowMinutes = (end.getTime() - start.getTime()) / 60_000;
+  if (windowMinutes <= 0) {
+    add("exam_end_at", "Waktu selesai harus lebih besar dari waktu mulai");
+  } else if (duration && durationOk && duration > windowMinutes) {
+    add("exam_duration", "Durasi melebihi rentang waktu mulai-selesai");
+  }
+
+  return { issues, start, end };
+};
+
+/* ---------- Schema form (longgar, per baris) ---------- */
+
+const examRowSchema = z.object({
   id_subject: z.string().min(1, REQUIRED_MESSAGES.id_subject),
   class_id: z.number().int().positive().nullish(),
   exam_date: z.string().nullish(), // "YYYY-MM-DD"
   exam_start_at: z.string().nullish(), // "HH:mm"
+  exam_end_at: z.string().nullish(), // "HH:mm"
   exam_duration: z.number().int().nullish(), // menit
 });
 
-export type ExamScheduleInput = z.infer<typeof examScheduleSchema>;
+export type ExamRowInput = z.infer<typeof examRowSchema>;
+
+export const isScheduleConfigured = (exam: ExamRowInput) =>
+  Boolean(
+    exam.class_id ||
+    exam.exam_date ||
+    exam.exam_start_at ||
+    exam.exam_end_at ||
+    exam.exam_duration,
+  );
 
 export const sendExamToStudentSchema = z
-  .object({ exams: z.array(examScheduleSchema) })
+  .object({ exams: z.array(examRowSchema) })
   .superRefine((data, ctx) => {
     const scheduled: {
       index: number;
@@ -56,10 +127,9 @@ export const sendExamToStudentSchema = z
 
     data.exams.forEach((exam, index) => {
       if (!isScheduleConfigured(exam)) return; // baris belum dipakai
-
       selectedCount++;
 
-      const addError = (field: keyof ExamScheduleInput, message: string) =>
+      const addError = (field: keyof ExamRowInput, message: string) =>
         ctx.addIssue({
           code: "custom",
           path: ["exams", index, field],
@@ -71,48 +141,23 @@ export const sendExamToStudentSchema = z
         if (!exam[field]) addError(field, REQUIRED_MESSAGES[field]);
       });
 
-      // 2. Format dan batas
-      if (exam.exam_start_at && !TIME_REGEX.test(exam.exam_start_at)) {
-        addError("exam_start_at", "Format waktu tidak valid (HH:mm)");
-      }
+      // 2. Aturan waktu, hanya jika tanggal, mulai, dan selesai sudah terisi
+      if (!exam.exam_date || !exam.exam_start_at || !exam.exam_end_at) return;
 
-      const durationOk =
-        !!exam.exam_duration &&
-        exam.exam_duration >= 1 &&
-        exam.exam_duration <= MAX_DURATION;
-      if (exam.exam_duration && !durationOk) {
-        addError("exam_duration", `Durasi harus 1–${MAX_DURATION} menit`);
-      }
+      const { issues, start, end } = checkTiming(
+        exam.exam_date,
+        exam.exam_start_at,
+        exam.exam_end_at,
+        exam.exam_duration,
+      );
+      issues.forEach((i) => addError(i.field, i.message));
 
-      // 3. Logika waktu (hanya jika tanggal dan jam sudah terisi)
-      if (!exam.exam_date || !exam.exam_start_at) return;
-
-      const start = toStartDateTime(exam.exam_date, exam.exam_start_at);
-      if (!start) {
-        // Kalau jamnya valid, berarti tanggalnya yang bermasalah
-        if (TIME_REGEX.test(exam.exam_start_at)) {
-          addError("exam_date", "Tanggal tidak valid");
-        }
-        return;
-      }
-
-      if (exam.exam_date < todayWIB()) {
-        addError("exam_date", "Tanggal ujian tidak boleh sebelum hari ini");
-      } else if (start <= new Date()) {
-        addError("exam_start_at", "Waktu mulai sudah lewat");
-      }
-
-      if (exam.class_id && durationOk) {
-        scheduled.push({
-          index,
-          classId: exam.class_id,
-          start,
-          end: addMinutes(start, exam.exam_duration!),
-        });
+      if (exam.class_id && start && end && issues.length === 0) {
+        scheduled.push({ index, classId: exam.class_id, start, end });
       }
     });
 
-    // 4. Bentrok antar baris dalam satu pengiriman (kelas sama + overlap)
+    // 3. Bentrok antar baris dalam satu pengiriman (kelas sama + jendela overlap)
     scheduled.forEach((a, i) => {
       const clash = scheduled
         .slice(0, i)
@@ -128,7 +173,7 @@ export const sendExamToStudentSchema = z
       }
     });
 
-    // 5. Minimal satu ujian
+    // 4. Minimal satu ujian
     if (selectedCount === 0) {
       ctx.addIssue({
         code: "custom",
@@ -142,79 +187,6 @@ export type SendExamToStudentSchemaType = z.infer<
   typeof sendExamToStudentSchema
 >;
 
-// export const sendExamToStudentSchema = z
-//   .object({
-//     exams: z.array(examScheduleSchema),
-//   })
-//   .superRefine((data, ctx) => {
-//     let selectedCount = 0;
-
-//     data.exams.forEach((exam, index) => {
-//       // Row belum digunakan → abaikan
-//       if (!isScheduleConfigured(exam)) return;
-
-//       selectedCount++;
-
-//       const addError = (field: keyof ExamScheduleInput, message: string) =>
-//         ctx.addIssue({
-//           code: "custom",
-//           path: ["exams", index, field],
-//           message,
-//         });
-
-//       // Field wajib untuk row yang dipakai
-//       (Object.keys(REQUIRED_MESSAGES) as RequiredField[]).forEach((field) => {
-//         if (!exam[field]) addError(field, REQUIRED_MESSAGES[field]);
-//       });
-
-//       // Jika tanggal yang sudah lewat
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0);
-
-//       if (exam.exam_date && exam.exam_date < today) {
-//         addError("exam_date", "Tanggal ujian tidak boleh sebelum hari ini");
-//       }
-
-//       // Format
-//       const validStart = TIME_REGEX.test(exam.exam_start_at);
-//       const validEnd = TIME_REGEX.test(exam.selesai);
-//       const validDuration = DURATION_REGEX.test(exam.durasi);
-
-//       if (exam.exam_start_at && !validStart) {
-//         addError("mulai", "Format waktu tidak valid (HH:mm)");
-//       }
-//       if (exam.selesai && !validEnd) {
-//         addError("selesai", "Format waktu tidak valid (HH:mm)");
-//       }
-//       if (exam.durasi && !validDuration) {
-//         addError("durasi", "Durasi harus berupa angka menit lebih dari 0");
-//       }
-
-//       // Logika waktu (hanya jika kedua jam valid)
-//       if (validStart && validEnd) {
-//         const window = toMinutes(exam.selesai) - toMinutes(exam.exam_start_at);
-
-//         if (window <= 0) {
-//           addError(
-//             "selesai",
-//             "Waktu selesai harus lebih besar dari waktu mulai",
-//           );
-//         } else if (validDuration && Number(exam.durasi) > window) {
-//           addError("durasi", "Durasi melebihi rentang waktu mulai–selesai");
-//         }
-//       }
-//     });
-
-//     // Minimal satu ujian harus dipilih
-//     if (selectedCount === 0) {
-//       ctx.addIssue({
-//         code: "custom",
-//         path: ["exams"],
-//         message: "Pilih minimal satu ujian",
-//       });
-//     }
-//   });
-
 /* ---------- Schema API (ketat, satu ujian) ---------- */
 
 export const examScheduleSchema = z
@@ -222,34 +194,22 @@ export const examScheduleSchema = z
     id_subject: z.string().min(1, REQUIRED_MESSAGES.id_subject),
     class_id: z.number().int().positive(REQUIRED_MESSAGES.class_id),
     exam_date: z.string().min(1, REQUIRED_MESSAGES.exam_date),
-    exam_start_at: z
-      .string()
-      .regex(TIME_REGEX, "Format waktu tidak valid (HH:mm)"),
-    exam_duration: z
-      .number()
-      .int()
-      .min(1, REQUIRED_MESSAGES.exam_duration)
-      .max(MAX_DURATION, `Durasi maksimal ${MAX_DURATION} menit`),
+    exam_start_at: z.string().min(1, REQUIRED_MESSAGES.exam_start_at),
+    exam_end_at: z.string().min(1, REQUIRED_MESSAGES.exam_end_at),
+    exam_duration: z.number().int().min(1, REQUIRED_MESSAGES.exam_duration),
   })
   .transform((v, ctx) => {
-    const startAt = toStartDateTime(v.exam_date, v.exam_start_at);
-    if (!startAt) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["exam_date"],
-        message: "Tanggal tidak valid",
-      });
-      return z.NEVER;
-    }
-    if (startAt <= new Date()) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["exam_start_at"],
-        message: "Waktu mulai sudah lewat",
-      });
-      return z.NEVER;
-    }
-    return { ...v, startAt, endAt: addMinutes(startAt, v.exam_duration) };
+    const { issues, start, end } = checkTiming(
+      v.exam_date,
+      v.exam_start_at,
+      v.exam_end_at,
+      v.exam_duration,
+    );
+    issues.forEach((i) =>
+      ctx.addIssue({ code: "custom", path: [i.field], message: i.message }),
+    );
+    if (issues.length > 0 || !start || !end) return z.NEVER;
+    return { ...v, startAt: start, endAt: end }; // Date siap disimpan
   });
 
 export type ExamScheduleParsed = z.output<typeof examScheduleSchema>;

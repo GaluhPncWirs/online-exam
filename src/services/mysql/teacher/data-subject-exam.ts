@@ -5,10 +5,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
-import {
-  ExamScheduleInput,
-  sendExamToStudentSchema,
-} from "@/src/schemas/manageDataExam";
+import { ExamScheduleParsed } from "@/src/schemas/manageDataExam";
 import { Pool, PoolConnection } from "mysql2/promise";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
@@ -510,8 +507,6 @@ export class ScheduleConflictError extends Error {
   }
 }
 
-const addMinutes = (d: Date, m: number) => new Date(d.getTime() + m * 60_000);
-
 async function withTransaction<T>(
   pool: Pool,
   fn: (c: PoolConnection) => Promise<T>,
@@ -576,11 +571,10 @@ async function findConflict(
 
 export function createExam(
   pool: Pool,
-  teacherId: number,
-  input: ExamScheduleInput,
+  teacherId: string,
+  input: ExamScheduleParsed,
 ) {
-  const startAt = input.exam_start_at;
-  const endAt = addMinutes(startAt, input.exam_duration);
+  const { startAt, endAt } = input;
 
   return withTransaction(pool, async (conn) => {
     await lockClasses(conn, [input.class_id]);
@@ -605,61 +599,61 @@ export function createExam(
   });
 }
 
-export function updateExam(
-  pool: Pool,
-  teacherId: number,
-  examId: number,
-  input: ExamScheduleInput,
-) {
-  const startAt = input.exam_start_at;
-  const endAt = addMinutes(startAt, input.exam_duration);
+// export function updateExam(
+//   pool: Pool,
+//   teacherId: number,
+//   examId: number,
+//   input: ExamScheduleInput,
+// ) {
+//   const startAt = input.exam_start_at;
+//   const endAt = addMinutes(startAt, input.exam_duration);
 
-  return withTransaction(pool, async (conn) => {
-    // 1. Ketahui kelas lama agar bisa dikunci bersama kelas baru
-    const [cur] = await conn.execute<RowDataPacket[]>(
-      "SELECT class_id FROM manage_exams WHERE id = ? AND id_teacher = ?",
-      [examId, teacherId],
-    );
-    if (cur.length === 0)
-      throw new Error("Ujian tidak ditemukan atau bukan milik Anda");
-    const oldClassId = cur[0].class_id;
+//   return withTransaction(pool, async (conn) => {
+//     // 1. Ketahui kelas lama agar bisa dikunci bersama kelas baru
+//     const [cur] = await conn.execute<RowDataPacket[]>(
+//       "SELECT class_id FROM manage_exams WHERE id = ? AND id_teacher = ?",
+//       [examId, teacherId],
+//     );
+//     if (cur.length === 0)
+//       throw new Error("Ujian tidak ditemukan atau bukan milik Anda");
+//     const oldClassId = cur[0].class_id;
 
-    // 2. Kunci kelas lama dan baru (jika guru memindahkan ujian ke kelas lain)
-    await lockClasses(conn, [oldClassId, input.class_id]);
+//     // 2. Kunci kelas lama dan baru (jika guru memindahkan ujian ke kelas lain)
+//     await lockClasses(conn, [oldClassId, input.class_id]);
 
-    // 3. Pastikan ujian tidak dipindah kelas oleh transaksi lain sebelum lock didapat
-    const [again] = await conn.execute<RowDataPacket[]>(
-      "SELECT class_id FROM manage_exams WHERE id = ? FOR UPDATE",
-      [examId],
-    );
-    if (again[0]?.class_id !== oldClassId)
-      throw new Error("Data berubah, silakan coba lagi");
+//     // 3. Pastikan ujian tidak dipindah kelas oleh transaksi lain sebelum lock didapat
+//     const [again] = await conn.execute<RowDataPacket[]>(
+//       "SELECT class_id FROM manage_exams WHERE id = ? FOR UPDATE",
+//       [examId],
+//     );
+//     if (again[0]?.class_id !== oldClassId)
+//       throw new Error("Data berubah, silakan coba lagi");
 
-    // 4. Cek bentrok dengan mengecualikan ujian ini sendiri
-    const conflict = await findConflict(
-      conn,
-      input.class_id,
-      startAt,
-      endAt,
-      examId,
-    );
-    if (conflict) throw new ScheduleConflictError(conflict);
+//     // 4. Cek bentrok dengan mengecualikan ujian ini sendiri
+//     const conflict = await findConflict(
+//       conn,
+//       input.class_id,
+//       startAt,
+//       endAt,
+//       examId,
+//     );
+//     if (conflict) throw new ScheduleConflictError(conflict);
 
-    await conn.execute(
-      `UPDATE manage_exams
-          SET id_subject = ?, class_id = ?, exam_start_at = ?, exam_end_at = ?, duration_exam = ?
-        WHERE id = ?`,
-      [
-        input.id_subject,
-        input.class_id,
-        startAt,
-        endAt,
-        input.exam_duration,
-        examId,
-      ],
-    );
-  });
-}
+//     await conn.execute(
+//       `UPDATE manage_exams
+//           SET id_subject = ?, class_id = ?, exam_start_at = ?, exam_end_at = ?, duration_exam = ?
+//         WHERE id = ?`,
+//       [
+//         input.id_subject,
+//         input.class_id,
+//         startAt,
+//         endAt,
+//         input.exam_duration,
+//         examId,
+//       ],
+//     );
+//   });
+// }
 
 // export async function handleInsertManagedExams(values: unknown) {
 //   const parsed = sendExamToStudentSchema.safeParse(values);

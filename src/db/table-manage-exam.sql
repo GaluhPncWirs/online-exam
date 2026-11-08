@@ -121,3 +121,14 @@ ALTER TABLE manage_exams
 
 ALTER TABLE manage_exams
   DROP COLUMN class;
+
+SELECT id_manage_exam FROM manage_exams
+WHERE TIMESTAMPDIFF(MINUTE, exam_start_at, exam_end_at) < duration_exam;
+
+UPDATE manage_exams SET duration_exam = 150 WHERE id_manage_exam = 'MNG-Igr3nY'
+
+UPDATE manage_exams SET duration_exam = 30 WHERE id_manage_exam = 'MNG-oxTG3r'
+
+ALTER TABLE manage_exams
+  ADD CONSTRAINT chk_exam_duration_fits
+  CHECK (TIMESTAMPDIFF(MINUTE, exam_start_at, exam_end_at) >= duration_exam)
