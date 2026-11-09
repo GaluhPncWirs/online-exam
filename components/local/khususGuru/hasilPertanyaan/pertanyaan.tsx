@@ -116,12 +116,17 @@ export default function ManageExams({
         exam.exam_end_at,
     );
 
-    const convertClass = selectedExams.map((data) => ({
+    const dataExams = selectedExams.map((data) => ({
       ...data,
       class_id: classIdMapping[data.class_id ?? ""] ?? 2,
     }));
 
-    console.log(convertClass);
+    const payload = {
+      teacherId: dataTeacher.id_teacher,
+      dataPayload: dataExams,
+    };
+
+    console.log(payload);
 
     // try {
     //   const req = await fetch("/api/teacher/sendExam", {
