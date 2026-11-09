@@ -37,15 +37,15 @@ export async function findConflict(
   excludeExamId?: number,
 ): Promise<ConflictInfo | null> {
   const [rows] = await conn.execute<RowDataPacket[]>(
-    `SELECT e.id, e.exam_start_at, e.exam_end_at,
-            s.name AS subject_name, t.name AS teacher_name
+    `SELECT e.id_manage_exam, e.exam_start_at, e.exam_end_at,
+            s.name_exam AS subject_name, t.fullname AS teacher_name
        FROM manage_exams e
-       JOIN subjects s ON s.id = e.id_subject
-       JOIN teachers t ON t.id = e.id_teacher
+       JOIN subject_exam s ON s.id_subject = e.id_subject
+       JOIN account_teacher t ON t.id_teacher = e.id_teacher
       WHERE e.class_id = ?
         AND e.exam_start_at < ?     
         AND e.exam_end_at   > ?      
-        AND e.id <> ?               
+        AND e.id_manage_exam <> ?               
       LIMIT 1`,
     [classId, endAt, startAt, excludeExamId ?? 0],
   );

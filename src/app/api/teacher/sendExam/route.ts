@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { teacherId, exams } = body;
 
-    const result = handleSendExamToStudent(teacherId, exams);
+    const result = await handleSendExamToStudent(teacherId, exams);
 
     return NextResponse.json(
       {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("Error simpan data ujian:", error);
     return NextResponse.json(
       {

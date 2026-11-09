@@ -36,6 +36,7 @@ import {
 import { PAGE_SIZE } from "@/src/lib/constants";
 import { fromDateString, toDateString } from "@/src/lib/utils/date";
 import {
+  isScheduleConfigured,
   sendExamToStudentSchema,
   SendExamToStudentSchemaType,
 } from "@/src/schemas/manageDataExam";
@@ -49,6 +50,7 @@ import {
   PenLine,
   Trash2,
 } from "lucide-react";
+import { error } from "next/dist/build/output/log";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -106,56 +108,55 @@ export default function ManageExams({
   });
 
   async function onSubmit(data: SendExamToStudentSchemaType) {
-    const selectedExams = data.exams.filter(
-      (exam) =>
-        exam.id_subject &&
-        exam.class_id &&
-        exam.exam_date &&
-        exam.exam_duration &&
-        exam.exam_start_at &&
-        exam.exam_end_at,
-    );
+    const dataExams = data.exams
+      .map((exam, formIndex) => ({
+        exam,
+        formIndex,
+      }))
+      .filter(({ exam }) => isScheduleConfigured(exam))
+      .map(({ exam, formIndex }) => ({
+        exam: {
+          ...exam,
+          class_id: classIdMapping[exam.class_id ?? ""] ?? 2,
+        },
+        formIndex,
+      }));
 
-    const dataExams = selectedExams.map((data) => ({
-      ...data,
-      class_id: classIdMapping[data.class_id ?? ""] ?? 2,
-    }));
+    const exams = dataExams.map(({ exam }) => exam);
 
     const payload = {
       teacherId: dataTeacher.id_teacher,
-      exams: dataExams,
+      exams,
     };
 
-    console.log(payload);
+    try {
+      const req = await fetch("/api/teacher/sendExam", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    // try {
-    //   const req = await fetch("/api/teacher/sendExam", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   });
+      const res = await req.json();
 
-    //   const res = await req.json();
+      if (!res.success) {
+        toast.error("Error", {
+          description: res.message,
+        });
+        return;
+      }
 
-    //   if (!res.success) {
-    //     toast.error("Error", {
-    //       description: res.message,
-    //     });
-    //     return;
-    //   }
-
-    //   setOpenDialog((prev) => ({
-    //     ...prev,
-    //     sendExam: false,
-    //   }));
-    //   toast.success("Berhasil", {
-    //     description: res.message,
-    //   });
-    // } catch {
-    //   toast.error("Error", {
-    //     description: "Terjadi kesalahan. Silakan coba lagi.",
-    //   });
-    // }
+      setOpenDialog((prev) => ({
+        ...prev,
+        sendExam: false,
+      }));
+      toast.success("Berhasil", {
+        description: res.message,
+      });
+    } catch {
+      toast.error("Error", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
   }
 
   function getDataBeforeDelete(idExam: string, namaUjian: string) {

@@ -68,8 +68,12 @@ CHANGE COLUMN deadline_exam exam_start_at TIME NOT NULL;
 ALTER TABLE manage_exams
 ADD COLUMN exam_end_at TIME NOT NULL AFTER exam_start_at;
 
+ALTER TABLE manage_exams DROP COLUMN id_history_exam
+
 -- UPDATE manage_exams
 -- SET exam_end_at = DATE_ADD(exam_start_at, INTERVAL 90 MINUTE);
+
+ALTER TABLE manage_exams ADD CONSTRAINT fk_id_history_exam FOREIGN KEY(id_history_exam) REFERENCES history_exams (id_history_exam)
 
 ALTER TABLE manage_exams
 ADD CONSTRAINT fk_id_teacher

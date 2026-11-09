@@ -503,11 +503,12 @@ export async function handleAddDataExamQuestion(
   }
 }
 
-export function handleSendExamToStudent(
+export async function handleSendExamToStudent(
   teacherId: string,
   exams: ExamScheduleListParsed[],
 ) {
   const parsed = examScheduleListSchema.safeParse(exams);
+  const idManageExam = generateRandomId(6, "MNG");
 
   if (!parsed.success) {
     return {
@@ -521,7 +522,7 @@ export function handleSendExamToStudent(
   }
 
   try {
-    const transaction = withTransaction(pool, async (conn) => {
+    const transaction = await withTransaction(pool, async (conn) => {
       await lockClasses(
         conn,
         parsed.data.map((i) => i.class_id),
@@ -539,9 +540,10 @@ export function handleSendExamToStudent(
 
         const [res] = await conn.execute<ResultSetHeader>(
           `INSERT INTO manage_exams
-           (id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+           (id_manage_exam, id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
+            idManageExam,
             teacherId,
             exam.id_subject,
             exam.class_id,
@@ -563,14 +565,23 @@ export function handleSendExamToStudent(
     };
   } catch (error: unknown) {
     console.error("Error create exam:", error);
+
     if (error instanceof ScheduleConflictError) {
       return {
+        success: false,
         code: "EXAM_SCHEDULE_CONFLICT",
         message: "Jadwal berbenturan dengan ujian yang sudah terjadwal.",
         conflict: error.conflict,
         status: 409,
       };
     }
+
+    return {
+      success: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Terjadi kesalahan saat menyimpan jadwal ujian.",
+      status: 500,
+    };
   }
 }
 
