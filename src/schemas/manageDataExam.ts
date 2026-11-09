@@ -8,14 +8,6 @@ const MAX_DURATION = 480; // menit
 const MAX_ADVANCE_DAYS = 90;
 
 const REQUIRED_MESSAGES = {
-  class_id: "Pilih kelas",
-  exam_date: "Pilih tanggal ujian",
-  exam_start_at: "Tentukan waktu mulai",
-  exam_end_at: "Tentukan waktu selesai",
-  exam_duration: "Pilih durasi",
-} as const;
-
-const REQUIRED_MESSAGES_API = {
   id_subject: "Ujian tidak valid",
   class_id: "Pilih kelas",
   exam_date: "Pilih tanggal ujian",
@@ -103,6 +95,7 @@ export const checkTiming = (
 /* ---------- Schema form (longgar, per baris) ---------- */
 
 const examRowSchema = z.object({
+  id_subject: z.string().min(1, REQUIRED_MESSAGES.id_subject),
   class_id: z.string().optional(),
   exam_date: z.string().nullish(), // "YYYY-MM-DD"
   exam_start_at: z.string().nullish(), // "HH:mm"
@@ -198,12 +191,12 @@ export type SendExamToStudentSchemaType = z.infer<
 
 export const examScheduleSchema = z
   .object({
-    id_subject: z.string().min(1, REQUIRED_MESSAGES_API.id_subject),
-    class_id: z.number().int().positive(REQUIRED_MESSAGES_API.class_id),
-    exam_date: z.string().min(1, REQUIRED_MESSAGES_API.exam_date),
-    exam_start_at: z.string().min(1, REQUIRED_MESSAGES_API.exam_start_at),
-    exam_end_at: z.string().min(1, REQUIRED_MESSAGES_API.exam_end_at),
-    exam_duration: z.number().int().min(1, REQUIRED_MESSAGES_API.exam_duration),
+    id_subject: z.string().min(1, REQUIRED_MESSAGES.id_subject),
+    class_id: z.number().int().positive(REQUIRED_MESSAGES.class_id),
+    exam_date: z.string().min(1, REQUIRED_MESSAGES.exam_date),
+    exam_start_at: z.string().min(1, REQUIRED_MESSAGES.exam_start_at),
+    exam_end_at: z.string().min(1, REQUIRED_MESSAGES.exam_end_at),
+    exam_duration: z.number().int().min(1, REQUIRED_MESSAGES.exam_duration),
   })
   .transform((v, ctx) => {
     const { issues, start, end } = checkTiming(

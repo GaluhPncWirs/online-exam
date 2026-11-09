@@ -50,7 +50,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -79,8 +79,8 @@ export default function ManageExams({
   const {
     control,
     register,
-    reset,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<SendExamToStudentSchemaType>({
@@ -90,7 +90,13 @@ export default function ManageExams({
     },
   });
 
-  console.log(errors);
+  useEffect(() => {
+    if (dataManageExams.length === 0) return;
+
+    dataManageExams.forEach((item, i) => {
+      setValue(`exams.${i}.id_subject`, item.id_subject);
+    });
+  }, [dataManageExams, setValue]);
 
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
@@ -102,6 +108,7 @@ export default function ManageExams({
   async function onSubmit(data: SendExamToStudentSchemaType) {
     const selectedExams = data.exams.filter(
       (exam) =>
+        exam.id_subject &&
         exam.class_id &&
         exam.exam_date &&
         exam.exam_duration &&
@@ -111,12 +118,10 @@ export default function ManageExams({
 
     const convertClass = selectedExams.map((data) => ({
       ...data,
-      class_id: classIdMapping[data.class_id] ?? 2,
+      class_id: classIdMapping[data.class_id ?? ""] ?? 2,
     }));
 
     console.log(convertClass);
-
-    // console.log(selectedExams);
 
     // try {
     //   const req = await fetch("/api/teacher/sendExam", {
