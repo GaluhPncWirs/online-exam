@@ -60,6 +60,15 @@ type ManagedExamsProps = {
   totalData: number;
 };
 
+const classIdMapping: Record<string, number> = {
+  "1A": 4,
+  "2B": 5,
+  "2C": 8,
+  "3A": 1,
+  "4E": 6,
+  "5A": 7,
+};
+
 export default function ManageExams({
   dataTeacher,
   dataManageExams,
@@ -77,17 +86,11 @@ export default function ManageExams({
   } = useForm<SendExamToStudentSchemaType>({
     resolver: zodResolver(sendExamToStudentSchema),
     defaultValues: {
-      exams: [
-        {
-          class_id: "",
-          exam_date: "",
-          exam_start_at: "",
-          exam_end_at: "",
-          exam_duration: 30,
-        },
-      ],
+      exams: [],
     },
   });
+
+  console.log(errors);
 
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
@@ -95,10 +98,6 @@ export default function ManageExams({
     sendExam: false,
     deleteExam: false,
   });
-
-  console.log(errors);
-
-  console.log(watch(`exams.${0}.exam_date`));
 
   async function onSubmit(data: SendExamToStudentSchemaType) {
     const selectedExams = data.exams.filter(
@@ -110,9 +109,9 @@ export default function ManageExams({
         exam.exam_end_at,
     );
 
-    const convertClass = data.exams.map((data) => ({
+    const convertClass = selectedExams.map((data) => ({
       ...data,
-      class_id: data.class_id === "1A" ? 4 : 5,
+      class_id: classIdMapping[data.class_id] ?? 2,
     }));
 
     console.log(convertClass);

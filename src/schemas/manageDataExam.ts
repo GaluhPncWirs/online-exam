@@ -103,7 +103,7 @@ export const checkTiming = (
 /* ---------- Schema form (longgar, per baris) ---------- */
 
 const examRowSchema = z.object({
-  class_id: z.string().min(1, "Pilih salah satu"),
+  class_id: z.string().optional(),
   exam_date: z.string().nullish(), // "YYYY-MM-DD"
   exam_start_at: z.string().nullish(), // "HH:mm"
   exam_end_at: z.string().nullish(), // "HH:mm"
