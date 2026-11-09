@@ -85,7 +85,8 @@
         "menambahkan data table class untuk relasi many to many dan juga sudah di foreign key yang tablenya membutuhkan ",
         "memperbaiki fungsi database untuk proses bisnis karena databasenya sudah di perbarui",
         "sedang menangani masalah pada fungsi untuk handle ujian itu terkirim ke siswa",
-        "selesai memperbaiki schema untuk konfigurasi penyerahan ujian ke siswa"
+        "selesai memperbaiki schema untuk konfigurasi penyerahan ujian ke siswa",
+        "selesai membuat api untuk mengkonfigurasi data ujian yang ingin di kirim ke siswa"
     ],
     "sqltools.connections": [
         {

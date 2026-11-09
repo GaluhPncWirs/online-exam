@@ -87,28 +87,46 @@ export default function ManageExams({
   });
 
   async function onSubmit(data: SendExamToStudentSchemaType) {
-    try {
-      const { error } = await supabase
-        .from("managed_exams")
-        .insert(selectedExams);
-      if (error) {
-        toast("Gagal ❌", {
-          description: "Error tidak bisa ditambahkan",
-        });
-      }
+    const selectedExams = data.exams.filter(
+      (exam) =>
+        exam.class_id &&
+        exam.exam_date &&
+        exam.exam_duration &&
+        exam.exam_start_at &&
+        exam.exam_end_at &&
+        exam.id_subject,
+    );
 
-      setOpenDialog((prev) => ({
-        ...prev,
-        sendExam: false,
-      }));
-      toast("Berhasil ✅", {
-        description: "Soal Berhasil Dikirimkan",
-      });
-    } catch {
-      toast("Gagal ❌", {
-        description: "Terjadi kesalahan. Silakan coba lagi.",
-      });
-    }
+    console.log(selectedExams);
+
+    // try {
+    //   const req = await fetch("/api/teacher/sendExam", {
+    //     method : "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body : JSON.stringify()
+    //   })
+
+    //   const { error } = await supabase
+    //     .from("managed_exams")
+    //     .insert(selectedExams);
+    //   if (error) {
+    //     toast("Gagal ❌", {
+    //       description: "Error tidak bisa ditambahkan",
+    //     });
+    //   }
+
+    //   setOpenDialog((prev) => ({
+    //     ...prev,
+    //     sendExam: false,
+    //   }));
+    //   toast("Berhasil ✅", {
+    //     description: "Soal Berhasil Dikirimkan",
+    //   });
+    // } catch {
+    //   toast("Gagal ❌", {
+    //     description: "Terjadi kesalahan. Silakan coba lagi.",
+    //   });
+    // }
   }
 
   function getDataBeforeDelete(idExam: string, namaUjian: string) {
@@ -505,21 +523,15 @@ export default function ManageExams({
             </DialogHeader>
 
             <DialogFooter className="mt-4 gap-2">
-              <DialogClose>
-                <Button variant="outline" className="rounded-xl">
-                  Batal
-                </Button>
-              </DialogClose>
+              <DialogClose>Batal</DialogClose>
 
-              <DialogClose>
-                <Button
-                  variant="destructive"
-                  className="rounded-xl bg-red-600 hover:bg-red-700"
-                  onClick={() => handleDeleteExam(selectedExam.idExam)}
-                >
-                  Hapus Ujian
-                </Button>
-              </DialogClose>
+              <Button
+                variant="destructive"
+                className="rounded-xl bg-red-600 hover:bg-red-700"
+                onClick={() => handleDeleteExam(selectedExam.idExam)}
+              >
+                Hapus Ujian
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
