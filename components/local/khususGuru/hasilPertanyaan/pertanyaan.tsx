@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PAGE_SIZE } from "@/src/lib/constants";
+import { fromDateString, toDateString } from "@/src/lib/utils/date";
 import {
   sendExamToStudentSchema,
   SendExamToStudentSchemaType,
@@ -71,11 +72,20 @@ export default function ManageExams({
     register,
     reset,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SendExamToStudentSchemaType>({
     resolver: zodResolver(sendExamToStudentSchema),
     defaultValues: {
-      exams: [],
+      exams: [
+        {
+          class_id: "",
+          exam_date: "",
+          exam_start_at: "",
+          exam_end_at: "",
+          exam_duration: 30,
+        },
+      ],
     },
   });
 
@@ -86,6 +96,10 @@ export default function ManageExams({
     deleteExam: false,
   });
 
+  console.log(errors);
+
+  console.log(watch(`exams.${0}.exam_date`));
+
   async function onSubmit(data: SendExamToStudentSchemaType) {
     const selectedExams = data.exams.filter(
       (exam) =>
@@ -93,11 +107,17 @@ export default function ManageExams({
         exam.exam_date &&
         exam.exam_duration &&
         exam.exam_start_at &&
-        exam.exam_end_at &&
-        exam.id_subject,
+        exam.exam_end_at,
     );
 
-    console.log(selectedExams);
+    const convertClass = data.exams.map((data) => ({
+      ...data,
+      class_id: data.class_id === "1A" ? 4 : 5,
+    }));
+
+    console.log(convertClass);
+
+    // console.log(selectedExams);
 
     // try {
     //   const req = await fetch("/api/teacher/sendExam", {
@@ -319,19 +339,13 @@ export default function ManageExams({
                             control={control}
                             name={`exams.${i}.exam_date`}
                             render={({ field, fieldState }) => {
-                              const selectedDate = field.value
-                                ? new Date(field.value)
-                                : undefined;
+                              const selectedDate = fromDateString(field.value);
 
                               return (
                                 <div className="space-y-1">
                                   <Popover>
-                                    <PopoverTrigger>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="h-10 w-full justify-between rounded-xl border-slate-200 font-medium text-slate-700"
-                                      >
+                                    <PopoverTrigger className="h-10 border w-full flex items-center justify-between rounded-lg border-slate-300 px-3 font-medium text-slate-700">
+                                      <span>
                                         {selectedDate
                                           ? selectedDate.toLocaleDateString(
                                               "id-ID",
@@ -342,19 +356,20 @@ export default function ManageExams({
                                               },
                                             )
                                           : "Pilih Tanggal"}
-                                        <ChevronDownIcon className="size-4 text-slate-400" />
-                                      </Button>
+                                      </span>
+                                      <ChevronDownIcon className="size-5 text-slate-400" />
                                     </PopoverTrigger>
 
                                     <PopoverContent className="w-auto overflow-hidden rounded-xl p-0">
                                       <Calendar
                                         mode="single"
                                         selected={selectedDate}
+                                        defaultMonth={selectedDate}
                                         captionLayout="dropdown"
                                         onSelect={(date) =>
                                           field.onChange(
                                             date
-                                              ? date.toISOString()
+                                              ? toDateString(date)
                                               : undefined,
                                           )
                                         }
@@ -427,15 +442,15 @@ export default function ManageExams({
                               </SelectTrigger>
 
                               <SelectContent className="rounded-xl bg-white">
-                                <SelectItem value="10">10 Menit</SelectItem>
-                                <SelectItem value="15">15 Menit</SelectItem>
-                                <SelectItem value="20">20 Menit</SelectItem>
-                                <SelectItem value="25">25 Menit</SelectItem>
-                                <SelectItem value="30">30 Menit</SelectItem>
-                                <SelectItem value="40">40 Menit</SelectItem>
-                                <SelectItem value="45">45 Menit</SelectItem>
-                                <SelectItem value="50">50 Menit</SelectItem>
-                                <SelectItem value="60">60 Menit</SelectItem>
+                                <SelectItem value={10}>10 Menit</SelectItem>
+                                <SelectItem value={15}>15 Menit</SelectItem>
+                                <SelectItem value={20}>20 Menit</SelectItem>
+                                <SelectItem value={25}>25 Menit</SelectItem>
+                                <SelectItem value={30}>30 Menit</SelectItem>
+                                <SelectItem value={40}>40 Menit</SelectItem>
+                                <SelectItem value={45}>45 Menit</SelectItem>
+                                <SelectItem value={50}>50 Menit</SelectItem>
+                                <SelectItem value={60}>60 Menit</SelectItem>
                               </SelectContent>
                             </Select>
 
@@ -564,13 +579,8 @@ export default function ManageExams({
               }))
             }
           >
-            <DialogTrigger>
-              <Button
-                type="button"
-                className="w-full rounded-xl bg-blue-500 px-7 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-600 md:w-auto"
-              >
-                Kirim Soal
-              </Button>
+            <DialogTrigger className="w-full rounded-xl bg-blue-500 px-7 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-600 md:w-auto">
+              Kirim Soal
             </DialogTrigger>
 
             <DialogContent className="rounded-2xl sm:max-w-md">
@@ -586,11 +596,7 @@ export default function ManageExams({
               </DialogHeader>
 
               <DialogFooter className="mt-4 gap-2">
-                <DialogClose>
-                  <Button variant="outline" className="rounded-xl">
-                    Batal
-                  </Button>
-                </DialogClose>
+                <DialogClose>Batal</DialogClose>
 
                 <Button
                   variant="default"
