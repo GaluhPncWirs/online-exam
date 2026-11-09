@@ -4,7 +4,6 @@ import ListSidebar from "@/components/global/listSidebar/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
-import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
   const getDataUser = useGetDataUser((state) => state.setGetDataUsers);

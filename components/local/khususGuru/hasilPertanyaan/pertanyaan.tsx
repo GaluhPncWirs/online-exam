@@ -123,36 +123,36 @@ export default function ManageExams({
 
     const payload = {
       teacherId: dataTeacher.id_teacher,
-      dataPayload: dataExams,
+      exams: dataExams,
     };
 
     console.log(payload);
 
     // try {
     //   const req = await fetch("/api/teacher/sendExam", {
-    //     method : "POST",
+    //     method: "POST",
     //     headers: { "Content-Type": "application/json" },
-    //     body : JSON.stringify()
-    //   })
+    //     body: JSON.stringify(payload),
+    //   });
 
-    //   const { error } = await supabase
-    //     .from("managed_exams")
-    //     .insert(selectedExams);
-    //   if (error) {
-    //     toast("Gagal ❌", {
-    //       description: "Error tidak bisa ditambahkan",
+    //   const res = await req.json();
+
+    //   if (!res.success) {
+    //     toast.error("Error", {
+    //       description: res.message,
     //     });
+    //     return;
     //   }
 
     //   setOpenDialog((prev) => ({
     //     ...prev,
     //     sendExam: false,
     //   }));
-    //   toast("Berhasil ✅", {
-    //     description: "Soal Berhasil Dikirimkan",
+    //   toast.success("Berhasil", {
+    //     description: res.message,
     //   });
     // } catch {
-    //   toast("Gagal ❌", {
+    //   toast.error("Error", {
     //     description: "Terjadi kesalahan. Silakan coba lagi.",
     //   });
     // }
@@ -249,23 +249,23 @@ export default function ManageExams({
                   No
                 </TableHead>
 
-                <TableHead className="min-w-[220px] font-semibold text-slate-600">
+                <TableHead className="min-w-55 font-semibold text-slate-600">
                   Ujian
                 </TableHead>
 
-                <TableHead className="min-w-[130px] font-semibold text-slate-600">
+                <TableHead className="min-w-32.5 font-semibold text-slate-600">
                   Kirim Ke
                 </TableHead>
 
-                <TableHead className="min-w-[250px] font-semibold text-slate-600">
+                <TableHead className="min-w-62.5 font-semibold text-slate-600">
                   Jadwal Ujian
                 </TableHead>
 
-                <TableHead className="min-w-[130px] font-semibold text-slate-600">
+                <TableHead className="min-w-32.5 font-semibold text-slate-600">
                   Durasi
                 </TableHead>
 
-                <TableHead className="min-w-[80px] text-center font-semibold text-slate-600">
+                <TableHead className="min-w-20 text-center font-semibold text-slate-600">
                   Kelola
                 </TableHead>
               </TableRow>
@@ -306,31 +306,29 @@ export default function ManageExams({
                         control={control}
                         name={`exams.${i}.class_id`}
                         render={({ field, fieldState }) => (
-                          <>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none">
-                                <SelectValue placeholder="Pilih kelas" />
-                              </SelectTrigger>
-
-                              <SelectContent className="rounded-xl bg-white">
-                                <SelectItem value="1A">1A</SelectItem>
-                                <SelectItem value="2B">2B</SelectItem>
-                                <SelectItem value="3A">3A</SelectItem>
-                                <SelectItem value="4E">4E</SelectItem>
-                                <SelectItem value="5A">5A</SelectItem>
-                                <SelectItem value="2C">2C</SelectItem>
-                              </SelectContent>
-                            </Select>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none">
+                              <SelectValue placeholder="Pilih kelas" />
+                            </SelectTrigger>
 
                             {fieldState.error && (
                               <p className="mt-0.5 text-xs text-red-500">
                                 {fieldState.error.message}
                               </p>
                             )}
-                          </>
+
+                            <SelectContent className="rounded-xl bg-white">
+                              <SelectItem value="1A">1A</SelectItem>
+                              <SelectItem value="2B">2B</SelectItem>
+                              <SelectItem value="3A">3A</SelectItem>
+                              <SelectItem value="4E">4E</SelectItem>
+                              <SelectItem value="5A">5A</SelectItem>
+                              <SelectItem value="2C">2C</SelectItem>
+                            </SelectContent>
+                          </Select>
                         )}
                       />
                     </TableCell>
@@ -528,7 +526,7 @@ export default function ManageExams({
             }))
           }
         >
-          <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogContent className="rounded-lg sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">
                 Hapus Soal Ujian
@@ -588,30 +586,28 @@ export default function ManageExams({
               }))
             }
           >
-            <DialogTrigger className="w-full rounded-xl bg-blue-500 px-7 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-600 md:w-auto">
+            <DialogTrigger className="w-full rounded-md bg-blue-500 px-7 font-semibold hover:bg-blue-500/80 text-slate-100 md:w-auto py-1.5">
               Kirim Soal
             </DialogTrigger>
 
-            <DialogContent className="rounded-2xl sm:max-w-md">
+            <DialogContent>
               <DialogHeader>
-                <DialogTitle className="text-xl font-bold">
-                  Konfirmasi Pengiriman
-                </DialogTitle>
+                <DialogTitle>Konfirmasi Pengiriman</DialogTitle>
 
-                <DialogDescription className="pt-2 text-base leading-6">
+                <DialogDescription>
                   Apakah Anda yakin ingin mengirimkan soal yang sudah
                   dikonfigurasi kepada siswa?
                 </DialogDescription>
               </DialogHeader>
 
-              <DialogFooter className="mt-4 gap-2">
+              <DialogFooter className="space-x-1">
                 <DialogClose>Batal</DialogClose>
 
                 <Button
                   variant="default"
                   form="form-send-exam"
                   type="submit"
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                  className="rounded-md bg-blue-600 hover:bg-blue-700"
                 >
                   Ya, Kirim Soal
                 </Button>

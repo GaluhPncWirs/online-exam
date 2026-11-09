@@ -10,7 +10,10 @@ export type ConflictInfo = {
 };
 
 export class ScheduleConflictError extends Error {
-  constructor(public readonly conflict: ConflictInfo) {
+  constructor(
+    public readonly conflict: ConflictInfo,
+    public readonly index?: number,
+  ) {
     super("Jadwal ujian bentrok dengan ujian lain pada kelas yang sama");
   }
 }

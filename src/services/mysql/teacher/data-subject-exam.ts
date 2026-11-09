@@ -6,6 +6,8 @@ import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import {
+  ExamScheduleListParsed,
+  examScheduleListSchema,
   ExamScheduleParsed,
   examScheduleSchema,
 } from "@/src/schemas/manageDataExam";
@@ -503,37 +505,54 @@ export async function handleAddDataExamQuestion(
 
 export function handleSendExamToStudent(
   teacherId: string,
-  input: ExamScheduleParsed,
+  exams: ExamScheduleListParsed[],
 ) {
-  const parsed = examScheduleSchema.parse(input);
-  const { startAt, endAt } = parsed;
+  const parsed = examScheduleListSchema.safeParse(exams);
+
+  if (!parsed.success) {
+    return {
+      code: "VALIDATION_ERROR",
+      errors: parsed.error.issues.map((i) => ({
+        row: typeof i.path[0] === "number" ? i.path[0] : null, // posisi di array payload
+        field: i.path[1] != null ? String(i.path[1]) : null,
+        message: i.message,
+      })),
+    };
+  }
 
   try {
     const transaction = withTransaction(pool, async (conn) => {
-      await lockClasses(conn, [parsed.class_id]);
-
-      const conflict = await findConflict(
+      await lockClasses(
         conn,
-        parsed.class_id,
-        startAt,
-        endAt,
+        parsed.data.map((i) => i.class_id),
       );
-      if (conflict) throw new ScheduleConflictError(conflict);
 
-      const [res] = await conn.execute<ResultSetHeader>(
-        `INSERT INTO manage_exams
-         (id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          teacherId,
-          parsed.id_subject,
-          parsed.class_id,
-          startAt,
-          endAt,
-          parsed.exam_duration,
-        ],
-      );
-      return res.insertId;
+      const insertIds: number[] = [];
+      for (const [index, exam] of parsed.data.entries()) {
+        const conflict = await findConflict(
+          conn,
+          exam.class_id,
+          exam.startAt,
+          exam.endAt,
+        );
+        if (conflict) throw new ScheduleConflictError(conflict, index);
+
+        const [res] = await conn.execute<ResultSetHeader>(
+          `INSERT INTO manage_exams
+           (id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            teacherId,
+            exam.id_subject,
+            exam.class_id,
+            exam.startAt,
+            exam.endAt,
+            exam.exam_duration,
+          ],
+        );
+        insertIds.push(res.insertId);
+      }
+      return insertIds;
     });
 
     return {

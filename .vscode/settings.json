@@ -87,7 +87,8 @@
         "sedang menangani masalah pada fungsi untuk handle ujian itu terkirim ke siswa",
         "selesai memperbaiki schema untuk konfigurasi penyerahan ujian ke siswa",
         "selesai membuat api untuk mengkonfigurasi data ujian yang ingin di kirim ke siswa",
-        "selesai memperbaiki masalah error ketika di submit data ujian yang ingin di kirim ke siswa karena masalah mengeset tanggal ujian"
+        "selesai memperbaiki masalah error ketika di submit data ujian yang ingin di kirim ke siswa karena masalah mengeset tanggal ujian",
+        "selesai untuk memperbaiki masalah pada proses pengaturan jadwal ujian yang ingin di kirim ke siswa"
     ],
     "sqltools.connections": [
         {

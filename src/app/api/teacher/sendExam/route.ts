@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { teacherId, dataPayload } = body;
+    const { teacherId, exams } = body;
 
-    const result = await handleSendExamToStudent(teacherId, dataPayload);
+    const result = handleSendExamToStudent(teacherId, exams);
 
     return NextResponse.json(
       {

@@ -6,6 +6,9 @@ const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/; // HH:mm
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/; // YYYY-MM-DD
 const MAX_DURATION = 480; // menit
 const MAX_ADVANCE_DAYS = 90;
+const MAX_EXAMS_PER_REQUEST = 50;
+
+type Slot = { index: number; classId: number; start: Date; end: Date };
 
 const REQUIRED_MESSAGES = {
   id_subject: "Ujian tidak valid",
@@ -28,6 +31,19 @@ export const toDateTime = (date: string, time: string): Date | null => {
     .toISOString()
     .slice(0, 10);
   return backToWIB === date ? d : null;
+};
+
+export const detectClashes = (slots: Slot[]) => {
+  const clashes: { index: number; with: number }[] = [];
+  slots.forEach((a, i) => {
+    const b = slots
+      .slice(0, i)
+      .find(
+        (x) => x.classId === a.classId && a.start < x.end && a.end > x.start,
+      );
+    if (b) clashes.push({ index: a.index, with: b.index });
+  });
+  return clashes;
 };
 
 type TimingField =
@@ -212,4 +228,33 @@ export const examScheduleSchema = z
     return { ...v, startAt: start, endAt: end }; // Date siap disimpan
   });
 
+export const examScheduleListSchema = z
+  .array(examScheduleSchema)
+  .min(1, "Pilih minimal satu ujian")
+  .max(
+    MAX_EXAMS_PER_REQUEST,
+    `Maksimal ${MAX_EXAMS_PER_REQUEST} ujian per pengiriman`,
+  )
+  .transform((items, ctx) => {
+    const slots = items.map((it, index) => ({
+      index,
+      classId: it.class_id,
+      start: it.startAt,
+      end: it.endAt,
+    }));
+
+    const clashes = detectClashes(slots);
+    clashes.forEach((c) =>
+      ctx.addIssue({
+        code: "custom",
+        path: [c.index, "exam_start_at"],
+        message: `Bentrok dengan jadwal ke-${c.with + 1} dalam pengiriman yang sama`,
+      }),
+    );
+    if (clashes.length > 0) return z.NEVER;
+
+    return items;
+  });
+
 export type ExamScheduleParsed = z.output<typeof examScheduleSchema>;
+export type ExamScheduleListParsed = z.output<typeof examScheduleListSchema>;
