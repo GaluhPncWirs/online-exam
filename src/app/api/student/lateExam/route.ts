@@ -1,15 +1,16 @@
 import { handleLateExam } from "@/src/services/mysql/student/data-subject-exam";
+import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const user = await getAuthenticatedUser();
 
-    if (!body) {
+    if (!user.success) {
       return NextResponse.json(
         {
           success: false,
-          message: "Data ujian tidak ada",
+          message: user.message,
         },
         {
           status: 401,
@@ -17,15 +18,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const { id_student, id_subject, result_exam, status_exam, className } =
-      body;
+    if (user.data.role !== "student") {
+      return NextResponse.json(
+        { success: false, message: "Hanya siswa yang dapat mengirim data ini" },
+        { status: 403 },
+      );
+    }
+
+    const body: unknown = await request.json();
+    if (
+      typeof body !== "object" ||
+      body === null ||
+      !("id_subject" in body) ||
+      typeof body.id_subject !== "string" ||
+      !body.id_subject.trim()
+    ) {
+      return NextResponse.json(
+        { success: false, message: "ID mata pelajaran tidak valid" },
+        { status: 400 },
+      );
+    }
 
     const result = await handleLateExam({
-      id_student,
-      id_subject,
-      result_exam,
-      status_exam,
-      className,
+      id_student: user.data.id_student,
+      id_subject: body.id_subject,
+      className: user.data.class,
     });
 
     return NextResponse.json(

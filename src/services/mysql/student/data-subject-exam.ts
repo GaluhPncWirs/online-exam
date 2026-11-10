@@ -96,22 +96,12 @@ export async function handleGetDataResultExamPerClass(idStudent: string) {
 type PropsHandleLateExam = {
   id_student: string;
   id_subject: string;
-  result_exam: string;
-  status_exam: boolean;
   className: string;
-};
-
-type ResultHandleLateExam = {
-  success: boolean;
-  status: number;
-  message: string;
 };
 
 export async function handleLateExam({
   id_student,
   id_subject,
-  result_exam,
-  status_exam,
   className,
 }: PropsHandleLateExam) {
   const query = `
@@ -125,8 +115,12 @@ export async function handleLateExam({
       class_id
     )
     SELECT ?, ?, ?, ?, ?, ?, c.id
-    FROM classes AS c
+    FROM manage_exams AS me
+    JOIN classes AS c
+      ON c.id = me.class_id
     WHERE c.name = ?
+      AND me.id_subject = ?
+      AND TIMESTAMP(DATE(me.exam_date), me.exam_end_at) <= NOW()
       AND NOT EXISTS (
         SELECT 1
         FROM history_exams
@@ -149,15 +143,35 @@ export async function handleLateExam({
       id_student,
       id_subject,
       null,
-      result_exam,
-      status_exam,
+      "telat",
+      true,
       className,
-      className,
+      id_subject,
       id_student,
       id_subject,
     ]);
 
-    if (result.affectedRows === 0) return alreadySaved;
+    if (result.affectedRows === 0) {
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        `
+          SELECT
+            EXISTS (
+              SELECT 1
+              FROM history_exams
+              WHERE id_student = ? AND id_subject = ?
+            ) AS already_saved
+        `,
+        [id_student, id_subject],
+      );
+
+      if (rows[0]?.already_saved) return alreadySaved;
+
+      return {
+        success: false,
+        status: 409,
+        message: "Tenggat ujian belum berakhir atau jadwal tidak ditemukan",
+      };
+    }
 
     return {
       success: true,

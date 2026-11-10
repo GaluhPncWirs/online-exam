@@ -90,7 +90,8 @@
         "selesai memperbaiki masalah error ketika di submit data ujian yang ingin di kirim ke siswa karena masalah mengeset tanggal ujian",
         "selesai untuk memperbaiki masalah pada proses pengaturan jadwal ujian yang ingin di kirim ke siswa",
         "sedang memperbaiki error pada bagian backend karena masih tidak sesuai payloadnya dari forntend",
-        "selesai untuk mengerjakan proses pengiriman ujian ke siswa"
+        "selesai untuk mengerjakan proses pengiriman ujian ke siswa",
+        "selesai memperbaiki error pada pengambilan jadwal data ujian untuk role siswa"
     ],
     "sqltools.connections": [
         {

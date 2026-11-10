@@ -52,7 +52,6 @@ export default function DashboardClientStudent({
     statusBadge: false,
   });
 
-  const [lateExam, setLateExam] = useState<ScheduleExams[]>([]);
   const savedLateExamIds = useRef<Set<string>>(new Set());
   const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
 
@@ -88,11 +87,7 @@ export default function DashboardClientStudent({
 
       try {
         const payload = {
-          id_student: dataStudent.id_student,
           id_subject: idUjian,
-          result_exam: "telat",
-          status_exam: true,
-          className: dataStudent.class,
         };
 
         const request = await fetch("/api/student/lateExam", {
@@ -105,48 +100,50 @@ export default function DashboardClientStudent({
 
         const response = await request.json().catch(() => null);
 
-        if (!request.ok || !response.success) {
+        if (!request.ok || !response?.success) {
           // Izinkan percobaan ulang jika penyimpanan gagal
           savedLateExamIds.current.delete(idUjian);
 
-          toast("❌ Gagal Simpan Data", {
-            description: response.message,
-          });
+          if (request.status !== 409) {
+            toast("❌ Gagal Simpan Data", {
+              description: response?.message ?? "Gagal menyimpan data ujian.",
+            });
+          }
 
           return;
         }
+
+        route.refresh();
       } catch (error) {
         // Izinkan percobaan ulang jika terjadi error jaringan
         savedLateExamIds.current.delete(idUjian);
 
-        toast("❌ Gagal Simpan Data", {
+        toast.error("Gagal Simpan Data", {
           description: "Terjadi kesalahan saat menghubungi server.",
         });
 
         console.error(error);
       }
     },
-    [dataStudent],
+    [dataStudent, route],
   );
-
   useEffect(() => {
-    const lateExamsList = dataExams.filter(
-      (exam) => getExamStatus(exam.deadline_exam, exam.exam_date) === "LEWAT",
-    );
+    const saveExpiredExams = () => {
+      const expiredExams = dataExams.filter(
+        (exam) =>
+          exam.status_exam !== 1 &&
+          getExamStatus(exam.deadline_exam, exam.exam_date) === "LEWAT",
+      );
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLateExam(lateExamsList);
+      for (const exam of expiredExams) {
+        void lateExams(exam.id_subject);
+      }
+    };
 
-    // Hanya memproses ujian yang belum berhasil disimpan
-    const unsavedLateExams = lateExamsList.filter(
-      (exam) => !savedLateExamIds.current.has(exam.id_subject),
-    );
+    saveExpiredExams();
+    const timer = window.setInterval(saveExpiredExams, 15_000);
 
-    if (unsavedLateExams.length === 0) return;
-
-    void Promise.all(
-      unsavedLateExams.map((exam) => lateExams(exam.id_subject)),
-    );
+    return () => window.clearInterval(timer);
   }, [dataExams, lateExams]);
 
   useEffect(() => {
@@ -277,8 +274,8 @@ export default function DashboardClientStudent({
                     </h3>
 
                     <p className="mt-1 text-sm font-medium text-slate-500">
-                      {upcomingExam?.deadline_exam.start} ·{" "}
-                      {upcomingExam?.deadline_exam.end}
+                      {upcomingExam?.deadline_exam.start.slice(0, 5)} ·{" "}
+                      {upcomingExam?.deadline_exam.end.slice(0, 5)}
                     </p>
                   </div>
                 </div>
@@ -385,8 +382,8 @@ export default function DashboardClientStudent({
               </TableHeader>
 
               <TableBody>
-                {dataExams.length > 0 ? (
-                  dataExams.map((data, i: number) => {
+                {isExamAvaible.length > 0 ? (
+                  isExamAvaible.map((data, i: number) => {
                     const status = getExamStatus(
                       data.deadline_exam,
                       data.exam_date,
