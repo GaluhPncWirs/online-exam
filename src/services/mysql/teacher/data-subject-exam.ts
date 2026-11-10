@@ -186,7 +186,7 @@ export async function handleGetDataManageExams(
   const offset = from;
 
   const queryManageExams = `
-    SELECT me.created_at, c.name AS class, me.class_id, me.id_subject, me.exam_date, me.exam_start_at, me.exam_end_at, se.name_exam, se.type_exam
+    SELECT me.created_at, c.name AS class, me.class_id, me.id_subject, me.exam_date, me.exam_start_at, me.is_manage_exam, me.exam_end_at, se.name_exam, se.type_exam
     FROM manage_exams AS me
     LEFT JOIN classes AS c
       ON c.id = me.class_id
@@ -531,8 +531,8 @@ export async function handleSendExamToStudent(
 
         const [res] = await conn.execute<ResultSetHeader>(
           `INSERT INTO manage_exams
-           (id_manage_exam, id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           (id_manage_exam, id_teacher, id_subject, class_id, exam_start_at, exam_end_at, duration_exam, is_manage_exam)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             idManageExam,
             teacherId,
@@ -541,6 +541,7 @@ export async function handleSendExamToStudent(
             exam.startAt,
             exam.endAt,
             exam.exam_duration,
+            true,
           ],
         );
         insertIds.push(res.insertId);

@@ -276,7 +276,7 @@ export default function ManageExams({
               {dataManageExams.length > 0 ? (
                 dataManageExams.map((data, i: number) => (
                   <TableRow
-                    key={data.id_subject}
+                    key={i}
                     className="align-top transition-colors hover:bg-slate-50"
                   >
                     {/* Number */}

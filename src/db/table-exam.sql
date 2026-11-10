@@ -279,6 +279,8 @@ SELECT JSON_SEARCH(exam_questions, 'one', 'Choose the correct word to complete t
 FROM subject_exam
 WHERE id_subject = 'SUB-wPTu3V';
 
+ALTER TABLE subject_exam ADD COLUMN BOOLEAN DEFAULT FALSE
+
 -- {
 --   "id_subject": "SUB-rT6UeV",
 --   "id_teacher": "TCR-ar45dgU",
