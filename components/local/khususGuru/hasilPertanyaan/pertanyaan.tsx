@@ -187,7 +187,9 @@ export default function ManageExams({
     }
 
     try {
-      const req = await fetch("/api/teacher/deleteDataExam");
+      const req = await fetch(`/api/teacher/deleteDataExam/${idManageExam}`, {
+        method: "DELETE",
+      });
       const res = await req.json();
 
       if (!res.success) {
@@ -196,6 +198,11 @@ export default function ManageExams({
         });
         return;
       }
+
+      setOpenDialog((prev) => ({
+        ...prev,
+        deleteExam: false,
+      }));
 
       toast.success("Berhasil", {
         description: res.message,
@@ -484,7 +491,10 @@ export default function ManageExams({
                           type="button"
                           variant="destructive"
                           onClick={() =>
-                            getDataBeforeDelete(data.id_subject, data.name_exam)
+                            getDataBeforeDelete(
+                              data.id_manage_exam,
+                              data.name_exam,
+                            )
                           }
                           className="h-7"
                         >

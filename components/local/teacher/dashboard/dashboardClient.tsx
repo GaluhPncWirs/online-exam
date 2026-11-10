@@ -305,7 +305,7 @@ export default function DashboardClientTeacher({
 
                             <TableCell className="text-sm text-slate-500">
                               {formatDateToYYYYMMDD(item.exam_date)}
-                              {" / "}
+                              {" | "}
                               {item.exam_start_at.slice(0, -3)} {" - "}{" "}
                               {item.exam_end_at.slice(0, -3)}
                             </TableCell>

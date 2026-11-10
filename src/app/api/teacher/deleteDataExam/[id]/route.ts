@@ -1,25 +1,50 @@
+import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleDeleteExamToStudent } from "@/src/services/mysql/teacher/data-subject-exam";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   try {
-    const body = await req.json();
-    const { idManageExam, idTeacher } = body;
+    const { id } = await context.params;
 
-    if (!idManageExam || !idTeacher) {
+    if (!id) {
       return NextResponse.json(
         {
           success: false,
-          message: "id ujian harus ada",
+          message: "id program harus ada",
         },
         {
           status: 400,
         },
       );
     }
+
+    const user = await getAuthenticatedUser();
+
+    if (!user.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: user.message,
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    if (user.data.role !== "teacher") {
+      return NextResponse.json(
+        { success: false, message: "Hanya guru yang dapat menghapus data ini" },
+        { status: 403 },
+      );
+    }
+
     const deletedData = await handleDeleteExamToStudent(
-      idManageExam,
-      idTeacher,
+      id,
+      user.data.id_teacher,
     );
 
     if (!deletedData.success) {
