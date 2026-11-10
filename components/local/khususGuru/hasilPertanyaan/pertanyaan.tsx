@@ -50,7 +50,6 @@ import {
   PenLine,
   Trash2,
 } from "lucide-react";
-import { error } from "next/dist/build/output/log";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -69,6 +68,11 @@ const classIdMapping: Record<string, number> = {
   "3A": 1,
   "4E": 6,
   "5A": 7,
+};
+
+type ActionsExam = {
+  id_manage_exam: string;
+  name_exam: string;
 };
 
 export default function ManageExams({
@@ -92,6 +96,10 @@ export default function ManageExams({
     },
   });
 
+  const filterByManageExams = dataManageExams.filter(
+    (exam) => !exam.is_manage_exam,
+  );
+
   useEffect(() => {
     if (dataManageExams.length === 0) return;
 
@@ -101,7 +109,7 @@ export default function ManageExams({
   }, [dataManageExams, setValue]);
 
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
-  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+  const [selectedExam, setSelectedExam] = useState<ActionsExam | null>(null);
   const [openDialog, setOpenDialog] = useState({
     sendExam: false,
     deleteExam: false,
@@ -130,7 +138,7 @@ export default function ManageExams({
     };
 
     try {
-      const req = await fetch("/api/teacher/sendExam", {
+      const req = await fetch("/api/teacher/sendDataExam", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -159,10 +167,10 @@ export default function ManageExams({
     }
   }
 
-  function getDataBeforeDelete(idExam: string, namaUjian: string) {
+  function getDataBeforeDelete(idManageExam: string, namaUjian: string) {
     setSelectedExam({
-      idExam,
-      namaUjian,
+      id_manage_exam: idManageExam,
+      name_exam: namaUjian,
     });
     setOpenDialog((prev) => ({
       ...prev,
@@ -170,40 +178,30 @@ export default function ManageExams({
     }));
   }
 
-  async function handleDeleteExam(idExam: string) {
-    if (!idExam) {
-      toast("Gagal ❌", {
-        description: "ID ujian tidak ditemukan.",
+  async function handleDeleteExam(idManageExam: string | undefined) {
+    if (!idManageExam) {
+      toast.error("Gagal", {
+        description: "Nama ujian tidak ditemukan.",
       });
       return;
     }
 
     try {
-      // const { error } = await supabase
-      //   .from("exams")
-      //   .update({
-      //     deleted_at: new Date().toISOString(),
-      //   })
-      //   .eq("id", idExam)
-      //   .is("deleted_at", null);
+      const req = await fetch("/api/teacher/deleteDataExam");
+      const res = await req.json();
 
-      // if (error) {
-      //   console.error("Delete exam error:", error);
+      if (!res.success) {
+        toast.error("Error", {
+          description: res.message,
+        });
+        return;
+      }
 
-      //   toast("Gagal ❌", {
-      //     description: "Ujian gagal dihapus.",
-      //   });
-
-      //   return;
-      // }
-
-      toast("Berhasil ✅", {
-        description: "Ujian berhasil dihapus.",
+      toast.success("Berhasil", {
+        description: res.message,
       });
-    } catch (error) {
-      console.error("Unexpected delete error:", error);
-
-      toast("Gagal ❌", {
+    } catch {
+      toast.error("Gagal", {
         description: "Terjadi kesalahan. Silakan coba lagi.",
       });
     }
@@ -267,7 +265,7 @@ export default function ManageExams({
                 </TableHead>
 
                 <TableHead className="min-w-20 text-center font-semibold text-slate-600">
-                  Kelola
+                  Aksi
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -477,20 +475,20 @@ export default function ManageExams({
                       <div className="flex flex-col gap-2">
                         <Link
                           href={`/Teacher/dashboard/manageExams/${String(data.id_subject)}`}
-                          className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                          className="inline-flex h-7 items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                         >
-                          <PenLine className="size-5" />
+                          <PenLine className="size-4" />
                         </Link>
 
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="destructive"
                           onClick={() =>
                             getDataBeforeDelete(data.id_subject, data.name_exam)
                           }
-                          className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
+                          className="h-7"
                         >
-                          <Trash2 className="size-5" />
+                          <Trash2 className="size-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -527,16 +525,14 @@ export default function ManageExams({
             }))
           }
         >
-          <DialogContent className="rounded-lg sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">
-                Hapus Soal Ujian
-              </DialogTitle>
+              <DialogTitle>Hapus Soal Ujian</DialogTitle>
 
-              <DialogDescription className="pt-2 leading-6">
+              <DialogDescription>
                 Apakah Anda yakin ingin menghapus ujian{" "}
                 <span className="font-bold text-slate-900">
-                  &quot;{selectedExam?.namaUjian}&quot;
+                  &quot;{selectedExam?.name_exam}&quot;
                 </span>
                 ?
                 <span className="mt-2 block">
@@ -545,13 +541,12 @@ export default function ManageExams({
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="mt-4 gap-2">
+            <DialogFooter className="space-x-1">
               <DialogClose>Batal</DialogClose>
 
               <Button
                 variant="destructive"
-                className="rounded-xl bg-red-600 hover:bg-red-700"
-                onClick={() => handleDeleteExam(selectedExam.idExam)}
+                onClick={() => handleDeleteExam(selectedExam?.id_manage_exam)}
               >
                 Hapus Ujian
               </Button>

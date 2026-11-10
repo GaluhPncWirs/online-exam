@@ -186,7 +186,7 @@ export async function handleGetDataManageExams(
   const offset = from;
 
   const queryManageExams = `
-    SELECT me.created_at, c.name AS class, me.class_id, me.id_subject, me.exam_date, me.exam_start_at, me.is_manage_exam, me.exam_end_at, se.name_exam, se.type_exam
+    SELECT me.id_manage_exam, me.created_at, c.name AS class, me.class_id, me.id_subject, me.exam_date, me.exam_start_at, me.exam_end_at, me.is_manage_exam, se.name_exam, se.type_exam
     FROM manage_exams AS me
     LEFT JOIN classes AS c
       ON c.id = me.class_id
@@ -742,3 +742,29 @@ export async function handleSendExamToStudent(
 //     };
 //   }
 // }
+
+export async function handleDeleteExamToStudent(
+  idManageExam: string,
+  idTeacher: string,
+) {
+  const query = `
+    DELETE FROM manage_exams
+    WHERE id_manage_exam = ? AND id_teacher = ?
+  `;
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      idManageExam,
+      idTeacher,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return { success: false, message: "Jadwal ujian tidak ditemukan" };
+    }
+
+    return { success: true, message: "Jadwal ujian berhasil dihapus" };
+  } catch (error) {
+    console.error("Gagal menghapus jadwal ujian:", error);
+    return { success: false, message: "Gagal menghapus jadwal ujian" };
+  }
+}

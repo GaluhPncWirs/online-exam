@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const { id_teacher, name_exam, type_exam, exam_questions } = body;
 
-    if (!body) {
+    if (!id_teacher || !name_exam || !type_exam || !exam_questions) {
       return NextResponse.json(
         {
           success: false,
@@ -16,8 +17,6 @@ export async function POST(req: NextRequest) {
         },
       );
     }
-
-    const { id_teacher, name_exam, type_exam, exam_questions } = body;
 
     const result = await handleAddDataExam({
       id_teacher,

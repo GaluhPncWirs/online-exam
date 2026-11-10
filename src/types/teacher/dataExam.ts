@@ -10,17 +10,19 @@ export type DataExamsPending = {
 };
 
 export type ManageExamItem = {
+  id_manage_exam: string;
   created_at: Date;
   class: string;
   id_subject: string;
   exam_date: Date;
-  name_exam: string | null;
+  name_exam: string;
   exam_start_at: string;
   exam_end_at: string;
   lengthStudent: string[];
   type_exam: "PG" | "ESSAY";
   lengthStudentCompleteExams: string[];
   hasil_ujian: unknown[];
+  is_manage_exam: boolean;
 };
 
 export type StatisticStudent = {

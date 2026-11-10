@@ -4,20 +4,19 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
+    const { payloadAddDataQuestion, id_subject, id_teacher } = body;
 
-    if (!body) {
+    if (!payloadAddDataQuestion || !id_subject || !id_teacher) {
       return NextResponse.json(
         {
           success: false,
-          message: "Data payload ujian belum ada",
+          message: "Data payload ujian tidak ada",
         },
         {
           status: 401,
         },
       );
     }
-
-    const { payloadAddDataQuestion, id_subject, id_teacher } = body;
 
     const result = await handleAddDataExamQuestion(
       payloadAddDataQuestion,

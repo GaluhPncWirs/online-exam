@@ -4,8 +4,9 @@ import { handleSendExamToStudent } from "@/src/services/mysql/teacher/data-subje
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const { teacherId, exams } = body;
 
-    if (!body) {
+    if (!teacherId || !exams) {
       return NextResponse.json(
         {
           success: false,
@@ -16,8 +17,6 @@ export async function POST(req: NextRequest) {
         },
       );
     }
-
-    const { teacherId, exams } = body;
 
     const result = await handleSendExamToStudent(teacherId, exams);
 
