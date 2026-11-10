@@ -62,7 +62,7 @@ export default function LoginAccount() {
         return;
       }
 
-      // push("/Student/Dashboard");
+      push("/Student/Dashboard");
       toast.success("Berhasil", {
         description: dataLogin.message,
       });

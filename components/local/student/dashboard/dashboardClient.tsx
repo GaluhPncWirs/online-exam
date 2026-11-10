@@ -131,7 +131,7 @@ export default function DashboardClientStudent({
 
   useEffect(() => {
     const lateExamsList = dataExams.filter(
-      (exam) => getExamStatus(exam.deadline_exam, exam.created_at) === "LEWAT",
+      (exam) => getExamStatus(exam.deadline_exam, exam.exam_date) === "LEWAT",
     );
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -277,8 +277,8 @@ export default function DashboardClientStudent({
                     </h3>
 
                     <p className="mt-1 text-sm font-medium text-slate-500">
-                      {upcomingExam?.created_at.toISOString()} ·{" "}
-                      {upcomingExam?.deadline_exam.toISOString()}
+                      {upcomingExam?.deadline_exam.start} ·{" "}
+                      {upcomingExam?.deadline_exam.end}
                     </p>
                   </div>
                 </div>
@@ -385,11 +385,11 @@ export default function DashboardClientStudent({
               </TableHeader>
 
               <TableBody>
-                {isExamAvaible.length > 0 ? (
-                  isExamAvaible.map((data, i: number) => {
+                {dataExams.length > 0 ? (
+                  dataExams.map((data, i: number) => {
                     const status = getExamStatus(
                       data.deadline_exam,
-                      data.created_at,
+                      data.exam_date,
                     );
 
                     return (
@@ -406,8 +406,9 @@ export default function DashboardClientStudent({
                         </TableCell>
 
                         <TableCell className="text-sm text-slate-500">
-                          {formatDateToYYYYMMDD(data.created_at)} | {""}
-                          {formatDateToYYYYMMDD(data.deadline_exam)}
+                          {formatDateToYYYYMMDD(data.exam_date)} |{" "}
+                          {data.deadline_exam.start.slice(0, 5)} -{" "}
+                          {data.deadline_exam.end.slice(0, 5)}
                         </TableCell>
 
                         <TableCell className="text-sm text-slate-600">
@@ -585,8 +586,8 @@ export default function DashboardClientStudent({
                           </TableCell>
 
                           <TableCell className="text-sm text-slate-500">
-                            {item.created_at
-                              ? formatDateToYYYYMMDD(item.created_at)
+                            {item.exam_date
+                              ? formatDateToYYYYMMDD(item.exam_date)
                               : "-"}
                           </TableCell>
 
@@ -630,8 +631,8 @@ export default function DashboardClientStudent({
                           </TableCell>
 
                           <TableCell className="text-sm text-slate-500">
-                            {item.created_at
-                              ? formatDateToYYYYMMDD(item.created_at)
+                            {item.history_created_at
+                              ? formatDateToYYYYMMDD(item.history_created_at)
                               : "-"}
                           </TableCell>
 

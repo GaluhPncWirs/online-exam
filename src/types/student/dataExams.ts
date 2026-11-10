@@ -1,10 +1,14 @@
 import { TypeExamQuestions } from "../dataExam";
 
 export type ScheduleExams = {
-  created_at: Date;
-  deadline_exam: Date;
+  exam_date: Date;
+  deadline_exam: {
+    start: string;
+    end: string;
+  };
   fullname: string;
-  id_history_exam: string;
+  history_created_at: Date | null;
+  id_history_exam: string | null;
   id_manage_exam: string;
   id_student: string;
   id_subject: string;

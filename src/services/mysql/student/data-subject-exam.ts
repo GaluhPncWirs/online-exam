@@ -1,7 +1,11 @@
 "server-only";
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { queryRows } from "@/src/lib/utils/queryPool";
+import { ScheduleExams } from "@/src/types/student/dataExams";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+
+type ScheduleExamsRow = RowDataPacket & ScheduleExams;
 
 export async function handleGetDataSubjectExams(
   className: string,
@@ -12,37 +16,48 @@ export async function handleGetDataSubjectExams(
       me.id_manage_exam,
       me.id_teacher,
       me.id_subject,
-      me.deadline_exam,
+      me.exam_date AS exam_date,
+      JSON_OBJECT(
+        'start', me.exam_start_at,
+        'end', me.exam_end_at
+      ) AS deadline_exam,
       account_teacher.fullname,
       subject_exam.name_exam,
-      // he.id_history_exam,
-      // he.id_student,
-      // he.status_exam,
-      // he.created_at,
-      // he.result_exam
+      he.id_history_exam,
+      ? AS id_student,
+      COALESCE(he.status_exam, 0) AS status_exam,
+      COALESCE(he.result_exam, 'pending') AS result_exam,
+      he.created_at AS history_created_at
     FROM manage_exams AS me
     JOIN account_teacher
       ON me.id_teacher = account_teacher.id_teacher
     JOIN subject_exam
       ON me.id_subject = subject_exam.id_subject
-    // JOIN history_exams AS he
-    //   ON me.id_history_exam = he.id_history_exam
     JOIN classes AS c
       ON c.id = me.class_id
+    LEFT JOIN history_exams AS he
+      ON he.id_subject = me.id_subject
+      AND he.class_id = me.class_id
+      AND he.id_student = ?
     WHERE c.name = ?
-      AND history_exams.id_student = ?
   `;
 
   try {
-    const [rows] = await pool.execute(query, [className, idStudent]);
+    const data = await queryRows<ScheduleExamsRow[]>(query, [
+      idStudent,
+      idStudent,
+      className,
+    ]);
 
     return {
-      data: rows,
+      data,
       success: true,
       message: "Berhasil mengambil data ujian",
     };
-  } catch {
+  } catch (error) {
+    console.error("Error handleGetDataSubjectExams:", error);
     return {
+      data: [],
       success: false,
       message: "Gagal mengambil data ujian",
     };

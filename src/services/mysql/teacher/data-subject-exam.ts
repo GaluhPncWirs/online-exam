@@ -17,6 +17,7 @@ import {
   ScheduleConflictError,
 } from "@/src/repositories/findConfictExam";
 import { withTransaction } from "@/src/repositories/transaction";
+import { queryRows } from "@/src/lib/utils/queryPool";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -174,16 +175,6 @@ type StudentRow = RowDataPacket & {
 type CountRow = RowDataPacket & {
   total: number;
 };
-
-async function queryRows<T extends RowDataPacket[]>(
-  sql: string,
-  params: unknown[],
-  skip = false,
-) {
-  if (skip) return [] as unknown as T;
-  const [rows] = await pool.query<T>(sql, params);
-  return rows;
-}
 
 export async function handleGetDataManageExams(
   id_teacher: string,
