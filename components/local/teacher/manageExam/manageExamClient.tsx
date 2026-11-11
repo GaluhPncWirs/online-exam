@@ -29,44 +29,32 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ClipboardList, PenLine, Trash2 } from "lucide-react";
-import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ExamQuestionInput,
   ExamQuestionInputType,
+  ExamQuestionType,
 } from "@/src/schemas/addDataExam";
-import { ExamQuestion } from "@/src/types/dataExam";
-
-const editExamQuestionSchema = z.object({
-  id: z.string().min(1),
-
-  pertanyaan: z.string().min(5, "Minimal 5 karakter"),
-
-  pilihanGanda: z
-    .object({
-      answer_a: z.string(),
-      answer_b: z.string(),
-      answer_c: z.string(),
-      answer_d: z.string(),
-      answer_e: z.string(),
-    })
-    .optional(),
-
-  jawabanYangBenar: z.enum(["a", "b", "c", "d", "e"]).optional(),
-});
-
-type EditExamQuestionSchemaType = z.infer<typeof editExamQuestionSchema>;
+import { Choice, ExamQuestion } from "@/src/types/dataExam";
 
 type DataExamQuestion = {
   examQuestion: ExamQuestion;
 };
 
+type SelectedQuestion = {
+  id: string;
+  questions: string;
+  multipleChoice?: Choice;
+  correctAnswer?: string;
+};
+
 export default function ManageExamComponent({
   examQuestion,
 }: DataExamQuestion) {
-  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<SelectedQuestion | null>(null);
   const [openDialog, setOpenDialog] = useState<Record<string, boolean>>({
     editExam: false,
     deleteExam: false,
@@ -94,148 +82,114 @@ export default function ManageExamComponent({
     },
   });
 
-  // useEffect(() => {
-  //   if (!getidTeacher) return;
-  //   async function handleViewQuestions() {
-  //     const { data, error } = await supabase
-  //       .from("exams")
-  //       .select("*")
-  //       .eq("id", Number(id))
-  //       .eq("idTeacher", getidTeacher)
-  //       .single();
-
-  //     if (error) {
-  //       toast("Gagal ❌", {
-  //         description: "Soal gagal ditampilkan.",
-  //       });
-  //     }
-  //     setViewQuestions(data);
-  //   }
-  //   handleViewQuestions();
-  // }, [getidTeacher]);
-
-  async function onSubmit(formData: EditExamQuestionSchemaType) {
-    const examId = viewQuestions?.id;
-
-    if (!examId) {
-      toast("Gagal ❌", {
-        description: "ID ujian tidak ditemukan.",
-      });
-
-      return;
-    }
-
+  async function onSubmit(formData: ExamQuestionInputType) {
     console.log(formData);
 
-    // try {
-    //   // ==========================================
-    //   // 1. Ambil data ujian
-    //   // ==========================================
+    try {
+      const { data: examData, error: fetchError } = await supabase
+        .from("exams")
+        .select("questions_exam, tipeUjian")
+        .eq("id", examId)
+        .single();
 
-    //   const { data: examData, error: fetchError } = await supabase
-    //     .from("exams")
-    //     .select("questions_exam, tipeUjian")
-    //     .eq("id", examId)
-    //     .single();
+      if (fetchError) {
+        console.error("Fetch exam error:", fetchError);
 
-    //   if (fetchError) {
-    //     console.error("Fetch exam error:", fetchError);
+        toast("Gagal ❌", {
+          description: "Ujian tidak ditemukan.",
+        });
 
-    //     toast("Gagal ❌", {
-    //       description: "Ujian tidak ditemukan.",
-    //     });
+        return;
+      }
 
-    //     return;
-    //   }
+      // ==========================================
+      // 2. Pastikan questions_exam berupa array
+      // ==========================================
 
-    //   // ==========================================
-    //   // 2. Pastikan questions_exam berupa array
-    //   // ==========================================
+      const questions = Array.isArray(examData.questions_exam)
+        ? examData.questions_exam
+        : [];
 
-    //   const questions = Array.isArray(examData.questions_exam)
-    //     ? examData.questions_exam
-    //     : [];
+      // ==========================================
+      // 3. Cek apakah soal yang diedit ada
+      // ==========================================
 
-    //   // ==========================================
-    //   // 3. Cek apakah soal yang diedit ada
-    //   // ==========================================
+      const questionExists = questions.some(
+        (question) => question.id === formData.id,
+      );
 
-    //   const questionExists = questions.some(
-    //     (question) => question.id === formData.id,
-    //   );
+      if (!questionExists) {
+        toast("Gagal ❌", {
+          description: "Soal yang ingin diedit tidak ditemukan.",
+        });
 
-    //   if (!questionExists) {
-    //     toast("Gagal ❌", {
-    //       description: "Soal yang ingin diedit tidak ditemukan.",
-    //     });
+        return;
+      }
 
-    //     return;
-    //   }
+      // ==========================================
+      // 4. Update soal
+      // ==========================================
 
-    //   // ==========================================
-    //   // 4. Update soal
-    //   // ==========================================
+      const updatedQuestions = questions.map((question) => {
+        if (question.id !== formData.id) {
+          return question;
+        }
 
-    //   const updatedQuestions = questions.map((question) => {
-    //     if (question.id !== formData.id) {
-    //       return question;
-    //     }
+        if (examData.tipeUjian === "pg") {
+          return {
+            ...question,
+            questions: formData.pertanyaan,
+            answerPg: formData.pilihanGanda,
+            correctAnswer: formData.jawabanYangBenar,
+          };
+        }
 
-    //     if (examData.tipeUjian === "pg") {
-    //       return {
-    //         ...question,
-    //         questions: formData.pertanyaan,
-    //         answerPg: formData.pilihanGanda,
-    //         correctAnswer: formData.jawabanYangBenar,
-    //       };
-    //     }
+        return {
+          ...question,
+          questions: formData.pertanyaan,
+        };
+      });
 
-    //     return {
-    //       ...question,
-    //       questions: formData.pertanyaan,
-    //     };
-    //   });
+      // ==========================================
+      // 5. Simpan ke database
+      // ==========================================
 
-    //   // ==========================================
-    //   // 5. Simpan ke database
-    //   // ==========================================
+      const { error: updateError } = await supabase
+        .from("exams")
+        .update({
+          questions_exam: updatedQuestions,
+        })
+        .eq("id", examId);
 
-    //   const { error: updateError } = await supabase
-    //     .from("exams")
-    //     .update({
-    //       questions_exam: updatedQuestions,
-    //     })
-    //     .eq("id", examId);
+      if (updateError) {
+        console.error("Update exam error:", updateError);
 
-    //   if (updateError) {
-    //     console.error("Update exam error:", updateError);
+        toast("Gagal ❌", {
+          description: "Soal gagal diedit. Coba periksa kembali.",
+        });
 
-    //     toast("Gagal ❌", {
-    //       description: "Soal gagal diedit. Coba periksa kembali.",
-    //     });
+        return;
+      }
 
-    //     return;
-    //   }
+      // ==========================================
+      // 6. Berhasil
+      // ==========================================
 
-    //   // ==========================================
-    //   // 6. Berhasil
-    //   // ==========================================
+      toast("Berhasil ✅", {
+        description: "Soal berhasil diperbarui.",
+      });
 
-    //   toast("Berhasil ✅", {
-    //     description: "Soal berhasil diperbarui.",
-    //   });
+      setOpenDialog((prev) => ({
+        ...prev,
+        editExam: false,
+      }));
+    } catch (error) {
+      console.error("Unexpected update error:", error);
 
-    //   setOpenDialog((prev) => ({
-    //     ...prev,
-    //     editExam: false,
-    //   }));
-    // } catch (error) {
-    //   console.error("Unexpected update error:", error);
-
-    //   toast("Gagal ❌", {
-    //     description: "Terjadi kesalahan. Silakan coba lagi.",
-    //   });
-    // }
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
   }
 
   // async function handleDeleteQuestion(questionId: string) {
@@ -362,8 +316,8 @@ export default function ManageExamComponent({
     }));
   }
 
-  function getDataBeforeDelete(idExam: string) {
-    setSelectedQuestion(idExam);
+  function getDataBeforeDelete(dataQuestion: SelectedQuestion) {
+    setSelectedQuestion(dataQuestion);
     setOpenDialog((prev) => ({
       ...prev,
       deleteExam: true,
@@ -459,9 +413,15 @@ export default function ManageExamComponent({
                           <div className="mt-4 space-y-2">
                             {["a", "b", "c", "d", "e"].map((option) => {
                               const choiceKey = `choice_${option}`;
-                              const choiceText = item.multipleChoice[choiceKey];
+                              const choiceText =
+                                "multipleChoice" in item
+                                  ? item.multipleChoice[
+                                      choiceKey as keyof Choice
+                                    ]
+                                  : undefined;
 
                               const isCorrect =
+                                "correctAnswer" in item &&
                                 item.correctAnswer === choiceText;
 
                               return (
@@ -536,7 +496,7 @@ export default function ManageExamComponent({
                         {/* Delete */}
                         <Button
                           type="button"
-                          onClick={() => getDataBeforeDelete(item.id)}
+                          onClick={() => getDataBeforeDelete(item)}
                           variant="destructive"
                           className="h-10 w-full rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
                         >
@@ -583,19 +543,17 @@ export default function ManageExamComponent({
             onSubmit={handleSubmit(onSubmit)}
             id="form-edit-question"
           >
-            <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-2xl">
+            <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] rounded-lg sm:max-w-xl overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="text-xl font-bold">
-                  Edit Soal
-                </DialogTitle>
+                <DialogTitle>Edit Soal</DialogTitle>
 
                 <DialogDescription>
-                  Perbarui pertanyaan dan jawaban soal berikut.
+                  Perbarui pertanyaan dan jawaban dari soal berikut.
                 </DialogDescription>
               </DialogHeader>
 
               {/* Question */}
-              <div className="space-y-5">
+              <div className="space-y-3">
                 <div>
                   <label
                     htmlFor={`question-${selectedQuestion?.id}`}
@@ -690,7 +648,6 @@ export default function ManageExamComponent({
                                         key={option}
                                         value={answerText}
                                       >
-                                        Opsi {option.toUpperCase()} —{" "}
                                         {answerText}
                                       </SelectItem>
                                     );
@@ -712,17 +669,13 @@ export default function ManageExamComponent({
                 )}
               </div>
 
-              <DialogFooter className="mt-5 gap-2">
-                <DialogClose>
-                  <Button variant="outline" className="rounded-xl">
-                    Batal
-                  </Button>
-                </DialogClose>
+              <DialogFooter className="space-x-2">
+                <DialogClose>Batal</DialogClose>
 
                 <Button
                   type="submit"
                   form="form-edit-question"
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                  className=" bg-blue-600 hover:bg-blue-700"
                 >
                   Simpan Perubahan
                 </Button>
@@ -741,36 +694,27 @@ export default function ManageExamComponent({
             }))
           }
         >
-          <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
+          <DialogContent className="w-[calc(100%-2rem)] rounded-lg sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">
-                Hapus Soal
-              </DialogTitle>
+              <DialogTitle>Hapus Soal</DialogTitle>
 
-              <DialogDescription className="pt-2 leading-6">
+              <DialogDescription>
                 Apakah Anda yakin ingin menghapus soal ini ?
-                <span className="mt-2 block">
+                <span className="block font-bold">
                   Tindakan ini tidak dapat dibatalkan.
                 </span>
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="mt-4 gap-2">
-              <DialogClose>
-                <Button variant="outline" className="rounded-xl">
-                  Batal
-                </Button>
-              </DialogClose>
+            <DialogFooter className="space-x-2">
+              <DialogClose>Batal</DialogClose>
 
-              <DialogClose>
-                <Button
-                  variant="destructive"
-                  className="rounded-xl bg-red-600 hover:bg-red-700"
-                  onClick={() => handleDeleteQuestion(selectedQuestion)}
-                >
-                  Hapus Soal
-                </Button>
-              </DialogClose>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteQuestion(selectedQuestion)}
+              >
+                Hapus Soal
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

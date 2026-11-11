@@ -796,3 +796,5 @@ export async function handleGetDetailExam(
     return { success: false, message: "Gagal ambil data ujian" };
   }
 }
+
+export async function handleUpdateQuestionExam() {}

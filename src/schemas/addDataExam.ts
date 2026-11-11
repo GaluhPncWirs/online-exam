@@ -31,7 +31,7 @@ export const ExamQuestion = ExamQuestionInput.extend({
 });
 
 export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
-// export type ExamQuestionType = z.infer<typeof ExamQuestion>;
+export type ExamQuestionType = z.infer<typeof ExamQuestion>;
 
 export function validateMultipleChoice(
   q: z.infer<typeof ExamQuestionInput>,
