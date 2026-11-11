@@ -95,7 +95,8 @@
         "selesai memperbaiki bug pada proses penyimpanan data ketika ada ujia yang masa tenggat waktunya sudah lewat maka otomatis tersimpan ke database",
         "menambahkan data field \"is_manage_exam\" agar data yang sudah di kelola maka bisa di pisahkan",
         "menambahkan api untuk hapus kelola data ujian, dan juga memperbaiki handle error api di role teacher",
-        "selesai mengerjakan fitur untuk menghapus data manage ujian"
+        "selesai mengerjakan fitur untuk menghapus data manage ujian",
+        "memuial untuk mengerjakan bagian halaman kelola ujian "
     ],
     "sqltools.connections": [
         {

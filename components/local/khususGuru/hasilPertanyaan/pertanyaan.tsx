@@ -481,7 +481,7 @@ export default function ManageExams({
                     <TableCell className="pt-5">
                       <div className="flex flex-col gap-2">
                         <Link
-                          href={`/Teacher/dashboard/manageExams/${data.id_manage_exam}`}
+                          href={`/Teacher/Dashboard/manageExams/${data.id_subject}`}
                           className="inline-flex h-7 items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                         >
                           <PenLine className="size-4" />

@@ -768,3 +768,31 @@ export async function handleDeleteExamToStudent(
     return { success: false, message: "Gagal menghapus jadwal ujian" };
   }
 }
+
+export async function handleGetDetailExam(
+  id_subject: string,
+  id_teacher: string,
+) {
+  const query = `
+    SELECT name_exam, exam_questions, type_exam
+    FROM subject_exam
+    WHERE id_subject = ? AND id_teacher = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [result] = await pool.execute<RowDataPacket[]>(query, [
+      id_subject,
+      id_teacher,
+    ]);
+
+    if (result.length === 0) {
+      return { success: false, message: "Ujian tidak ditemukan" };
+    }
+
+    return { success: true, data: result[0] };
+  } catch (error) {
+    console.error("Gagal ambil data ujian:", error);
+    return { success: false, message: "Gagal ambil data ujian" };
+  }
+}
