@@ -29,3 +29,9 @@ export type StatisticStudent = {
   jumlahSiswa: number;
   averageValueExam: number;
 };
+
+export type DataPureExams = {
+  id_subject: string;
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
+};

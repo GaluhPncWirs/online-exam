@@ -42,7 +42,7 @@ import {
   SendExamToStudentSchemaType,
 } from "@/src/schemas/manageDataExam";
 import { DataTeacher } from "@/src/types/dataUser";
-import { ManageExamItem } from "@/src/types/teacher/dataExam";
+import { DataPureExams, ManageExamItem } from "@/src/types/teacher/dataExam";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
@@ -72,7 +72,7 @@ const classIdMapping: Record<string, number> = {
 };
 
 type ActionsExam = {
-  id_manage_exam: string;
+  idExam: string;
   name_exam: string;
 };
 
@@ -83,7 +83,7 @@ export default function ManageExams({
 }: ManagedExamsProps) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [dataPureExams, setDataPureExams] = useState([]);
+  const [dataPureExams, setDataPureExams] = useState<DataPureExams[]>([]);
   const {
     control,
     register,
@@ -116,7 +116,7 @@ export default function ManageExams({
           return;
         }
 
-        setDataPureExams(result.data);
+        setDataPureExams(result.data as DataPureExams[]);
       } catch (error) {
         console.error("Gagal mengambil data exams:", error);
       } finally {
@@ -198,9 +198,9 @@ export default function ManageExams({
     }
   }
 
-  function getDataBeforeDelete(idManageExam: string, namaUjian: string) {
+  function getDataBeforeDelete(idExam: string, namaUjian: string) {
     setSelectedExam({
-      id_manage_exam: idManageExam,
+      idExam: idExam,
       name_exam: namaUjian,
     });
     setOpenDialog((prev) => ({
@@ -209,8 +209,8 @@ export default function ManageExams({
     }));
   }
 
-  async function handleDeleteExam(idManageExam: string | undefined) {
-    if (!idManageExam) {
+  async function handleDeleteExam(idExam: string | undefined) {
+    if (!idExam) {
       toast.error("Gagal", {
         description: "Nama ujian tidak ditemukan.",
       });
@@ -218,7 +218,7 @@ export default function ManageExams({
     }
 
     try {
-      const req = await fetch(`/api/teacher/deleteDataExam/${idManageExam}`, {
+      const req = await fetch(`/api/teacher/deleteDataExam/${idExam}`, {
         method: "DELETE",
       });
       const res = await req.json();
@@ -522,10 +522,7 @@ export default function ManageExams({
                           type="button"
                           variant="destructive"
                           onClick={() =>
-                            getDataBeforeDelete(
-                              data.id_manage_exam,
-                              data.name_exam,
-                            )
+                            getDataBeforeDelete(data.id_subject, data.name_exam)
                           }
                           className="h-7"
                         >
@@ -587,7 +584,7 @@ export default function ManageExams({
 
               <Button
                 variant="destructive"
-                onClick={() => handleDeleteExam(selectedExam?.id_manage_exam)}
+                onClick={() => handleDeleteExam(selectedExam?.idExam)}
               >
                 Hapus Ujian
               </Button>

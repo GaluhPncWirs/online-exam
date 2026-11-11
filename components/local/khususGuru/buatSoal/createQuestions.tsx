@@ -29,15 +29,10 @@ import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import { getDataExams } from "@/src/actions/dataExams";
+import { DataPureExams } from "@/src/types/teacher/dataExam";
 
 const OPTION_LABELS = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof OPTION_LABELS)[number];
-
-type ConfigExam = {
-  id_subject: string;
-  name_exam: string;
-  type_exam: "PG" | "ESSAY";
-};
 
 type CreateNewQuestionsProps = {
   dataTeacher: DataTeacher;
@@ -47,7 +42,7 @@ export default function CreateNewQuestions({
   dataTeacher,
 }: CreateNewQuestionsProps) {
   const [openDialog, setOpenDialog] = useState(false);
-  const [dataExam, setDataExam] = useState<ConfigExam[]>([]);
+  const [dataExam, setDataExam] = useState<DataPureExams[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const {
     control,
@@ -80,7 +75,7 @@ export default function CreateNewQuestions({
           return;
         }
 
-        setDataExam(result.data as ConfigExam[]);
+        setDataExam(result.data as DataPureExams[]);
       } catch (error) {
         console.error("Gagal mengambil data manage exams:", error);
       } finally {

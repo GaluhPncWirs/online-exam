@@ -97,7 +97,8 @@
         "menambahkan api untuk hapus kelola data ujian, dan juga memperbaiki handle error api di role teacher",
         "selesai mengerjakan fitur untuk menghapus data manage ujian",
         "memuial untuk mengerjakan bagian halaman kelola ujian ",
-        "sedang mengerjakan halaman kelola ujian"
+        "sedang mengerjakan halaman kelola ujian",
+        "memperbaiki pengambilan data yang salah harusnya dari table subject_exam di bagian kelola daftar ujian"
     ],
     "sqltools.connections": [
         {

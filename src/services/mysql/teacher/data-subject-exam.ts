@@ -744,17 +744,17 @@ export async function handleSendExamToStudent(
 // }
 
 export async function handleDeleteExamToStudent(
-  idManageExam: string,
+  idSubject: string,
   idTeacher: string,
 ) {
   const query = `
-    DELETE FROM manage_exams
-    WHERE id_manage_exam = ? AND id_teacher = ?
+    DELETE FROM subject_exam
+    WHERE id_subject = ? AND id_teacher = ?
   `;
 
   try {
     const [result] = await pool.execute<ResultSetHeader>(query, [
-      idManageExam,
+      idSubject,
       idTeacher,
     ]);
 
