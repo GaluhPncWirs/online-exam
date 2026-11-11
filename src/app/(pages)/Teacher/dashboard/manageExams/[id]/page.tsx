@@ -3,6 +3,7 @@ import ManageExamSkeletonTeacher from "@/components/local/teacher/manageExam/ske
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleGetDetailExam } from "@/src/services/mysql/teacher/data-subject-exam";
+import { ExamQuestion } from "@/src/types/dataExam";
 import { Suspense } from "react";
 
 type Props = {
@@ -38,11 +39,9 @@ async function ManageExamTeacher({ params }: Props) {
     return <h3>{dataDetailExam.message}</h3>;
   }
 
-  console.log(dataDetailExam);
-
   return (
     <MainContent>
-      <h1>hello</h1>
+      <ManageExamComponent examQuestion={dataDetailExam.data as ExamQuestion} />
     </MainContent>
   );
 }

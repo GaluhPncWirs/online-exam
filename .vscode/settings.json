@@ -98,7 +98,8 @@
         "selesai mengerjakan fitur untuk menghapus data manage ujian",
         "memuial untuk mengerjakan bagian halaman kelola ujian ",
         "sedang mengerjakan halaman kelola ujian",
-        "memperbaiki pengambilan data yang salah harusnya dari table subject_exam di bagian kelola daftar ujian"
+        "memperbaiki pengambilan data yang salah harusnya dari table subject_exam di bagian kelola daftar ujian",
+        "mengubah proses penghapusah data ujian menjadi menggunakan table subject_exam karena sekarang data yang tampil dari table subject_exam"
     ],
     "sqltools.connections": [
         {

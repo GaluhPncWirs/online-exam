@@ -6,15 +6,26 @@ export type Choice = {
   choice_e: string;
 };
 
-export type ExamQuestions = {
+export type ExamQuestionBase = {
   id: string;
   questions: string;
 };
 
-export type MultipleChoice = ExamQuestions & {
-  multipleChoice: Choice[];
+export type MultipleChoiceQuestion = ExamQuestionBase & {
+  multipleChoice: Choice;
   correctAnswer: string;
 };
-export type Essay = ExamQuestions;
 
-export type TypeExamQuestions = MultipleChoice[] | Essay[];
+export type EssayQuestion = ExamQuestionBase;
+
+export type ExamQuestion =
+  | {
+      name_exam: string;
+      type_exam: "PG";
+      exam_questions: MultipleChoiceQuestion[];
+    }
+  | {
+      name_exam: string;
+      type_exam: "ESSAY";
+      exam_questions: EssayQuestion[];
+    };
