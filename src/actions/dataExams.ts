@@ -1,5 +1,4 @@
 "use server";
-
 import { getAuthenticatedUser } from "../lib/auth/getAuthenticatedUser";
 import { PAGE_SIZE } from "../lib/constants";
 import {
@@ -29,7 +28,7 @@ export async function getManageExamsAction(page: number) {
   return handleGetDataManageExams(session.data.id_teacher, from, to);
 }
 
-export async function getDataExam() {
+export async function getDataExams() {
   const session = await getAuthenticatedUser();
 
   if (!session.success) {

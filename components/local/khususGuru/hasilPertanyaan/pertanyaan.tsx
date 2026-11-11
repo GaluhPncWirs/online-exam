@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getDataExams } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
 import { fromDateString, toDateString } from "@/src/lib/utils/date";
 import {
@@ -82,6 +83,7 @@ export default function ManageExams({
 }: ManagedExamsProps) {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataPureExams, setDataPureExams] = useState([]);
   const {
     control,
     register,
@@ -99,6 +101,35 @@ export default function ManageExams({
   const filterByManageExams = dataManageExams.filter(
     (exam) => !exam.is_manage_exam,
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getDataExams();
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataPureExams(result.data);
+      } catch (error) {
+        console.error("Gagal mengambil data exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (dataManageExams.length === 0) return;
@@ -236,7 +267,7 @@ export default function ManageExams({
 
           <div className="text-sm font-semibold text-blue-600 space-x-2">
             <span className="size-2 rounded-full bg-green-500 inline-block" />
-            <span>{dataManageExams.length} Ujian</span>
+            <span>{dataPureExams.length} Ujian</span>
           </div>
         </div>
       </div>
@@ -278,8 +309,8 @@ export default function ManageExams({
             </TableHeader>
 
             <TableBody>
-              {dataManageExams.length > 0 ? (
-                dataManageExams.map((data, i: number) => (
+              {dataPureExams.length > 0 ? (
+                dataPureExams.map((data, i: number) => (
                   <TableRow
                     key={i}
                     className="align-top transition-colors hover:bg-slate-50"

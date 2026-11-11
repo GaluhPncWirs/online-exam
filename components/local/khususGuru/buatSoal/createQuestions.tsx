@@ -25,10 +25,10 @@ import {
   createExamSchema,
   CreateExamSchemaType,
 } from "@/src/schemas/addDataExam";
-import { getDataExam } from "@/src/actions/dataExams";
 import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { getDataExams } from "@/src/actions/dataExams";
 
 const OPTION_LABELS = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof OPTION_LABELS)[number];
@@ -72,7 +72,7 @@ export default function CreateNewQuestions({
     async function getDataManageExams() {
       setIsLoading(true);
       try {
-        const result = await getDataExam();
+        const result = await getDataExams();
         if (!isMounted) return;
 
         if (!result.success) {
