@@ -258,9 +258,6 @@ UPDATE subject_exam SET exam_questions = '[
   }
 ]', name_exam = "Ujian Bahasa Inggris" WHERE id_subject = 'SUB-wPTu3V'
 
-
-UPDATE subject_exam SET exam_questions = JSON_REMOVE(exam_questions, REPLACE(JSON_UNQUOTE(JSON_SEARCH(exam_questions 'one', ?, NULL, '$[*].id')), '.id', '')) WHERE id_subject = 'SUB-wPTu3V' AND id_teacher = 'TCR-ar45dgU' AND JSON_SEARCH(exam_questions, 'one', ?, NULL, '$[*].id') IS NOT NULL
-
 UPDATE subject_exam
   SET exam_questions = JSON_REMOVE(
     exam_questions,

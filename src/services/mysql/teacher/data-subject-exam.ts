@@ -1,6 +1,5 @@
 "server-only";
 import { pool } from "@/src/lib/db";
-import { TypeExamQuestions } from "@/src/types/dataExam";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
@@ -18,6 +17,7 @@ import {
 } from "@/src/repositories/findConfictExam";
 import { withTransaction } from "@/src/repositories/transaction";
 import { queryRows } from "@/src/lib/utils/queryPool";
+import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -347,7 +347,7 @@ type PayloadDataExam = {
   id_teacher: string;
   name_exam: string;
   type_exam: "PG" | "ESSAY";
-  exam_questions: TypeExamQuestions;
+  exam_questions: MultipleChoiceQuestion | EssayQuestion;
 };
 
 export async function handleAddDataExam({
@@ -797,4 +797,54 @@ export async function handleGetDetailExam(
   }
 }
 
-export async function handleUpdateQuestionExam() {}
+export async function handleUpdateQuestionExam(
+  idSubject: string,
+  idQuestion: string,
+  idTeacher: string,
+) {
+  const query = `
+    UPDATE subject_exam
+    SET exam_questions = JSON_SET(
+      exam_questions,
+      CONCAT(
+        REPLACE(
+          JSON_UNQUOTE(
+            JSON_SEARCH(
+              exam_questions, 'one', ?, NULL, '$[*].id'
+            )
+          ),
+          '.id',
+          ''
+        ),
+        '.questions'
+      ),
+      ?
+    )
+    WHERE id_subject = ?
+      AND id_teacher = ?
+      AND JSON_SEARCH(
+        exam_questions, 'one', ?, NULL, '$[*].id'
+      ) IS NOT NULL
+  `;
+}
+
+export async function handleDeleteQuestionExam(
+  idSubject: string,
+  idQuestion: string,
+  idTeacher: string,
+) {
+  const query = `
+    UPDATE subject_exam
+    SET exam_questions = JSON_REMOVE(
+    exam_questions,
+      REPLACE(
+        JSON_UNQUOTE(JSON_SEARCH(exam_questions, 'one', ?, NULL, '$[*].id')),
+        '.id',
+        ''
+      )
+    )
+    WHERE id_subject = ?
+    AND id_teacher = ?
+    AND JSON_SEARCH(exam_questions, 'one', ?, NULL, '$[*].id') IS NOT NULL
+  `;
+}
