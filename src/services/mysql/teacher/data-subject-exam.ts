@@ -776,9 +776,18 @@ export async function handleDeleteExamToStudent(
 export async function handleGetDetailExam(
   id_subject: string,
   id_teacher: string,
+  page: number = 1,
+  limit: number = 10,
 ) {
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit) || 10));
+
+  const start = (safePage - 1) * safeLimit;
+  const end = start + safeLimit - 1;
+  const jsonPath = `$[${start} to ${end}]`;
+
   const query = `
-    SELECT name_exam, exam_questions, type_exam
+    SELECT name_exam, type_exam, JSON_LENGTH(exam_questions) AS total_questions, JSON_EXTRACT(exam_questions, ?) AS exam_questions
     FROM subject_exam
     WHERE id_subject = ? AND id_teacher = ?
     LIMIT 1
@@ -786,6 +795,7 @@ export async function handleGetDetailExam(
 
   try {
     const [result] = await pool.execute<RowDataPacket[]>(query, [
+      jsonPath,
       id_subject,
       id_teacher,
     ]);
@@ -794,7 +804,31 @@ export async function handleGetDetailExam(
       return { success: false, message: "Ujian tidak ditemukan" };
     }
 
-    return { success: true, data: result[0] };
+    const row = result[0];
+    const totalItems = Number(row.total_questions ?? 0);
+    const totalPages = Math.ceil(totalItems / safeLimit);
+
+    const questions =
+      typeof row.exam_questions === "string"
+        ? JSON.parse(row.exam_questions)
+        : (row.exam_questions ?? []);
+
+    return {
+      success: true,
+      data: {
+        name_exam: row.name_exam,
+        type_exam: row.type_exam,
+        exam_questions: questions,
+        pagination: {
+          page: safePage,
+          limit: safeLimit,
+          total_items: totalItems,
+          total_pages: totalPages,
+          has_next: safePage < totalPages,
+          has_prev: safePage > 1,
+        },
+      },
+    };
   } catch (error) {
     console.error("Gagal ambil data ujian:", error);
     return { success: false, message: "Gagal ambil data ujian" };

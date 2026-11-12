@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { ClipboardList, PenLine, Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +38,7 @@ import {
 } from "@/src/schemas/addDataExam";
 import { Choice, ExamQuestion } from "@/src/types/dataExam";
 import { toast } from "sonner";
+import PaginationUi from "@/components/global/pagination/content";
 
 type DataExamQuestion = {
   examQuestion: ExamQuestion;
@@ -52,6 +53,15 @@ type SelectedQuestion = {
   correctAnswer?: string;
 };
 
+type Pagination = {
+  page: number;
+  limit: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};
+
 export default function ManageExamComponent({
   examQuestion,
   idExam,
@@ -64,6 +74,11 @@ export default function ManageExamComponent({
     editExam: false,
     deleteExam: false,
   });
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [questions, setQuestions] = useState(examQuestion.exam_questions);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [loading, setLoading] = useState(false);
   const {
     control,
     register,
@@ -88,6 +103,67 @@ export default function ManageExamComponent({
       correctAnswer: undefined,
     },
   });
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchQuestions() {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/teacher/GET/dataQuestions/${idExam}?page=${page}&limit=${limit}`,
+          {
+            signal: controller.signal,
+            credentials: "include",
+          },
+        );
+
+        if (
+          !response.headers.get("content-type")?.includes("application/json")
+        ) {
+          throw new Error(
+            `Respons server tidak valid (${response.status} ${response.statusText}).`,
+          );
+        }
+
+        const res: {
+          success: boolean;
+          message?: string;
+          data?: {
+            exam_questions: ExamQuestion["exam_questions"];
+            pagination: Pagination;
+          };
+        } = await response.json();
+
+        if (res.success) {
+          if (!res.data) {
+            throw new Error("Data soal dari server tidak lengkap.");
+          }
+          setQuestions(res.data.exam_questions);
+          setPagination(res.data.pagination);
+        } else {
+          toast.error("Gagal mengambil data soal", {
+            description:
+              res.message || "Terjadi kesalahan saat mengambil data soal",
+          });
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        console.error("Error fetching questions:", error);
+        toast.error("Gagal mengambil data soal", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Terjadi kesalahan saat mengambil data soal",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchQuestions();
+    return () => controller.abort();
+  }, [page, limit, idExam]);
 
   useEffect(() => {
     if (selectedQuestion) {
@@ -186,6 +262,11 @@ export default function ManageExamComponent({
       toast.success("Berhasil", {
         description: res.message || "Soal berhasil dihapus.",
       });
+
+      setOpenDialog((prev) => ({
+        ...prev,
+        deleteExam: false,
+      }));
     } catch (error) {
       console.error("Hapus soal gagal:", error);
       toast("Gagal ❌", {
@@ -245,7 +326,7 @@ export default function ManageExamComponent({
   return (
     <div className="space-y-6">
       {/* ================= HEADER ================= */}
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-linear-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-linear-to-r from-blue-500 via-blue-500 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
         <div className="relative">
           <div className="absolute -right-20 -top-20 size-64 rounded-full bg-white/10" />
 
@@ -268,7 +349,7 @@ export default function ManageExamComponent({
               </span>
 
               <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-                {examQuestion.exam_questions.length || 0} Soal
+                {questions.length || 0} Soal
               </span>
             </div>
           </div>
@@ -308,8 +389,8 @@ export default function ManageExamComponent({
             </TableHeader>
 
             <TableBody>
-              {examQuestion.exam_questions.length > 0 ? (
-                examQuestion.exam_questions.map((item, i: number) => (
+              {questions.length > 0 ? (
+                questions.map((item, i: number) => (
                   <TableRow
                     key={item.id}
                     className="align-top transition-colors hover:bg-slate-50"
@@ -646,10 +727,21 @@ export default function ManageExamComponent({
           </div>
         )}
 
+        {pagination && pagination.total_pages > 1 && (
+          <div className="border-t border-slate-200 px-5 py-5 sm:px-6">
+            <PaginationUi
+              currentPage={page}
+              totalPage={pagination?.total_pages || 1}
+              onPageChange={setPage}
+              isLoading={loading}
+            />
+          </div>
+        )}
+
         {/* Back */}
         <div className="border-t border-slate-200 px-5 py-5 sm:px-6">
           <Link
-            href="/Teacher/dashboard"
+            href="/Teacher/Dashboard"
             className="inline-flex items-center rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-600/70"
           >
             Kembali ke Dashboard
