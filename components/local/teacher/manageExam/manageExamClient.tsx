@@ -26,21 +26,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ClipboardList, PenLine, Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ExamQuestionInput,
-  ExamQuestionInputType,
   ExamQuestionType,
+  SchemaExamQuestion,
 } from "@/src/schemas/addDataExam";
 import { Choice, ExamQuestion } from "@/src/types/dataExam";
+import { toast } from "sonner";
 
 type DataExamQuestion = {
   examQuestion: ExamQuestion;
+  idExam: string;
+  idTeacher: string;
 };
 
 type SelectedQuestion = {
@@ -52,7 +54,10 @@ type SelectedQuestion = {
 
 export default function ManageExamComponent({
   examQuestion,
+  idExam,
+  idTeacher,
 }: DataExamQuestion) {
+  const router = useRouter();
   const [selectedQuestion, setSelectedQuestion] =
     useState<SelectedQuestion | null>(null);
   const [openDialog, setOpenDialog] = useState<Record<string, boolean>>({
@@ -65,11 +70,13 @@ export default function ManageExamComponent({
     reset,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
-  } = useForm<ExamQuestionInputType>({
-    resolver: zodResolver(ExamQuestionInput),
+  } = useForm<ExamQuestionType>({
+    resolver: zodResolver(SchemaExamQuestion),
 
     defaultValues: {
+      id: "",
       questions: "",
       multipleChoice: {
         choice_a: "",
@@ -82,98 +89,57 @@ export default function ManageExamComponent({
     },
   });
 
-  async function onSubmit(formData: ExamQuestionInputType) {
-    console.log(formData);
+  useEffect(() => {
+    if (selectedQuestion) {
+      setValue("id", selectedQuestion.id);
+    }
+  }, [selectedQuestion, setValue]);
 
+  async function onSubmit(formData: ExamQuestionType) {
     try {
-      const { data: examData, error: fetchError } = await supabase
-        .from("exams")
-        .select("questions_exam, tipeUjian")
-        .eq("id", examId)
-        .single();
+      const updates: Record<string, string> = {
+        questions: formData.questions,
+      };
 
-      if (fetchError) {
-        console.error("Fetch exam error:", fetchError);
-
-        toast("Gagal ❌", {
-          description: "Ujian tidak ditemukan.",
-        });
-
-        return;
+      if (formData.multipleChoice) {
+        updates["multipleChoice.choice_a"] =
+          formData.multipleChoice.choice_a;
+        updates["multipleChoice.choice_b"] =
+          formData.multipleChoice.choice_b;
+        updates["multipleChoice.choice_c"] =
+          formData.multipleChoice.choice_c;
+        updates["multipleChoice.choice_d"] =
+          formData.multipleChoice.choice_d;
+        updates["multipleChoice.choice_e"] =
+          formData.multipleChoice.choice_e;
       }
 
-      // ==========================================
-      // 2. Pastikan questions_exam berupa array
-      // ==========================================
-
-      const questions = Array.isArray(examData.questions_exam)
-        ? examData.questions_exam
-        : [];
-
-      // ==========================================
-      // 3. Cek apakah soal yang diedit ada
-      // ==========================================
-
-      const questionExists = questions.some(
-        (question) => question.id === formData.id,
-      );
-
-      if (!questionExists) {
-        toast("Gagal ❌", {
-          description: "Soal yang ingin diedit tidak ditemukan.",
-        });
-
-        return;
+      if (formData.correctAnswer !== undefined) {
+        updates.correctAnswer = formData.correctAnswer;
       }
 
-      // ==========================================
-      // 4. Update soal
-      // ==========================================
-
-      const updatedQuestions = questions.map((question) => {
-        if (question.id !== formData.id) {
-          return question;
-        }
-
-        if (examData.tipeUjian === "pg") {
-          return {
-            ...question,
-            questions: formData.pertanyaan,
-            answerPg: formData.pilihanGanda,
-            correctAnswer: formData.jawabanYangBenar,
-          };
-        }
-
-        return {
-          ...question,
-          questions: formData.pertanyaan,
-        };
+      const response = await fetch("/api/teacher/updateDataQuestion", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_subject: idExam,
+          id_teacher: idTeacher,
+          questionId: formData.id,
+          updates,
+        }),
       });
 
-      // ==========================================
-      // 5. Simpan ke database
-      // ==========================================
+      const result: { success: boolean; message?: string } =
+        await response.json();
 
-      const { error: updateError } = await supabase
-        .from("exams")
-        .update({
-          questions_exam: updatedQuestions,
-        })
-        .eq("id", examId);
-
-      if (updateError) {
-        console.error("Update exam error:", updateError);
-
+      if (!response.ok || !result.success) {
         toast("Gagal ❌", {
-          description: "Soal gagal diedit. Coba periksa kembali.",
+          description: result.message ?? "Soal gagal diperbarui.",
         });
-
         return;
       }
-
-      // ==========================================
-      // 6. Berhasil
-      // ==========================================
 
       toast("Berhasil ✅", {
         description: "Soal berhasil diperbarui.",
@@ -183,6 +149,7 @@ export default function ManageExamComponent({
         ...prev,
         editExam: false,
       }));
+      router.refresh();
     } catch (error) {
       console.error("Unexpected update error:", error);
 
@@ -279,34 +246,37 @@ export default function ManageExamComponent({
   //   }
   // }
 
-  function getDataBeforeUpdate(isTypeExam: "PG" | "ESSAY", dataQuestion: any) {
+  function getDataBeforeUpdate(
+    isTypeExam: "PG" | "ESSAY",
+    dataQuestion: SelectedQuestion,
+  ) {
     setSelectedQuestion(dataQuestion);
 
     const baseData = {
       id: dataQuestion.id ?? "",
-      pertanyaan: dataQuestion.questions ?? "",
+      questions: dataQuestion.questions ?? "",
     };
 
-    if (isTypeExam === "pg") {
+    if (isTypeExam === "PG") {
       reset({
         ...baseData,
 
-        pilihanGanda: {
-          answer_a: dataQuestion.answerPg?.answer_a ?? "",
-          answer_b: dataQuestion.answerPg?.answer_b ?? "",
-          answer_c: dataQuestion.answerPg?.answer_c ?? "",
-          answer_d: dataQuestion.answerPg?.answer_d ?? "",
-          answer_e: dataQuestion.answerPg?.answer_e ?? "",
+        multipleChoice: {
+          choice_a: dataQuestion.multipleChoice?.choice_a ?? "",
+          choice_b: dataQuestion.multipleChoice?.choice_b ?? "",
+          choice_c: dataQuestion.multipleChoice?.choice_c ?? "",
+          choice_d: dataQuestion.multipleChoice?.choice_d ?? "",
+          choice_e: dataQuestion.multipleChoice?.choice_e ?? "",
         },
 
-        jawabanYangBenar: dataQuestion.correctAnswer ?? "",
+        correctAnswer: dataQuestion.correctAnswer ?? "",
       });
     } else {
       reset({
         ...baseData,
 
-        pilihanGanda: undefined,
-        jawabanYangBenar: undefined,
+        multipleChoice: undefined,
+        correctAnswer: undefined,
       });
     }
 

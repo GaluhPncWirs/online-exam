@@ -26,12 +26,12 @@ export const ExamQuestionInput = z.object({
   correctAnswer: z.string().trim().optional(),
 });
 
-export const ExamQuestion = ExamQuestionInput.extend({
+export const SchemaExamQuestion = ExamQuestionInput.extend({
   id: z.string().trim().min(1),
 });
 
 export type ExamQuestionInputType = z.infer<typeof ExamQuestionInput>;
-export type ExamQuestionType = z.infer<typeof ExamQuestion>;
+export type ExamQuestionType = z.infer<typeof SchemaExamQuestion>;
 
 export function validateMultipleChoice(
   q: z.infer<typeof ExamQuestionInput>,
@@ -90,7 +90,7 @@ export const ExamSchema = z
     id_teacher: z.string().min(1).max(50),
     name_exam: z.string().trim().min(3).max(150),
     type_exam: z.enum(["PG", "ESSAY"]),
-    exam_questions: z.array(ExamQuestion).min(1).max(100),
+    exam_questions: z.array(SchemaExamQuestion).min(1).max(100),
   })
   .superRefine((data, ctx) => {
     if (data.type_exam !== "PG") return;

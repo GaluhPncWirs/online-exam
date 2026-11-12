@@ -41,7 +41,11 @@ async function ManageExamTeacher({ params }: Props) {
 
   return (
     <MainContent>
-      <ManageExamComponent examQuestion={dataDetailExam.data as ExamQuestion} />
+      <ManageExamComponent
+        examQuestion={dataDetailExam.data as ExamQuestion}
+        idExam={id}
+        idTeacher={dataTeacher.data.id_teacher}
+      />
     </MainContent>
   );
 }

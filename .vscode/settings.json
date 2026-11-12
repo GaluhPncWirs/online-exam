@@ -102,7 +102,8 @@
         "mengubah proses penghapusah data ujian menjadi menggunakan table subject_exam karena sekarang data yang tampil dari table subject_exam",
         "sedang mengerjakan halaman untuk kelola data pertanyaan ujian",
         "memperbaiki masalah error pada type dan pemanggilan variabel ",
-        "sedang mengerjakan api untuk proses update data pertanyaan"
+        "sedang mengerjakan api untuk proses update data pertanyaan",
+        "selesai membuat fungsi dan api untuk update data pertanyaan ujian"
     ],
     "sqltools.connections": [
         {

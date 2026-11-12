@@ -1,7 +1,7 @@
 "server-only";
 import { pool } from "@/src/lib/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { ExamQuestion, ExamSchema } from "@/src/schemas/addDataExam";
+import { ExamSchema, SchemaExamQuestion } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import {
@@ -440,7 +440,7 @@ export async function handleAddDataExamQuestion(
   id_subject: string,
   id_teacher: string,
 ) {
-  const parsed = ExamQuestion.safeParse(payloadAddDataQuestion);
+  const parsed = SchemaExamQuestion.safeParse(payloadAddDataQuestion);
 
   if (!parsed.success) {
     return {
@@ -801,18 +801,36 @@ export async function handleGetDetailExam(
   }
 }
 
-type UpdateExamQuestionType = {
+type ExamField =
+  | "questions"
+  | "correctAnswer"
+  | "multipleChoice.choice_a"
+  | "multipleChoice.choice_b"
+  | "multipleChoice.choice_c"
+  | "multipleChoice.choice_d"
+  | "multipleChoice.choice_e";
+
+type UpdateExamPayload = {
   id_subject: string;
   id_teacher: string;
   questionId: string;
-  field: string;
-  value: string;
+  updates: Partial<Record<ExamField, unknown>>;
 };
 
-export async function handleUpdateQuestionExam(data: UpdateExamQuestionType) {
-  const { id_subject, id_teacher, questionId, field, value } = data;
+export async function handleUpdateQuestionExam(data: UpdateExamPayload) {
+  const { id_subject, id_teacher, questionId, updates } = data;
 
-  const allowedFields = [
+  const entries = Object.entries(updates);
+
+  if (entries.length === 0) {
+    return {
+      success: false,
+      message: "Tidak ada field yang diperbarui",
+      status: 400,
+    };
+  }
+
+  const allowedFields: ExamField[] = [
     "questions",
     "correctAnswer",
     "multipleChoice.choice_a",
@@ -822,32 +840,42 @@ export async function handleUpdateQuestionExam(data: UpdateExamQuestionType) {
     "multipleChoice.choice_e",
   ];
 
-  if (!allowedFields.includes(field)) {
-    return {
-      success: false,
-      message: "Field yang dimasukkan tidak valid",
-      status: 400,
-    };
+  const serializedUpdates: Array<[ExamField, string]> = [];
+
+  for (const [field, value] of entries) {
+    if (!allowedFields.includes(field as ExamField)) {
+      return {
+        success: false,
+        message: `Field ${field} tidak valid`,
+        status: 400,
+      };
+    }
+
+    const serializedValue = JSON.stringify(value);
+
+    if (serializedValue === undefined) {
+      return {
+        success: false,
+        message: `Nilai field ${field} tidak valid`,
+        status: 400,
+      };
+    }
+
+    serializedUpdates.push([field as ExamField, serializedValue]);
   }
 
-  const query = `
+  const updateClauses = serializedUpdates
+    .map(
+      () =>
+        "CONCAT(REPLACE(JSON_UNQUOTE(JSON_SEARCH(exam_questions, 'one', ?, NULL, '$[*].id')), '.id', ''), '.', ?), CAST(? AS JSON)",
+    )
+    .join(", ");
+
+  const updateQuery = `
     UPDATE subject_exam
     SET exam_questions = JSON_SET(
       exam_questions,
-      CONCAT(
-        REPLACE(
-          JSON_UNQUOTE(
-            JSON_SEARCH(
-              exam_questions, 'one', ?, NULL, '$[*].id'
-            )
-          ),
-          '.id',
-          ''
-        ),
-        '.',
-        ?
-      ),
-      CAST(? AS JSON)
+      ${updateClauses}
     )
     WHERE id_subject = ?
       AND id_teacher = ?
@@ -856,15 +884,19 @@ export async function handleUpdateQuestionExam(data: UpdateExamQuestionType) {
       ) IS NOT NULL
   `;
 
-  try {
-    const [result] = await pool.execute<ResultSetHeader>(query, [
+  const params = [
+    ...serializedUpdates.flatMap(([field, value]) => [
       questionId,
       field,
-      JSON.stringify(value),
-      id_subject,
-      id_teacher,
-      questionId,
-    ]);
+      value,
+    ]),
+    id_subject,
+    id_teacher,
+    questionId,
+  ];
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(updateQuery, params);
 
     if (result.affectedRows === 0) {
       return {
@@ -876,7 +908,7 @@ export async function handleUpdateQuestionExam(data: UpdateExamQuestionType) {
 
     return {
       success: true,
-      data: { questionId, field, value },
+      data: { questionId, updates: Object.fromEntries(entries) },
       message: "Berhasil memperbarui soal ujian",
       status: 200,
     };
