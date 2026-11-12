@@ -941,4 +941,34 @@ export async function handleDeleteQuestionExam(
     AND id_teacher = ?
     AND JSON_SEARCH(exam_questions, 'one', ?, NULL, '$[*].id') IS NOT NULL
   `;
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      idQuestion,
+      idSubject,
+      idTeacher,
+      idQuestion,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "Soal ujian tidak ditemukan",
+        status: 404,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Berhasil menghapus soal ujian",
+      status: 200,
+    };
+  } catch (error) {
+    console.error("Gagal menghapus soal ujian:", error);
+    return {
+      success: false,
+      message: "Gagal menghapus soal ujian",
+      status: 500,
+    };
+  }
 }

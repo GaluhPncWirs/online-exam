@@ -104,7 +104,8 @@
         "memperbaiki masalah error pada type dan pemanggilan variabel ",
         "sedang mengerjakan api untuk proses update data pertanyaan",
         "selesai membuat fungsi dan api untuk update data pertanyaan ujian",
-        "selesai membuat penggunaan api untuk update data pertanyaan"
+        "selesai membuat penggunaan api untuk update data pertanyaan",
+        "fungsi untuk update data pertanyaan sekarang sudah bisa digunakan "
     ],
     "sqltools.connections": [
         {

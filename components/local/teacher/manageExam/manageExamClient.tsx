@@ -154,92 +154,45 @@ export default function ManageExamComponent({
     }
   }
 
-  // async function handleDeleteQuestion(questionId: string) {
-  //   try {
-  //     // =========================================
-  //     // 1. Ambil data soal dari exam
-  //     // =========================================
+  async function handleDeleteQuestion(questionId: string | undefined) {
+    if (!questionId) {
+      toast.error("Gagal", {
+        description: "ID soal tidak valid.",
+      });
+      return;
+    }
 
-  //     const { data: exam, error: fetchError } = await supabase
-  //       .from("exams")
-  //       .select("questions_exam")
-  //       .eq("id", viewQuestions?.id)
-  //       .single();
+    try {
+      const req = await fetch("/api/teacher/delete/dataQuestion", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idSubject: idExam,
+          idQuestion: questionId,
+          idTeacher: idTeacher,
+        }),
+      });
 
-  //     if (fetchError) {
-  //       console.error("Fetch exam error:", fetchError);
+      const res = await req.json();
 
-  //       toast("Gagal ❌", {
-  //         description: "Data ujian gagal diambil.",
-  //       });
+      if (!res.success) {
+        toast.error("Gagal", {
+          description: res.message || "Soal gagal dihapus.",
+        });
+      }
 
-  //       return;
-  //     }
-
-  //     // =========================================
-  //     // 2. Pastikan questions_exam berupa array
-  //     // =========================================
-
-  //     const questions = Array.isArray(exam?.questions_exam)
-  //       ? exam.questions_exam
-  //       : [];
-
-  //     // =========================================
-  //     // 3. Hapus soal berdasarkan ID soal
-  //     // =========================================
-
-  //     const updatedQuestions = questions.filter(
-  //       (question: { id: string }) => question.id !== questionId,
-  //     );
-
-  //     // =========================================
-  //     // 4. Pastikan soal memang ditemukan
-  //     // =========================================
-
-  //     if (updatedQuestions.length === questions.length) {
-  //       toast("Gagal ❌", {
-  //         description: "Soal yang ingin dihapus tidak ditemukan.",
-  //       });
-
-  //       return;
-  //     }
-
-  //     // =========================================
-  //     // 5. Update kembali questions_exam
-  //     // =========================================
-
-  //     const { error: updateError } = await supabase
-  //       .from("exams")
-  //       .update({
-  //         questions_exam: updatedQuestions,
-  //       })
-  //       .eq("id", viewQuestions?.id);
-
-  //     if (updateError) {
-  //       console.error("Update exam error:", updateError);
-
-  //       toast("Gagal ❌", {
-  //         description: "Soal gagal dihapus.",
-  //       });
-
-  //       return;
-  //     }
-
-  //     // =========================================
-  //     // 6. Berhasil
-  //     // =========================================
-
-  //     toast("Berhasil ✅", {
-  //       description: "Soal berhasil dihapus.",
-  //     });
-  //   } catch (error) {
-  //     console.error("Delete question error:", error);
-
-  //     toast("Gagal ❌", {
-  //       description: "Terjadi kesalahan. Silakan coba lagi.",
-  //     });
-  //   }
-  // }
+      toast.success("Berhasil", {
+        description: res.message || "Soal berhasil dihapus.",
+      });
+    } catch (error) {
+      console.error("Hapus soal gagal:", error);
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
+  }
 
   function getDataBeforeUpdate(
     isTypeExam: "PG" | "ESSAY",
@@ -455,7 +408,7 @@ export default function ManageExamComponent({
                             getDataBeforeUpdate(examQuestion.type_exam, item)
                           }
                         >
-                          <PenLine className="size-5" />
+                          <PenLine className="size-4" />
                         </Button>
 
                         {/* Delete */}
@@ -463,9 +416,8 @@ export default function ManageExamComponent({
                           type="button"
                           onClick={() => getDataBeforeDelete(item)}
                           variant="destructive"
-                          className="h-10 w-full rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
                         >
-                          <Trash2 className="size-5" />
+                          <Trash2 className="size-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -676,7 +628,7 @@ export default function ManageExamComponent({
 
               <Button
                 variant="destructive"
-                onClick={() => handleDeleteQuestion(selectedQuestion)}
+                onClick={() => handleDeleteQuestion(selectedQuestion?.id)}
               >
                 Hapus Soal
               </Button>
@@ -698,7 +650,7 @@ export default function ManageExamComponent({
         <div className="border-t border-slate-200 px-5 py-5 sm:px-6">
           <Link
             href="/Teacher/dashboard"
-            className="inline-flex items-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+            className="inline-flex items-center rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-600/70"
           >
             Kembali ke Dashboard
           </Link>
