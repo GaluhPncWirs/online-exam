@@ -102,16 +102,11 @@ export default function ManageExamComponent({
       };
 
       if (formData.multipleChoice) {
-        updates["multipleChoice.choice_a"] =
-          formData.multipleChoice.choice_a;
-        updates["multipleChoice.choice_b"] =
-          formData.multipleChoice.choice_b;
-        updates["multipleChoice.choice_c"] =
-          formData.multipleChoice.choice_c;
-        updates["multipleChoice.choice_d"] =
-          formData.multipleChoice.choice_d;
-        updates["multipleChoice.choice_e"] =
-          formData.multipleChoice.choice_e;
+        updates["multipleChoice.choice_a"] = formData.multipleChoice.choice_a;
+        updates["multipleChoice.choice_b"] = formData.multipleChoice.choice_b;
+        updates["multipleChoice.choice_c"] = formData.multipleChoice.choice_c;
+        updates["multipleChoice.choice_d"] = formData.multipleChoice.choice_d;
+        updates["multipleChoice.choice_e"] = formData.multipleChoice.choice_e;
       }
 
       if (formData.correctAnswer !== undefined) {
