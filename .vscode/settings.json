@@ -101,7 +101,8 @@
         "memperbaiki pengambilan data yang salah harusnya dari table subject_exam di bagian kelola daftar ujian",
         "mengubah proses penghapusah data ujian menjadi menggunakan table subject_exam karena sekarang data yang tampil dari table subject_exam",
         "sedang mengerjakan halaman untuk kelola data pertanyaan ujian",
-        "memperbaiki masalah error pada type dan pemanggilan variabel "
+        "memperbaiki masalah error pada type dan pemanggilan variabel ",
+        "sedang mengerjakan api untuk proses update data pertanyaan"
     ],
     "sqltools.connections": [
         {

@@ -17,7 +17,11 @@ import {
 } from "@/src/repositories/findConfictExam";
 import { withTransaction } from "@/src/repositories/transaction";
 import { queryRows } from "@/src/lib/utils/queryPool";
-import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
+import {
+  Choice,
+  EssayQuestion,
+  MultipleChoiceQuestion,
+} from "@/src/types/dataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -797,11 +801,35 @@ export async function handleGetDetailExam(
   }
 }
 
-export async function handleUpdateQuestionExam(
-  idSubject: string,
-  idQuestion: string,
-  idTeacher: string,
-) {
+type UpdateExamQuestionType = {
+  id_subject: string;
+  id_teacher: string;
+  questionId: string;
+  field: string;
+  value: string;
+};
+
+export async function handleUpdateQuestionExam(data: UpdateExamQuestionType) {
+  const { id_subject, id_teacher, questionId, field, value } = data;
+
+  const allowedFields = [
+    "questions",
+    "correctAnswer",
+    "multipleChoice.choice_a",
+    "multipleChoice.choice_b",
+    "multipleChoice.choice_c",
+    "multipleChoice.choice_d",
+    "multipleChoice.choice_e",
+  ];
+
+  if (!allowedFields.includes(field)) {
+    return {
+      success: false,
+      message: "Field yang dimasukkan tidak valid",
+      status: 400,
+    };
+  }
+
   const query = `
     UPDATE subject_exam
     SET exam_questions = JSON_SET(
@@ -816,9 +844,10 @@ export async function handleUpdateQuestionExam(
           '.id',
           ''
         ),
-        '.questions'
+        '.',
+        ?
       ),
-      ?
+      CAST(? AS JSON)
     )
     WHERE id_subject = ?
       AND id_teacher = ?
@@ -826,6 +855,39 @@ export async function handleUpdateQuestionExam(
         exam_questions, 'one', ?, NULL, '$[*].id'
       ) IS NOT NULL
   `;
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      questionId,
+      field,
+      JSON.stringify(value),
+      id_subject,
+      id_teacher,
+      questionId,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "Soal ujian tidak ditemukan",
+        status: 404,
+      };
+    }
+
+    return {
+      success: true,
+      data: { questionId, field, value },
+      message: "Berhasil memperbarui soal ujian",
+      status: 200,
+    };
+  } catch (error) {
+    console.error("Gagal memperbarui soal ujian:", error);
+    return {
+      success: false,
+      message: "Gagal memperbarui soal ujian",
+      status: 500,
+    };
+  }
 }
 
 export async function handleDeleteQuestionExam(
