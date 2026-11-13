@@ -108,7 +108,8 @@
         "fungsi untuk update data pertanyaan sekarang sudah bisa digunakan ",
         "fungsi untuk menghapus data soal sudah bisa di pakai ",
         "sedang mengerjakan pengambilan data dengan pagination di halaman kelol data soal",
-        "memperbaiki struktur folder di bagian component khusus guru "
+        "memperbaiki struktur folder di bagian component khusus guru ",
+        "memulai untuk mengerjakan bagian kelola nilai siswa"
     ],
     "sqltools.connections": [
         {

@@ -13,18 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useResultExamDataStudent } from "@/hooks/getDataResultStudent";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
+import { DataTeacher } from "@/src/types/dataUser";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
-export default function ManageStudent() {
-  const idTeacher = useGetIdUsers((state) => state.idUser);
-  const [page, setPage] = useState(1);
-  const { resultExamsStudent, totalData, isLoading, pageSize } =
-    useResultExamDataStudent(idTeacher, page);
-  const totalPages = Math.ceil(totalData / pageSize);
+type ManageStudentProps = {
+  dataTeacher: DataTeacher;
+};
+
+export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* ================= HEADER ================= */}
@@ -44,9 +41,9 @@ export default function ManageStudent() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
+          {/* <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
             {resultExamsStudent.length} Siswa
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -81,19 +78,17 @@ export default function ManageStudent() {
             </TableRow>
           </TableHeader>
 
-          <TableBody>
+          {/* <TableBody>
             {resultExamsStudent.length > 0 ? (
               resultExamsStudent.map((data: any, i: number) => (
                 <TableRow
                   key={data.student_id ?? i}
                   className="align-top transition-colors hover:bg-slate-50"
                 >
-                  {/* No */}
                   <TableCell className="pt-5 font-semibold text-slate-400">
                     {String(i + 1).padStart(2, "0")}
                   </TableCell>
 
-                  {/* Student */}
                   <TableCell className="pt-5">
                     <div className="flex items-start gap-3">
                       <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600">
@@ -112,7 +107,6 @@ export default function ManageStudent() {
                     </div>
                   </TableCell>
 
-                  {/* Exam */}
                   <TableCell className="pt-5">
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
@@ -148,7 +142,6 @@ export default function ManageStudent() {
                     </div>
                   </TableCell>
 
-                  {/* Score */}
                   <TableCell className="pt-5">
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
@@ -204,7 +197,6 @@ export default function ManageStudent() {
                     </div>
                   </TableCell>
 
-                  {/* Status */}
                   <TableCell className="pt-5">
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
@@ -232,7 +224,6 @@ export default function ManageStudent() {
                     </div>
                   </TableCell>
 
-                  {/* Class */}
                   <TableCell className="pt-5">
                     <span className="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
                       {data.classes || "-"}
@@ -257,15 +248,15 @@ export default function ManageStudent() {
                 </TableCell>
               </TableRow>
             )}
-          </TableBody>
+          </TableBody> */}
         </Table>
 
-        <PaginationUi
+        {/* <PaginationUi
           currentPage={page}
           totalPage={totalPages}
           onPageChange={setPage}
           isLoading={isLoading}
-        />
+        /> */}
       </div>
     </div>
   );

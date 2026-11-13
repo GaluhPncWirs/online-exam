@@ -24,6 +24,7 @@ import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
 import CreateNewQuestions from "../createExam/createExamClient";
 import SendExamToStudent from "../sendExam/sendExamClient";
+import ManageStudent from "../manageStudent/manageStudentClient";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];
@@ -360,10 +361,9 @@ export default function DashboardClientTeacher({
               totalData={totalData}
               dataManageExams={dataManageExams}
             />
-          ) : // : dashboardButton.manageStudent === true ? (
-          // //   <ManageStudent />
-          // // ) : null
-          null}
+          ) : dashboardButton.manageStudent === true ? (
+            <ManageStudent dataTeacher={dataTeacher} />
+          ) : null}
         </section>
       </div>
     </>
