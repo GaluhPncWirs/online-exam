@@ -76,7 +76,7 @@ type ActionsExam = {
   name_exam: string;
 };
 
-export default function ManageExams({
+export default function SendExamToStudent({
   dataTeacher,
   dataManageExams,
   totalData,

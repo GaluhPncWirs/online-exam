@@ -22,8 +22,8 @@ import { getManageExamsAction } from "@/src/actions/dataExams";
 import { PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
-import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
-import ManageExams from "../../khususGuru/hasilPertanyaan/pertanyaan";
+import CreateNewQuestions from "../createExam/createExamClient";
+import SendExamToStudent from "../sendExam/sendExamClient";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];
@@ -355,7 +355,7 @@ export default function DashboardClientTeacher({
           ) : dashboardButton.createQuestions === true ? (
             <CreateNewQuestions dataTeacher={dataTeacher} />
           ) : dashboardButton.viewResult === true ? (
-            <ManageExams
+            <SendExamToStudent
               dataTeacher={dataTeacher}
               totalData={totalData}
               dataManageExams={dataManageExams}

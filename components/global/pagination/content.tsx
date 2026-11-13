@@ -55,7 +55,7 @@ export default function PaginationUi({
   const paginationRange = getPaginationRange(currentPage, totalPage);
 
   return (
-    <Pagination>
+    <Pagination className="flex justify-end">
       <PaginationContent>
         {/* Previous */}
         <PaginationItem>

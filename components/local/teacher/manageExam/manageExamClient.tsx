@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipboardList, PenLine, Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -717,18 +717,8 @@ export default function ManageExamComponent({
           </DialogContent>
         </Dialog>
 
-        {/* Legend */}
-        {examQuestion.type_exam === "PG" && (
-          <div className="border-t border-slate-200 bg-emerald-50/50 px-5 py-4 sm:px-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-              <span className="size-3 rounded bg-emerald-500" />
-              Pilihan yang diberi highlight hijau merupakan jawaban yang benar.
-            </div>
-          </div>
-        )}
-
         {pagination && pagination.total_pages > 1 && (
-          <div className="border-t border-slate-200 px-5 py-5 sm:px-6">
+          <div className="border-t border-slate-200 px-5 py-5 sm:px-6 flex justify-end">
             <PaginationUi
               currentPage={page}
               totalPage={pagination?.total_pages || 1}
