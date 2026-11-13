@@ -581,172 +581,6 @@ export async function handleSendExamToStudent(
   }
 }
 
-// export function updateExam(
-//   pool: Pool,
-//   teacherId: number,
-//   examId: number,
-//   input: ExamScheduleInput,
-// ) {
-//   const startAt = input.exam_start_at;
-//   const endAt = addMinutes(startAt, input.exam_duration);
-
-//   return withTransaction(pool, async (conn) => {
-//     // 1. Ketahui kelas lama agar bisa dikunci bersama kelas baru
-//     const [cur] = await conn.execute<RowDataPacket[]>(
-//       "SELECT class_id FROM manage_exams WHERE id = ? AND id_teacher = ?",
-//       [examId, teacherId],
-//     );
-//     if (cur.length === 0)
-//       throw new Error("Ujian tidak ditemukan atau bukan milik Anda");
-//     const oldClassId = cur[0].class_id;
-
-//     // 2. Kunci kelas lama dan baru (jika guru memindahkan ujian ke kelas lain)
-//     await lockClasses(conn, [oldClassId, input.class_id]);
-
-//     // 3. Pastikan ujian tidak dipindah kelas oleh transaksi lain sebelum lock didapat
-//     const [again] = await conn.execute<RowDataPacket[]>(
-//       "SELECT class_id FROM manage_exams WHERE id = ? FOR UPDATE",
-//       [examId],
-//     );
-//     if (again[0]?.class_id !== oldClassId)
-//       throw new Error("Data berubah, silakan coba lagi");
-
-//     // 4. Cek bentrok dengan mengecualikan ujian ini sendiri
-//     const conflict = await findConflict(
-//       conn,
-//       input.class_id,
-//       startAt,
-//       endAt,
-//       examId,
-//     );
-//     if (conflict) throw new ScheduleConflictError(conflict);
-
-//     await conn.execute(
-//       `UPDATE manage_exams
-//           SET id_subject = ?, class_id = ?, exam_start_at = ?, exam_end_at = ?, duration_exam = ?
-//         WHERE id = ?`,
-//       [
-//         input.id_subject,
-//         input.class_id,
-//         startAt,
-//         endAt,
-//         input.exam_duration,
-//         examId,
-//       ],
-//     );
-//   });
-// }
-
-// export async function handleInsertManagedExams(values: unknown) {
-//   const parsed = sendExamToStudentSchema.safeParse(values);
-
-//   if (!parsed.success) {
-//     return {
-//       success: false,
-//       status: 400,
-//       message: "Data untuk edit ujian tidak valid.",
-//       errors: parsed.error.issues.map((issue) => ({
-//         path: issue.path.join("."),
-//         message: issue.message,
-//       })),
-//     };
-//   }
-
-//   const idTeacher =
-//     typeof (values as { id_teacher?: string })?.id_teacher === "string"
-//       ? (values as { id_teacher?: string }).id_teacher
-//       : undefined;
-
-//   if (!idTeacher) {
-//     return {
-//       success: false,
-//       status: 400,
-//       message: "ID guru tidak ditemukan.",
-//     };
-//   }
-
-//   const classNames = [...new Set(parsed.data.exams.map((exam) => exam.kelas))];
-
-//   const [classRows] = await pool.query<ClassRow[]>(
-//     `
-//       SELECT id, name
-//       FROM classes
-//       WHERE name IN (?)
-//     `,
-//     [classNames],
-//   );
-
-//   const classMap = new Map(classRows.map((row) => [row.name, Number(row.id)]));
-
-//   const invalidClass = parsed.data.exams.find(
-//     (exam) => exam.kelas && !classMap.has(exam.kelas),
-//   );
-
-//   if (invalidClass) {
-//     return {
-//       success: false,
-//       status: 400,
-//       message: `Kelas ${invalidClass.kelas} tidak ditemukan.`,
-//     };
-//   }
-
-//   const rowsToInsert = parsed.data.exams
-//     .filter((exam) => exam.kelas)
-//     .map((exam) => {
-//       const idManageExam = generateRandomId(8, "MNG");
-//       const classId = classMap.get(exam.kelas)!;
-
-//       return [
-//         idManageExam,
-//         idTeacher,
-//         exam.examId,
-//         classId,
-//         exam.tanggalUjian ? new Date(exam.tanggalUjian) : new Date(),
-//         exam.mulai,
-//         exam.selesai,
-//         Number(exam.durasi),
-//       ];
-//     });
-
-//   if (!rowsToInsert.length) {
-//     return {
-//       success: false,
-//       status: 400,
-//       message: "Pilih minimal satu kelas untuk jadwal ujian.",
-//     };
-//   }
-
-//   const query = `
-//     INSERT INTO manage_exams (
-//       id_manage_exam,
-//       id_teacher,
-//       id_subject,
-//       class_id,
-//       exam_date,
-//       exam_start_at,
-//       exam_end_at,
-//       duration_exam
-//     ) VALUES ?
-//   `;
-
-//   try {
-//     await pool.query(query, [rowsToInsert]);
-
-//     return {
-//       success: true,
-//       status: 201,
-//       message: "Jadwal ujian berhasil disimpan.",
-//     };
-//   } catch (error) {
-//     console.error("Gagal menyimpan jadwal ujian:", error);
-//     return {
-//       success: false,
-//       status: 500,
-//       message: "Gagal menyimpan jadwal ujian.",
-//     };
-//   }
-// }
-
 export async function handleDeleteExamToStudent(
   idSubject: string,
   idTeacher: string,
@@ -1003,6 +837,131 @@ export async function handleDeleteQuestionExam(
       success: false,
       message: "Gagal menghapus soal ujian",
       status: 500,
+    };
+  }
+}
+
+type ResultScoreStudentRow = RowDataPacket & {
+  id_student: string;
+  fullname: string;
+  classes: string | null;
+};
+
+type ResultScoreHistoryRow = RowDataPacket & {
+  id_student: string;
+  id_subject: string;
+  name_exam: string | null;
+  type_exam: string | null;
+  result_exam: string | null;
+  status_exam: boolean;
+  created_at: Date | null;
+};
+
+export async function handleGetDataResultScoreExams(
+  id_teacher: string,
+  from: number,
+  to: number,
+) {
+  const limit = to - from + 1;
+  const offset = from;
+
+  const queryStudents = `
+    SELECT a.id_student, a.fullname, c.name AS classes
+    FROM account_students AS a
+    LEFT JOIN classes AS c
+      ON a.class_id = c.id
+    ORDER BY a.fullname ASC, a.id_student ASC
+    LIMIT ? OFFSET ?
+  `;
+
+  const queryCount = `
+    SELECT COUNT(*) AS total
+    FROM account_students
+  `;
+
+  try {
+    const [students, countRows] = await Promise.all([
+      queryRows<ResultScoreStudentRow[]>(queryStudents, [limit, offset]),
+      queryRows<CountRow[]>(queryCount, []),
+    ]);
+
+    const total = Number(countRows[0]?.total ?? 0);
+
+    if (!students.length) {
+      return { success: true, data: [], total };
+    }
+
+    const studentIds = students.map((student) => student.id_student);
+    const placeholders = studentIds.map(() => "?").join(", ");
+    const queryHistoryExams = `
+      SELECT
+        he.id_student,
+        he.id_subject,
+        he.result_exam,
+        he.status_exam,
+        he.created_at,
+        se.name_exam,
+        se.type_exam
+      FROM history_exams AS he
+      INNER JOIN subject_exam AS se
+        ON he.id_subject = se.id_subject
+      WHERE se.id_teacher = ?
+        AND he.id_student IN (${placeholders})
+    `;
+
+    const historyExams = await queryRows<ResultScoreHistoryRow[]>(
+      queryHistoryExams,
+      [id_teacher, ...studentIds],
+    );
+
+    const studentResultMap = new Map(
+      students.map((student) => [
+        student.id_student,
+        {
+          student_id: student.id_student,
+          resultUjian: [] as {
+            namaUjian: string | null;
+            idUjian: string;
+            tipe_ujian: string | null;
+            hasil_ujian: string | null;
+            status_exam: boolean;
+          }[],
+          created_at: [] as Date[],
+          fullName: student.fullname ?? null,
+          classes: student.classes ?? null,
+        },
+      ]),
+    );
+
+    historyExams.forEach((history) => {
+      const student = studentResultMap.get(history.id_student);
+      if (!student) return;
+
+      student.resultUjian.push({
+        namaUjian: history.name_exam ?? null,
+        idUjian: history.id_subject,
+        tipe_ujian: history.type_exam ?? null,
+        hasil_ujian: history.result_exam,
+        status_exam: history.status_exam,
+      });
+
+      if (history.created_at) {
+        student.created_at.push(history.created_at);
+      }
+    });
+
+    return {
+      success: true,
+      data: Array.from(studentResultMap.values()),
+      total,
+    };
+  } catch (error) {
+    console.error("Gagal mengambil data hasil ujian:", error);
+    return {
+      success: false,
+      message: "Gagal mengambil data hasil ujian",
+      data: [],
+      total: 0,
     };
   }
 }

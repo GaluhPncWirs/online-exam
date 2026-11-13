@@ -107,7 +107,8 @@
         "selesai membuat penggunaan api untuk update data pertanyaan",
         "fungsi untuk update data pertanyaan sekarang sudah bisa digunakan ",
         "fungsi untuk menghapus data soal sudah bisa di pakai ",
-        "sedang mengerjakan pengambilan data dengan pagination di halaman kelol data soal"
+        "sedang mengerjakan pengambilan data dengan pagination di halaman kelol data soal",
+        "memperbaiki struktur folder di bagian component khusus guru "
     ],
     "sqltools.connections": [
         {
