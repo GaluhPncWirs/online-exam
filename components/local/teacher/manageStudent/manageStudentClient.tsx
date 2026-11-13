@@ -16,12 +16,97 @@ import {
 import { DataTeacher } from "@/src/types/dataUser";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type ManageStudentProps = {
   dataTeacher: DataTeacher;
 };
 
+type ResultExamStudent = {
+  student_id: string;
+  resultUjian: {
+    namaUjian: string | null;
+    idUjian: string;
+    tipe_ujian: "PG" | "ESSAY";
+    hasil_ujian: string | null;
+    status_exam: 0 | 1;
+  }[];
+  created_at: Date[];
+  fullName: string | null;
+  classes: string | null;
+};
+
+const PAGE_SIZE = 10;
+
 export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
+  const [resultExamStudents, setResultExamStudents] = useState<
+    ResultExamStudent[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+  const totalPages = Math.ceil(totalStudents / PAGE_SIZE);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchQuestions() {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/teacher/GET/dataResultScoreExams?from=${from}&to=${to}`,
+          {
+            signal: controller.signal,
+            credentials: "include",
+          },
+        );
+
+        if (
+          !response.headers.get("content-type")?.includes("application/json")
+        ) {
+          throw new Error(
+            `Respons server tidak valid (${response.status} ${response.statusText}).`,
+          );
+        }
+
+        const res = await response.json();
+
+        if (res.success) {
+          if (!Array.isArray(res.data) || typeof res.total !== "number") {
+            throw new Error("Data hasil ujian dari server tidak lengkap.");
+          }
+          setResultExamStudents(res.data);
+          setTotalStudents(res.total);
+        } else {
+          toast.error("Gagal mengambil data hasil ujian", {
+            description:
+              res.message ||
+              "Terjadi kesalahan saat mengambil data hasil ujian",
+          });
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        console.error("Error fetching exam results:", error);
+        toast.error("Gagal mengambil data hasil ujian", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Terjadi kesalahan saat mengambil data hasil ujian",
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchQuestions();
+    return () => controller.abort();
+  }, [from, to]);
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* ================= HEADER ================= */}
@@ -41,9 +126,9 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
             </p>
           </div>
 
-          {/* <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
-            {resultExamsStudent.length} Siswa
-          </div> */}
+          <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
+            {resultExamStudents.length} dari {totalStudents} Siswa
+          </div>
         </div>
       </div>
 
@@ -56,33 +141,33 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                 No
               </TableHead>
 
-              <TableHead className="min-w-[190px] font-semibold text-slate-600">
+              <TableHead className="min-w-45 font-semibold text-slate-600">
                 Siswa
               </TableHead>
 
-              <TableHead className="min-w-[260px] font-semibold text-slate-600">
+              <TableHead className="min-w-65 font-semibold text-slate-600">
                 Ujian
               </TableHead>
 
-              <TableHead className="min-w-[140px] font-semibold text-slate-600">
+              <TableHead className="min-w-35 font-semibold text-slate-600">
                 Nilai
               </TableHead>
 
-              <TableHead className="min-w-[170px] font-semibold text-slate-600">
+              <TableHead className="min-w-42.5 font-semibold text-slate-600">
                 Status Tugas
               </TableHead>
 
-              <TableHead className="min-w-[120px] font-semibold text-slate-600">
+              <TableHead className="min-w-30 font-semibold text-slate-600">
                 Kelas
               </TableHead>
             </TableRow>
           </TableHeader>
 
-          {/* <TableBody>
-            {resultExamsStudent.length > 0 ? (
-              resultExamsStudent.map((data: any, i: number) => (
+          <TableBody>
+            {resultExamStudents.length > 0 ? (
+              resultExamStudents.map((data, i: number) => (
                 <TableRow
-                  key={data.student_id ?? i}
+                  key={data.student_id}
                   className="align-top transition-colors hover:bg-slate-50"
                 >
                   <TableCell className="pt-5 font-semibold text-slate-400">
@@ -90,33 +175,25 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                   </TableCell>
 
                   <TableCell className="pt-5">
-                    <div className="flex items-start gap-3">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-sm font-bold text-blue-600">
-                        {data.fullName?.charAt(0)?.toUpperCase() || "S"}
-                      </div>
+                    <p className="font-semibold text-slate-900">
+                      {data.fullName || "-"}
+                    </p>
 
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {data.fullName || "-"}
-                        </p>
-
-                        <p className="mt-1 text-xs text-slate-400">
-                          ID: {data.student_id || "-"}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="mt-1 text-[10px] text-slate-400">
+                      ID: {data.student_id || "-"}
+                    </p>
                   </TableCell>
 
                   <TableCell className="pt-5">
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
-                        data.resultUjian.map((item: any, examIndex: number) => (
+                        data.resultUjian.map((item, examIndex: number) => (
                           <div
-                            key={item.idUjian ?? examIndex}
+                            key={item.idUjian}
                             className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5"
                           >
-                            <div className="flex items-start gap-3">
-                              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-bold text-slate-500 shadow-sm">
+                            <div className="flex gap-3">
+                              <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-white text-xs font-bold text-slate-500 shadow-sm">
                                 {examIndex + 1}
                               </span>
 
@@ -125,8 +202,8 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                                   {item.namaUjian || "-"}
                                 </p>
 
-                                <span className="mt-1 inline-flex rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-500">
-                                  {item.tipe_ujian === "essay"
+                                <span className="mt-1 text-[9px] font-semibold text-slate-500">
+                                  {item.tipe_ujian === "ESSAY"
                                     ? "Essay"
                                     : "Pilihan Ganda"}
                                 </span>
@@ -146,16 +223,16 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
                         data.resultUjian.map(
-                          (nilaiUjian: any, examIndex: number) => {
+                          (nilaiUjian, examIndex: number) => {
                             const isPending =
                               nilaiUjian.hasil_ujian === "pending";
 
-                            const isEssay = nilaiUjian.tipe_ujian === "essay";
+                            const isEssay = nilaiUjian.tipe_ujian === "ESSAY";
 
                             return (
                               <div
                                 key={nilaiUjian.idUjian ?? `score-${examIndex}`}
-                                className="flex min-h-[42px] items-center"
+                                className="flex min-h-10.5 items-center"
                               >
                                 {isPending && isEssay ? (
                                   <HoverCard>
@@ -201,12 +278,12 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                     <div className="space-y-2">
                       {data.resultUjian?.length > 0 ? (
                         data.resultUjian.map(
-                          (statusUjian: any, examIndex: number) => (
+                          (statusUjian, examIndex: number) => (
                             <div
                               key={statusUjian.idUjian ?? `status-${examIndex}`}
-                              className="flex min-h-[42px] items-center"
+                              className="flex min-h-10.5 items-center"
                             >
-                              {statusUjian.status_exam === true ? (
+                              {statusUjian.status_exam === 1 ? (
                                 <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600">
                                   Selesai
                                 </span>
@@ -248,15 +325,15 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                 </TableCell>
               </TableRow>
             )}
-          </TableBody> */}
+          </TableBody>
         </Table>
 
-        {/* <PaginationUi
+        <PaginationUi
           currentPage={page}
           totalPage={totalPages}
           onPageChange={setPage}
-          isLoading={isLoading}
-        /> */}
+          isLoading={loading}
+        />
       </div>
     </div>
   );

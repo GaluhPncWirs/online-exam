@@ -109,7 +109,8 @@
         "fungsi untuk menghapus data soal sudah bisa di pakai ",
         "sedang mengerjakan pengambilan data dengan pagination di halaman kelol data soal",
         "memperbaiki struktur folder di bagian component khusus guru ",
-        "memulai untuk mengerjakan bagian kelola nilai siswa"
+        "memulai untuk mengerjakan bagian kelola nilai siswa",
+        "selesai membuat fungsi handleGetDataResultScoreExams() untuk pengambilan data dan juga memperbaiki error path export di component manageStudent"
     ],
     "sqltools.connections": [
         {
