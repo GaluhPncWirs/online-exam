@@ -126,7 +126,7 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
             </p>
           </div>
 
-          <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
+          <div className="rounded-md bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600">
             {resultExamStudents.length} dari {totalStudents} Siswa
           </div>
         </div>
@@ -284,11 +284,11 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                               className="flex min-h-10.5 items-center"
                             >
                               {statusUjian.status_exam === 1 ? (
-                                <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600">
+                                <span className="inline-flex rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600">
                                   Selesai
                                 </span>
                               ) : (
-                                <span className="inline-flex rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-600">
+                                <span className="inline-flex rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-600">
                                   Belum Selesai
                                 </span>
                               )}
@@ -302,7 +302,7 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
                   </TableCell>
 
                   <TableCell className="pt-5">
-                    <span className="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+                    <span className="inline-flex rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
                       {data.classes || "-"}
                     </span>
                   </TableCell>
@@ -328,12 +328,14 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
           </TableBody>
         </Table>
 
-        <PaginationUi
-          currentPage={page}
-          totalPage={totalPages}
-          onPageChange={setPage}
-          isLoading={loading}
-        />
+        {totalStudents > PAGE_SIZE && (
+          <PaginationUi
+            currentPage={page}
+            totalPage={totalPages}
+            onPageChange={setPage}
+            isLoading={loading}
+          />
+        )}
       </div>
     </div>
   );

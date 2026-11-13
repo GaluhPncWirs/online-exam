@@ -128,7 +128,7 @@ export default function CreateNewQuestions({
 
     try {
       if (isNewExam) {
-        const req = await fetch("/api/teacher/addDataExam", {
+        const req = await fetch("/api/teacher/POST/addDataExam", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -157,7 +157,7 @@ export default function CreateNewQuestions({
         setOpenDialog(false);
       }
 
-      const req = await fetch("/api/teacher/addDataQuestion", {
+      const req = await fetch("/api/teacher/POST/addDataQuestion", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

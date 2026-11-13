@@ -169,7 +169,7 @@ export default function SendExamToStudent({
     };
 
     try {
-      const req = await fetch("/api/teacher/sendDataExam", {
+      const req = await fetch("/api/teacher/POST/sendDataExam", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -218,7 +218,7 @@ export default function SendExamToStudent({
     }
 
     try {
-      const req = await fetch(`/api/teacher/deleteDataExam/${idExam}`, {
+      const req = await fetch(`/api/teacher/DELETE/dataExam/${idExam}`, {
         method: "DELETE",
       });
       const res = await req.json();

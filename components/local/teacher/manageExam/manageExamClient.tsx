@@ -189,7 +189,7 @@ export default function ManageExamComponent({
         updates.correctAnswer = formData.correctAnswer;
       }
 
-      const response = await fetch("/api/teacher/updateDataQuestion", {
+      const response = await fetch("/api/teacher/PATCH/updateDataQuestion", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -239,7 +239,7 @@ export default function ManageExamComponent({
     }
 
     try {
-      const req = await fetch("/api/teacher/delete/dataQuestion", {
+      const req = await fetch("/api/teacher/DELETE/dataExam", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
