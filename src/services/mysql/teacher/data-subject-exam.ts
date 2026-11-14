@@ -965,3 +965,67 @@ export async function handleGetDataResultScoreExams(
     };
   }
 }
+
+export async function handleGetDataExamEssayForCorrection(
+  idStudent: string,
+  idSubject: string,
+  page: number = 1,
+  limit: number = 10,
+) {
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit) || 10));
+
+  const start = (safePage - 1) * safeLimit;
+  const end = start + safeLimit - 1;
+  const jsonPath = `$[${start} to ${end}]`;
+
+  const query = `
+    SELECT he.id_student, he.id_subject, he.answer_student, se.name_exam, se.type_exam, se.exam_questions
+    FROM history_exams AS he
+    INNER JOIN subject_exam AS se
+      ON he.id_subject = se.id_subject
+    WHERE he.id_student = ? AND he.id_subject = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [result] = await pool.execute<RowDataPacket[]>(query, [
+      jsonPath,
+      idStudent,
+      idSubject,
+    ]);
+
+    if (result.length === 0) {
+      return { success: false, message: "Ujian tidak ditemukan" };
+    }
+
+    const row = result[0];
+    const totalItems = Number(row.total_questions ?? 0);
+    const totalPages = Math.ceil(totalItems / safeLimit);
+
+    const questions =
+      typeof row.exam_questions === "string"
+        ? JSON.parse(row.exam_questions)
+        : (row.exam_questions ?? []);
+
+    return {
+      success: true,
+      data: {
+        name_exam: row.name_exam,
+        type_exam: row.type_exam,
+        exam_questions: questions,
+        pagination: {
+          page: safePage,
+          limit: safeLimit,
+          total_items: totalItems,
+          total_pages: totalPages,
+          has_next: safePage < totalPages,
+          has_prev: safePage > 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Gagal ambil data ujian:", error);
+    return { success: false, message: "Gagal ambil data ujian" };
+  }
+}
