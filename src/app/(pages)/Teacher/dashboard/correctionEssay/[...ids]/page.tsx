@@ -1,6 +1,8 @@
 import CorrectionEssayClient from "@/components/local/teacher/correctionEssay/correctionEssayClient";
+import CorrectionSkeletonTeacher from "@/components/local/teacher/correctionEssay/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { handleGetDataExamEssayForCorrection } from "@/src/services/mysql/teacher/data-subject-exam";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{
@@ -8,7 +10,15 @@ type Props = {
   }>;
 };
 
-export default async function CorrectionEssay({ params }: Props) {
+export default function Loader({ params }: Props) {
+  return (
+    <Suspense fallback={<CorrectionSkeletonTeacher />}>
+      <CorrectionEssay params={params} />
+    </Suspense>
+  );
+}
+
+async function CorrectionEssay({ params }: Props) {
   const { ids } = await params;
   const [idSubject, idStudent] = ids;
 
@@ -16,6 +26,8 @@ export default async function CorrectionEssay({ params }: Props) {
     idStudent,
     idSubject,
   );
+
+  console.log(resultDataCorrections);
 
   return (
     <MainContent>

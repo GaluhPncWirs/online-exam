@@ -980,7 +980,7 @@ export async function handleGetDataExamEssayForCorrection(
   const jsonPath = `$[${start} to ${end}]`;
 
   const query = `
-    SELECT he.id_student, he.id_subject, JSON_LENGTH(he.answer_student) AS total_questions JSON_EXTRACT(he.answer_student, ?) AS exam_answer, se.name_exam, se.type_exam, se.exam_questions
+    SELECT he.id_student, he.id_subject, JSON_LENGTH(he.answer_student) AS total_questions, JSON_EXTRACT(he.answer_student, ?) AS exam_answer, se.name_exam, se.type_exam, se.exam_questions
     FROM history_exams AS he
     INNER JOIN subject_exam AS se
       ON he.id_subject = se.id_subject

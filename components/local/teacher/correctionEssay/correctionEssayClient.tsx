@@ -60,7 +60,6 @@ export default function CorrectionEssayClient({
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [dataAnswer, setDataAnswer] = useState(dataCorrections.exam_answer);
-  console.log(dataAnswer);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -204,11 +203,11 @@ export default function CorrectionEssayClient({
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="text-base font-semibold sm:text-lg">
-              {viewQuestionsExams.exams?.nama_ujian}
+              {dataCorrections.name_exam}
             </span>
 
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-              {viewQuestionsExams.exams?.questions_exam?.length || 0} Soal
+              {dataAnswer.length || 0} Soal
             </span>
           </div>
         </div>
@@ -393,7 +392,7 @@ export default function CorrectionEssayClient({
 
                   <Button
                     type="button"
-                    onClick={giveAssesment}
+                    // onClick={giveAssesment}
                     className="rounded-xl bg-blue-600 hover:bg-blue-700"
                   >
                     Ya, Simpan
