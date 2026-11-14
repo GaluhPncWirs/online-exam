@@ -1,5 +1,6 @@
 import CorrectionEssayClient from "@/components/local/teacher/correctionEssay/correctionEssayClient";
 import MainContent from "@/src/layout/mainContent/content";
+import { handleGetDataExamEssayForCorrection } from "@/src/services/mysql/teacher/data-subject-exam";
 
 type Props = {
   params: Promise<{
@@ -9,11 +10,20 @@ type Props = {
 
 export default async function CorrectionEssay({ params }: Props) {
   const { ids } = await params;
-  const [idExam, idStudent] = ids;
+  const [idSubject, idStudent] = ids;
+
+  const resultDataCorrections = await handleGetDataExamEssayForCorrection(
+    idStudent,
+    idSubject,
+  );
 
   return (
     <MainContent>
-      <CorrectionEssayClient idExam={idExam} idStudent={idStudent} />
+      <CorrectionEssayClient
+        idSubject={idSubject}
+        idStudent={idStudent}
+        dataCorrections={resultDataCorrections.data}
+      />
     </MainContent>
   );
 }

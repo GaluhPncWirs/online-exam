@@ -39,6 +39,7 @@ import {
 import { Choice, ExamQuestion } from "@/src/types/dataExam";
 import { toast } from "sonner";
 import PaginationUi from "@/components/global/pagination/content";
+import { Pagination } from "@/src/types/teacher/dataExam";
 
 type DataExamQuestion = {
   examQuestion: ExamQuestion;
@@ -51,15 +52,6 @@ type SelectedQuestion = {
   questions: string;
   multipleChoice?: Choice;
   correctAnswer?: string;
-};
-
-type Pagination = {
-  page: number;
-  limit: number;
-  total_items: number;
-  total_pages: number;
-  has_next: boolean;
-  has_prev: boolean;
 };
 
 export default function ManageExamComponent({

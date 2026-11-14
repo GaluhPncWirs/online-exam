@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -11,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ExamQuestion } from "@/src/types/dataExam";
+import { Pagination } from "@/src/types/teacher/dataExam";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -39,63 +42,85 @@ const assessmentOptions = [
 ];
 
 type DataCorrectionEssay = {
-  idExam: string;
+  idSubject: string;
   idStudent: string;
+  dataCorrections: unknown;
 };
 
 export default function CorrectionEssayClient({
-  idExam,
+  idSubject,
   idStudent,
+  dataCorrections,
 }: DataCorrectionEssay) {
   const [viewQuestionsExams, setViewQuestionsExams] = useState<any>(null);
   const [giveAssesmentExams, setGiveAssesmentExams] = useState<
     Record<string, number>
   >({});
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [dataAnswer, setDataAnswer] = useState(dataCorrections.exam_answer);
+  console.log(dataAnswer);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!idExam || !idStudent) {
-      setViewQuestionsExams(null);
-      return;
-    }
+    const controller = new AbortController();
 
-    let isMounted = true;
+    async function fetchAnswer() {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `/api/teacher/GET/dataCorrectionEssay?page=${page}&limit=${limit}`,
+          {
+            method: "GET",
+            signal: controller.signal,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              idStudent,
+              idSubject,
+            }),
+          },
+        );
 
-    async function getExamEssay() {
-      const { data, error } = await supabase
-        .from("history-exam-student")
-        .select(
-          `
-          student_id,
-          exam_id,
-          answer_student,
-          exams (
-            questions_exam,
-            nama_ujian
-          )
-        `,
-        )
-        .eq("exam_id", Number(idExam))
-        .eq("student_id", idStudent)
-        .single();
+        const res: {
+          success: boolean;
+          message?: string;
+          data?: {
+            exam_answer: unknown;
+            pagination: Pagination;
+          };
+        } = await response.json();
 
-      if (error) {
-        console.error("Gagal mengambil data essay:", error);
-
-        return;
+        if (res.success) {
+          if (!res.data) {
+            throw new Error("Data jawaban dari server tidak lengkap.");
+          }
+          setDataAnswer(res.data.exam_answer);
+          setPagination(res.data.pagination);
+        } else {
+          toast.error("Gagal mengambil data jawaban", {
+            description:
+              res.message || "Terjadi kesalahan saat mengambil data jawaban",
+          });
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        console.error("Error fetching questions:", error);
+        toast.error("Gagal mengambil data jawaban", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Terjadi kesalahan saat mengambil data jawaban",
+        });
+      } finally {
+        setLoading(false);
       }
-
-      if (!isMounted) return;
-
-      setViewQuestionsExams(data);
     }
 
-    getExamEssay();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [idExam, idStudent]);
+    fetchAnswer();
+    return () => controller.abort();
+  }, [page, limit, idStudent, idSubject]);
 
   function handleChooseAssesment(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -120,54 +145,54 @@ export default function CorrectionEssayClient({
     return Math.round((totalScore / maxScore) * 100);
   }, [giveAssesmentExams]);
 
-  async function giveAssesment() {
-    if (!idExam || !idStudent) {
-      toast("Gagal ❌", {
-        description: "Data ujian atau siswa tidak ditemukan.",
-      });
+  //   async function giveAssesment() {
+  //     if (!idExam || !idStudent) {
+  //       toast("Gagal ❌", {
+  //         description: "Data ujian atau siswa tidak ditemukan.",
+  //       });
 
-      return;
-    }
+  //       return;
+  //     }
 
-    const scores = Object.values(giveAssesmentExams);
+  //     const scores = Object.values(giveAssesmentExams);
 
-    if (scores.length === 0) {
-      toast("Gagal ❌", {
-        description: "Belum ada nilai yang diberikan.",
-      });
+  //     if (scores.length === 0) {
+  //       toast("Gagal ❌", {
+  //         description: "Belum ada nilai yang diberikan.",
+  //       });
 
-      return;
-    }
+  //       return;
+  //     }
 
-    // const { error } = await supabase
-    //   .from("history-exam-student")
-    //   .update({
-    //     hasil_ujian: finalResultAssesment,
-    //   })
-    //   .eq("exam_id", Number(idExam))
-    //   .eq("student_id", idStudent);
+  //     // const { error } = await supabase
+  //     //   .from("history-exam-student")
+  //     //   .update({
+  //     //     hasil_ujian: finalResultAssesment,
+  //     //   })
+  //     //   .eq("exam_id", Number(idExam))
+  //     //   .eq("student_id", idStudent);
 
-    // if (error) {
-    //   console.error("Assessment error:", error);
+  //     // if (error) {
+  //     //   console.error("Assessment error:", error);
 
-    //   toast("Gagal ❌", {
-    //     description: "Gagal menilai soal.",
-    //   });
+  //     //   toast("Gagal ❌", {
+  //     //     description: "Gagal menilai soal.",
+  //     //   });
 
-    //   return;
-    // }
+  //     //   return;
+  //     // }
 
-    toast("Berhasil ✅", {
-      description: `Nilai akhir: ${finalResultAssesment}/100`,
-    });
+  //     toast("Berhasil ✅", {
+  //       description: `Nilai akhir: ${finalResultAssesment}/100`,
+  //     });
 
-    setOpenConfirmDialog(false);
-  }
+  //     setOpenConfirmDialog(false);
+  //   }
 
   return (
     <div className="space-y-6">
       {/* ================= HEADER ================= */}
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-linear-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
         <div className="relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100 sm:text-sm">
             Essay Grading
@@ -199,14 +224,13 @@ export default function CorrectionEssayClient({
       </div>
 
       {/* ================= QUESTIONS ================= */}
-      <section className="space-y-5">
-        {viewQuestionsExams.exams?.questions_exam?.map(
+      {/* <section className="space-y-5">
+        {dataAnswer.map(
           (item: any, i: number) => (
             <article
-              key={item.id ?? i}
+              key={i}
               className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
             >
-              {/* Question Header */}
               <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
                 <div className="flex items-start gap-3">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
@@ -218,16 +242,14 @@ export default function CorrectionEssayClient({
                       Pertanyaan {i + 1}
                     </p>
 
-                    <h2 className="mt-1 break-words text-base font-bold leading-6 text-slate-900 sm:text-lg">
+                    <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg">
                       {item.questions}
                     </h2>
                   </div>
                 </div>
               </div>
 
-              {/* Content */}
               <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:p-6">
-                {/* Student Answer */}
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <label className="text-sm font-bold text-slate-700">
@@ -246,7 +268,6 @@ export default function CorrectionEssayClient({
                   />
                 </div>
 
-                {/* Assessment */}
                 <div>
                   <div className="mb-3">
                     <h3 className="text-sm font-bold text-slate-700">
@@ -287,7 +308,6 @@ export default function CorrectionEssayClient({
                     ))}
                   </div>
 
-                  {/* Score Legend */}
                   <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
                     <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
                       Keterangan Penilaian
@@ -316,7 +336,7 @@ export default function CorrectionEssayClient({
             </article>
           ),
         )}
-      </section>
+      </section> */}
 
       {/* ================= ACTION ================= */}
       <section className="sticky bottom-3 z-20 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl shadow-slate-300/30 backdrop-blur-xl sm:p-5">
@@ -346,23 +366,18 @@ export default function CorrectionEssayClient({
               open={openConfirmDialog}
               onOpenChange={setOpenConfirmDialog}
             >
-              <DialogTrigger>
-                <Button
-                  type="button"
-                  className="h-11 rounded-xl bg-blue-600 px-6 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700"
-                  disabled={Object.keys(giveAssesmentExams).length === 0}
-                >
-                  Simpan Penilaian
-                </Button>
+              <DialogTrigger
+                className="h-11 rounded-xl bg-blue-600 px-6 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700"
+                disabled={Object.keys(giveAssesmentExams).length === 0}
+              >
+                Simpan Penilaian
               </DialogTrigger>
 
-              <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
+              <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold">
-                    Konfirmasi Penilaian
-                  </DialogTitle>
+                  <DialogTitle>Konfirmasi Penilaian</DialogTitle>
 
-                  <DialogDescription className="pt-2 leading-6">
+                  <DialogDescription>
                     Apakah penilaian ini sudah benar?
                     <span className="mt-3 block">Nilai akhir ujian siswa:</span>
                     <span className="mt-2 block text-2xl font-extrabold text-blue-600">
@@ -371,15 +386,10 @@ export default function CorrectionEssayClient({
                   </DialogDescription>
                 </DialogHeader>
 
-                <DialogFooter className="mt-4 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="rounded-xl"
-                    onClick={() => setOpenConfirmDialog(false)}
-                  >
+                <DialogFooter className="space-x-2">
+                  <DialogClose onClick={() => setOpenConfirmDialog(false)}>
                     Periksa Lagi
-                  </Button>
+                  </DialogClose>
 
                   <Button
                     type="button"

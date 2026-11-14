@@ -112,7 +112,8 @@
         "memulai untuk mengerjakan bagian kelola nilai siswa",
         "selesai membuat fungsi handleGetDataResultScoreExams() untuk pengambilan data dan juga memperbaiki error path export di component manageStudent",
         "sudah selesai menampilkan data siswa di bagian hasil ujian siswa dengan menggunakan pagination",
-        "menghapus file atau folder yang tidak di perlukan lagi dan juga menambhkan skeleton di halaman dashboard guru"
+        "menghapus file atau folder yang tidak di perlukan lagi dan juga menambhkan skeleton di halaman dashboard guru",
+        "sedang mengerjakan halaman untuk koreksi ujian type essay"
     ],
     "sqltools.connections": [
         {

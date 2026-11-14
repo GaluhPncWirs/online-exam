@@ -35,3 +35,12 @@ export type DataPureExams = {
   name_exam: string;
   type_exam: "PG" | "ESSAY";
 };
+
+export type Pagination = {
+  page: number;
+  limit: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};

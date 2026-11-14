@@ -980,7 +980,7 @@ export async function handleGetDataExamEssayForCorrection(
   const jsonPath = `$[${start} to ${end}]`;
 
   const query = `
-    SELECT he.id_student, he.id_subject, he.answer_student, se.name_exam, se.type_exam, se.exam_questions
+    SELECT he.id_student, he.id_subject, JSON_LENGTH(he.answer_student) AS total_questions JSON_EXTRACT(he.answer_student, ?) AS exam_answer, se.name_exam, se.type_exam, se.exam_questions
     FROM history_exams AS he
     INNER JOIN subject_exam AS se
       ON he.id_subject = se.id_subject
@@ -1003,17 +1003,17 @@ export async function handleGetDataExamEssayForCorrection(
     const totalItems = Number(row.total_questions ?? 0);
     const totalPages = Math.ceil(totalItems / safeLimit);
 
-    const questions =
-      typeof row.exam_questions === "string"
-        ? JSON.parse(row.exam_questions)
-        : (row.exam_questions ?? []);
+    const answers =
+      typeof row.exam_answer === "string"
+        ? JSON.parse(row.exam_answer)
+        : (row.exam_answer ?? []);
 
     return {
       success: true,
       data: {
         name_exam: row.name_exam,
         type_exam: row.type_exam,
-        exam_questions: questions,
+        exam_answer: answers,
         pagination: {
           page: safePage,
           limit: safeLimit,
