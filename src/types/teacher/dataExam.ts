@@ -1,3 +1,5 @@
+import { EssayQuestion } from "../dataExam";
+
 export type DataExamsPending = {
   created_at: Date;
   id_student: string;
@@ -47,6 +49,7 @@ export type Pagination = {
 
 export type DataCorrectionEssayType = {
   exam_answer: Record<string, string>;
+  exam_questions: EssayQuestion[];
   name_exam: string;
   pagination: {
     has_next: boolean;

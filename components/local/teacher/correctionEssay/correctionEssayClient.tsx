@@ -65,6 +65,9 @@ export default function CorrectionEssayClient({
   const [dataAnswer, setDataAnswer] = useState<Record<string, string>>(
     dataCorrections.exam_answer,
   );
+  const [dataQuestions, setDataQuestions] = useState(
+    dataCorrections.exam_questions,
+  );
 
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(false);
@@ -94,14 +97,7 @@ export default function CorrectionEssayClient({
           throw new Error("Gagal mengambil data jawaban.");
         }
 
-        const res: {
-          success: boolean;
-          message?: string;
-          data?: {
-            exam_answer: unknown;
-            pagination: Pagination;
-          };
-        } = await response.json();
+        const res = await response.json();
 
         if (!res.success) {
           throw new Error(
@@ -113,17 +109,8 @@ export default function CorrectionEssayClient({
           throw new Error("Data jawaban dari server tidak lengkap.");
         }
 
-        const examAnswer = res.data.exam_answer;
-        if (
-          typeof examAnswer !== "object" ||
-          examAnswer === null ||
-          Array.isArray(examAnswer) ||
-          Object.values(examAnswer).some((answer) => typeof answer !== "string")
-        ) {
-          throw new Error("Format data jawaban dari server tidak valid.");
-        }
-
-        setDataAnswer(examAnswer as Record<string, string>);
+        setDataAnswer(res.data.exam_answer);
+        setDataQuestions(res.data.exam_questions);
         setPagination(res.data.pagination);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
@@ -247,119 +234,117 @@ export default function CorrectionEssayClient({
       </div>
 
       {/* ================= QUESTIONS ================= */}
-      {/* <section className="space-y-5">
-        {dataAnswer.map(
-          (item: any, i: number) => (
-            <article
-              key={i}
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-            >
-              <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
-                <div className="flex items-start gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
+      <section className="space-y-5">
+        {dataQuestions.map((item, i: number) => (
+          <article
+            key={item.id}
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+          >
+            <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
+              <div className="flex items-start gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
 
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      Pertanyaan {i + 1}
-                    </p>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    Pertanyaan {i + 1}
+                  </p>
 
-                    <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg">
-                      {item.questions}
-                    </h2>
-                  </div>
+                  <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg">
+                    {item.questions}
+                  </h2>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:p-6">
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="text-sm font-bold text-slate-700">
-                      Jawaban Siswa
-                    </label>
+            <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:p-6">
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="text-sm font-bold text-slate-700">
+                    Jawaban Siswa
+                  </label>
 
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                      Jawaban
-                    </span>
-                  </div>
-
-                  <Textarea
-                    disabled
-                    value={viewQuestionsExams.answer_student?.[item.id] || ""}
-                    className="min-h-40 resize-none rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
-                  />
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                    Jawaban
+                  </span>
                 </div>
 
-                <div>
-                  <div className="mb-3">
-                    <h3 className="text-sm font-bold text-slate-700">
-                      Beri Penilaian
-                    </h3>
+                <Textarea
+                  disabled
+                  // value={viewQuestionsExams.answer_student?.[item.id] || ""}
+                  className="min-h-40 resize-none rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+                />
+              </div>
 
-                    <p className="mt-1 text-xs text-slate-400">
-                      Pilih tingkat kebenaran jawaban siswa.
-                    </p>
-                  </div>
+              <div>
+                <div className="mb-3">
+                  <h3 className="text-sm font-bold text-slate-700">
+                    Beri Penilaian
+                  </h3>
 
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {assessmentOptions.map((assessment) => (
-                      <label
-                        key={`${item.id}-${assessment.value}`}
-                        className="group flex cursor-pointer flex-col items-center rounded-xl border border-slate-200 bg-white p-3 text-center transition-all hover:border-blue-200 hover:bg-blue-50"
-                      >
-                        <Input
-                          type="radio"
-                          name={item.id}
-                          value={assessment.value}
-                          onChange={(e) => handleChooseAssesment(e)}
-                          className="mb-3 size-5 cursor-pointer accent-blue-600"
-                        />
+                  <p className="mt-1 text-xs text-slate-400">
+                    Pilih tingkat kebenaran jawaban siswa.
+                  </p>
+                </div>
 
-                        <span className="text-sm font-bold text-slate-800">
-                          {assessment.short}
-                        </span>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {assessmentOptions.map((assessment) => (
+                    <label
+                      key={`${item.id}-${assessment.value}`}
+                      className="group flex cursor-pointer flex-col items-center rounded-xl border border-slate-200 bg-white p-3 text-center transition-all hover:border-blue-200 hover:bg-blue-50"
+                    >
+                      <Input
+                        type="radio"
+                        name={item.id}
+                        value={assessment.value}
+                        onChange={(e) => handleChooseAssesment(e)}
+                        className="mb-3 size-5 cursor-pointer accent-blue-600"
+                      />
 
-                        <span className="mt-1 text-xs leading-4 text-slate-400">
-                          {assessment.label}
-                        </span>
+                      <span className="text-sm font-bold text-slate-800">
+                        {assessment.short}
+                      </span>
 
-                        <span className="mt-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600">
-                          {assessment.value}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+                      <span className="mt-1 text-xs leading-4 text-slate-400">
+                        {assessment.label}
+                      </span>
 
-                  <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                      Keterangan Penilaian
-                    </p>
+                      <span className="mt-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600">
+                        {assessment.value}
+                      </span>
+                    </label>
+                  ))}
+                </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-amber-800">
-                      <div>
-                        <span className="font-bold">100</span> — Sangat Benar
-                      </div>
+                <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                    Keterangan Penilaian
+                  </p>
 
-                      <div>
-                        <span className="font-bold">75</span> — Benar
-                      </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-amber-800">
+                    <div>
+                      <span className="font-bold">100</span> — Sangat Benar
+                    </div>
 
-                      <div>
-                        <span className="font-bold">50</span> — Setengah Benar
-                      </div>
+                    <div>
+                      <span className="font-bold">75</span> — Benar
+                    </div>
 
-                      <div>
-                        <span className="font-bold">0</span> — Salah
-                      </div>
+                    <div>
+                      <span className="font-bold">50</span> — Setengah Benar
+                    </div>
+
+                    <div>
+                      <span className="font-bold">0</span> — Salah
                     </div>
                   </div>
                 </div>
               </div>
-            </article>
-          ),
-        )}
-      </section> */}
+            </div>
+          </article>
+        ))}
+      </section>
 
       {/* ================= ACTION ================= */}
       <section className="sticky bottom-3 z-20 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-xl shadow-slate-300/30 backdrop-blur-xl sm:p-5">

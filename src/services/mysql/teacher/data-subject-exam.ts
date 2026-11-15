@@ -22,6 +22,7 @@ import {
   EssayQuestion,
   MultipleChoiceQuestion,
 } from "@/src/types/dataExam";
+import { success } from "zod";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
@@ -980,16 +981,25 @@ export async function handleGetDataExamEssayForCorrection(
   const jsonPath = `$[${start} to ${end}]`;
 
   const query = `
-    SELECT he.id_student, he.id_subject, JSON_LENGTH(he.answer_student) AS total_questions, JSON_EXTRACT(he.answer_student, ?) AS exam_answer, se.name_exam, se.type_exam, se.exam_questions
+    SELECT
+      he.id_student,
+      he.id_subject,
+      JSON_LENGTH(he.answer_student) AS total_questions,
+      JSON_EXTRACT(he.answer_student, ?) AS exam_answer,
+      se.name_exam,
+      se.type_exam,
+      JSON_EXTRACT(se.exam_questions, ?) AS exam_questions
     FROM history_exams AS he
     INNER JOIN subject_exam AS se
       ON he.id_subject = se.id_subject
-    WHERE he.id_student = ? AND he.id_subject = ?
+    WHERE he.id_student = ?
+      AND he.id_subject = ?
     LIMIT 1
   `;
 
   try {
     const [result] = await pool.execute<RowDataPacket[]>(query, [
+      jsonPath,
       jsonPath,
       idStudent,
       idSubject,
@@ -1003,17 +1013,33 @@ export async function handleGetDataExamEssayForCorrection(
     const totalItems = Number(row.total_questions ?? 0);
     const totalPages = Math.ceil(totalItems / safeLimit);
 
-    const answers =
-      typeof row.exam_answer === "string"
-        ? JSON.parse(row.exam_answer)
-        : (row.exam_answer ?? []);
+    if (totalPages > 0 && safePage > totalPages) {
+      return {
+        success: false,
+        message: "Halaman tidak ditemukan",
+      };
+    }
+
+    const parseJson = (value: unknown) => {
+      if (typeof value === "string") {
+        return JSON.parse(value);
+      }
+
+      return value ?? [];
+    };
+
+    const answers = parseJson(row.exam_answer);
+    const questions = parseJson(row.exam_questions);
 
     return {
       success: true,
       data: {
         name_exam: row.name_exam,
         type_exam: row.type_exam,
+
         exam_answer: answers[0],
+        exam_questions: questions,
+
         pagination: {
           page: safePage,
           limit: safeLimit,

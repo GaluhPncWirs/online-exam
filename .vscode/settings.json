@@ -115,7 +115,8 @@
         "menghapus file atau folder yang tidak di perlukan lagi dan juga menambhkan skeleton di halaman dashboard guru",
         "sedang mengerjakan halaman untuk koreksi ujian type essay",
         "untuk saat ini sudah menyelesaikan penggunaan api untuk menamapilkan hasul jawaban dari siswa",
-        "menghapus folder yang tidak diperlukan dan juga sudah memperbaiki masalah error ketika masuk ke halaman koreksi ujian"
+        "menghapus folder yang tidak diperlukan dan juga sudah memperbaiki masalah error ketika masuk ke halaman koreksi ujian",
+        "memperbaiki error pada saat proses ambil data hasil jawaban siswa karena masalah pemanggilan API"
     ],
     "sqltools.connections": [
         {
