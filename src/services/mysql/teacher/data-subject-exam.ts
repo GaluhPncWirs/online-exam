@@ -1013,7 +1013,7 @@ export async function handleGetDataExamEssayForCorrection(
       data: {
         name_exam: row.name_exam,
         type_exam: row.type_exam,
-        exam_answer: answers,
+        exam_answer: answers[0],
         pagination: {
           page: safePage,
           limit: safeLimit,

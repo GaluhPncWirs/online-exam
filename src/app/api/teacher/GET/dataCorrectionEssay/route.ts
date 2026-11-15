@@ -3,31 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { idStudent, idSubject } = body;
-
-    if (!idStudent || !idSubject) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "ID yang diperlukan tidak ada",
-        },
-        {
-          status: 401,
-        },
-      );
-    }
-
     const { searchParams } = new URL(req.url);
 
-    const from = Number(searchParams.get("from"));
-    const to = Number(searchParams.get("to"));
+    const page = Number(searchParams.get("page") || 1);
+    const limit = Number(searchParams.get("limit") || 10);
+
+    const idStudent = searchParams.get("idStudent") || "";
+    const idSubject = searchParams.get("idSubject") || "";
 
     const result = await handleGetDataExamEssayForCorrection(
       idStudent,
       idSubject,
-      from,
-      to,
+      page,
+      limit,
     );
 
     return NextResponse.json(

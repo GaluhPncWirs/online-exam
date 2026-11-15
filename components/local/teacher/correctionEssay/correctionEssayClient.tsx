@@ -13,7 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ExamQuestion } from "@/src/types/dataExam";
-import { Pagination } from "@/src/types/teacher/dataExam";
+import {
+  DataCorrectionEssayType,
+  Pagination,
+} from "@/src/types/teacher/dataExam";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -44,7 +47,7 @@ const assessmentOptions = [
 type DataCorrectionEssay = {
   idSubject: string;
   idStudent: string;
-  dataCorrections: unknown;
+  dataCorrections: DataCorrectionEssayType;
 };
 
 export default function CorrectionEssayClient({
@@ -59,7 +62,10 @@ export default function CorrectionEssayClient({
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [dataAnswer, setDataAnswer] = useState(dataCorrections.exam_answer);
+  const [dataAnswer, setDataAnswer] = useState<Record<string, string>>(
+    dataCorrections.exam_answer,
+  );
+
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -69,18 +75,24 @@ export default function CorrectionEssayClient({
     async function fetchAnswer() {
       setLoading(true);
       try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+          idStudent,
+          idSubject,
+        });
+
         const response = await fetch(
-          `/api/teacher/GET/dataCorrectionEssay?page=${page}&limit=${limit}`,
+          `/api/teacher/GET/dataCorrectionEssay?${params.toString()}`,
           {
             method: "GET",
             signal: controller.signal,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              idStudent,
-              idSubject,
-            }),
           },
         );
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data jawaban.");
+        }
 
         const res: {
           success: boolean;
@@ -91,18 +103,28 @@ export default function CorrectionEssayClient({
           };
         } = await response.json();
 
-        if (res.success) {
-          if (!res.data) {
-            throw new Error("Data jawaban dari server tidak lengkap.");
-          }
-          setDataAnswer(res.data.exam_answer);
-          setPagination(res.data.pagination);
-        } else {
-          toast.error("Gagal mengambil data jawaban", {
-            description:
-              res.message || "Terjadi kesalahan saat mengambil data jawaban",
-          });
+        if (!res.success) {
+          throw new Error(
+            res.message || "Terjadi kesalahan saat mengambil data jawaban.",
+          );
         }
+
+        if (!res.data) {
+          throw new Error("Data jawaban dari server tidak lengkap.");
+        }
+
+        const examAnswer = res.data.exam_answer;
+        if (
+          typeof examAnswer !== "object" ||
+          examAnswer === null ||
+          Array.isArray(examAnswer) ||
+          Object.values(examAnswer).some((answer) => typeof answer !== "string")
+        ) {
+          throw new Error("Format data jawaban dari server tidak valid.");
+        }
+
+        setDataAnswer(examAnswer as Record<string, string>);
+        setPagination(res.data.pagination);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
         console.error("Error fetching questions:", error);
@@ -113,7 +135,9 @@ export default function CorrectionEssayClient({
               : "Terjadi kesalahan saat mengambil data jawaban",
         });
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 

@@ -44,3 +44,17 @@ export type Pagination = {
   has_next: boolean;
   has_prev: boolean;
 };
+
+export type DataCorrectionEssayType = {
+  exam_answer: Record<string, string>;
+  name_exam: string;
+  pagination: {
+    has_next: boolean;
+    has_prev: boolean;
+    limit: number;
+    page: number;
+    total_items: number;
+    total_pages: number;
+  };
+  type_exam: string;
+};

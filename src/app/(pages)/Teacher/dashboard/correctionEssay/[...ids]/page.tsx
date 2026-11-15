@@ -2,6 +2,7 @@ import CorrectionEssayClient from "@/components/local/teacher/correctionEssay/co
 import CorrectionSkeletonTeacher from "@/components/local/teacher/correctionEssay/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { handleGetDataExamEssayForCorrection } from "@/src/services/mysql/teacher/data-subject-exam";
+import { DataCorrectionEssayType } from "@/src/types/teacher/dataExam";
 import { Suspense } from "react";
 
 type Props = {
@@ -27,14 +28,12 @@ async function CorrectionEssay({ params }: Props) {
     idSubject,
   );
 
-  console.log(resultDataCorrections);
-
   return (
     <MainContent>
       <CorrectionEssayClient
         idSubject={idSubject}
         idStudent={idStudent}
-        dataCorrections={resultDataCorrections.data}
+        dataCorrections={resultDataCorrections.data as DataCorrectionEssayType}
       />
     </MainContent>
   );
