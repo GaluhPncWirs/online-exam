@@ -391,7 +391,7 @@ export default function CorrectionEssayClient({
 
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link
-              href="/Teacher/dashboard"
+              href="/Teacher/Dashboard"
               className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               Kembali
