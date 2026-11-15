@@ -1036,18 +1036,16 @@ export async function handleGetDataExamEssayForCorrection(
       data: {
         name_exam: row.name_exam,
         type_exam: row.type_exam,
-
-        exam_answer: answers[0],
+        exam_answer: answers,
         exam_questions: questions,
-
-        pagination: {
-          page: safePage,
-          limit: safeLimit,
-          total_items: totalItems,
-          total_pages: totalPages,
-          has_next: safePage < totalPages,
-          has_prev: safePage > 1,
-        },
+      },
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total_items: totalItems,
+        total_pages: totalPages,
+        has_next: safePage < totalPages,
+        has_prev: safePage > 1,
       },
     };
   } catch (error) {

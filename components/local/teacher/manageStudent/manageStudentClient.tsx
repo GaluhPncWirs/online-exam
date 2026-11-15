@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PAGE_SIZE } from "@/src/lib/constants";
 import { DataTeacher } from "@/src/types/dataUser";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
@@ -36,8 +37,6 @@ type ResultExamStudent = {
   fullName: string | null;
   classes: string | null;
 };
-
-const PAGE_SIZE = 10;
 
 export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
   const [resultExamStudents, setResultExamStudents] = useState<

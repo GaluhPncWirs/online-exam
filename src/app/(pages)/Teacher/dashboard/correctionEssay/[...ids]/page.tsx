@@ -2,7 +2,10 @@ import CorrectionEssayClient from "@/components/local/teacher/correctionEssay/co
 import CorrectionSkeletonTeacher from "@/components/local/teacher/correctionEssay/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { handleGetDataExamEssayForCorrection } from "@/src/services/mysql/teacher/data-subject-exam";
-import { DataCorrectionEssayType } from "@/src/types/teacher/dataExam";
+import {
+  DataCorrectionEssayType,
+  Pagination,
+} from "@/src/types/teacher/dataExam";
 import { Suspense } from "react";
 
 type Props = {
@@ -26,6 +29,8 @@ async function CorrectionEssay({ params }: Props) {
   const resultDataCorrections = await handleGetDataExamEssayForCorrection(
     idStudent,
     idSubject,
+    1,
+    10,
   );
 
   return (
@@ -33,7 +38,8 @@ async function CorrectionEssay({ params }: Props) {
       <CorrectionEssayClient
         idSubject={idSubject}
         idStudent={idStudent}
-        dataCorrections={resultDataCorrections.data as DataCorrectionEssayType}
+        initialData={resultDataCorrections.data as DataCorrectionEssayType}
+        initialPagination={resultDataCorrections.pagination as Pagination}
       />
     </MainContent>
   );

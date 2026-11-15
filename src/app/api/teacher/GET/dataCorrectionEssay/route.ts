@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         success: result?.success,
         message: result?.message,
         data: result?.data,
+        pagination: result?.pagination,
       },
       { status: 200 },
     );

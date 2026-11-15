@@ -116,7 +116,8 @@
         "sedang mengerjakan halaman untuk koreksi ujian type essay",
         "untuk saat ini sudah menyelesaikan penggunaan api untuk menamapilkan hasul jawaban dari siswa",
         "menghapus folder yang tidak diperlukan dan juga sudah memperbaiki masalah error ketika masuk ke halaman koreksi ujian",
-        "memperbaiki error pada saat proses ambil data hasil jawaban siswa karena masalah pemanggilan API"
+        "memperbaiki error pada saat proses ambil data hasil jawaban siswa karena masalah pemanggilan API",
+        "sudah selesai untuk bisa menampilkan ui dengan data pertanyaannya, tinggal di selaraskan pertanyaan dengan jawaban siswa"
     ],
     "sqltools.connections": [
         {

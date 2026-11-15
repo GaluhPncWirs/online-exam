@@ -1,4 +1,5 @@
 "use client";
+import PaginationUi from "@/components/global/pagination/content";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PAGE_SIZE } from "@/src/lib/constants";
 import { ExamQuestion } from "@/src/types/dataExam";
 import {
   DataCorrectionEssayType,
@@ -47,29 +49,37 @@ const assessmentOptions = [
 type DataCorrectionEssay = {
   idSubject: string;
   idStudent: string;
-  dataCorrections: DataCorrectionEssayType;
+  initialData: DataCorrectionEssayType;
+  initialPagination: Pagination;
 };
 
 export default function CorrectionEssayClient({
   idSubject,
   idStudent,
-  dataCorrections,
+  initialData,
+  initialPagination,
 }: DataCorrectionEssay) {
-  const [viewQuestionsExams, setViewQuestionsExams] = useState<any>(null);
   const [giveAssesmentExams, setGiveAssesmentExams] = useState<
     Record<string, number>
   >({});
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
   const [dataAnswer, setDataAnswer] = useState<Record<string, string>>(
-    dataCorrections.exam_answer,
+    initialData.exam_answer,
   );
   const [dataQuestions, setDataQuestions] = useState(
-    dataCorrections.exam_questions,
+    initialData.exam_questions,
   );
 
-  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [page, setPage] = useState(initialPagination?.page ?? 1);
+  const [limit, setLimit] = useState(initialPagination?.limit ?? 10);
+  const [pagination, setPagination] = useState<Pagination | null>(
+    initialPagination,
+  );
+  // const from = (page - 1) * limit;
+  // const to = from + limit - 1;
+
+  // const totalPages = pagination?.total_pages ?? 0;
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -111,7 +121,7 @@ export default function CorrectionEssayClient({
 
         setDataAnswer(res.data.exam_answer);
         setDataQuestions(res.data.exam_questions);
-        setPagination(res.data.pagination);
+        setPagination(res.pagination);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
         console.error("Error fetching questions:", error);
@@ -140,6 +150,11 @@ export default function CorrectionEssayClient({
       [name]: Number(value),
     }));
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1);
+  }, [limit]);
 
   const finalResultAssesment = useMemo(() => {
     const values = Object.values(giveAssesmentExams);
@@ -214,11 +229,11 @@ export default function CorrectionEssayClient({
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="text-base font-semibold sm:text-lg">
-              {dataCorrections.name_exam}
+              {initialData.name_exam}
             </span>
 
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-              {dataAnswer.length || 0} Soal
+              {pagination?.total_items || 0} Soal
             </span>
           </div>
         </div>
@@ -235,115 +250,127 @@ export default function CorrectionEssayClient({
 
       {/* ================= QUESTIONS ================= */}
       <section className="space-y-5">
-        {dataQuestions.map((item, i: number) => (
-          <article
-            key={item.id}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-          >
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
-              <div className="flex items-start gap-3">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Pertanyaan {i + 1}
-                  </p>
-
-                  <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg">
-                    {item.questions}
-                  </h2>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:p-6">
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <label className="text-sm font-bold text-slate-700">
-                    Jawaban Siswa
-                  </label>
-
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-                    Jawaban
+        {dataQuestions.map((item, i: number) => {
+          const questionNumber = (page - 1) * limit + i + 1;
+          return (
+            <article
+              key={item.id}
+              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+            >
+              <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
+                <div className="flex items-start gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                    {String(questionNumber).padStart(2, "0")}
                   </span>
-                </div>
 
-                <Textarea
-                  disabled
-                  // value={viewQuestionsExams.answer_student?.[item.id] || ""}
-                  className="min-h-40 resize-none rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
-                />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      Pertanyaan {questionNumber}
+                    </p>
+
+                    <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg">
+                      {item.questions}
+                    </h2>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <div className="mb-3">
-                  <h3 className="text-sm font-bold text-slate-700">
-                    Beri Penilaian
-                  </h3>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    Pilih tingkat kebenaran jawaban siswa.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {assessmentOptions.map((assessment) => (
-                    <label
-                      key={`${item.id}-${assessment.value}`}
-                      className="group flex cursor-pointer flex-col items-center rounded-xl border border-slate-200 bg-white p-3 text-center transition-all hover:border-blue-200 hover:bg-blue-50"
-                    >
-                      <Input
-                        type="radio"
-                        name={item.id}
-                        value={assessment.value}
-                        onChange={(e) => handleChooseAssesment(e)}
-                        className="mb-3 size-5 cursor-pointer accent-blue-600"
-                      />
-
-                      <span className="text-sm font-bold text-slate-800">
-                        {assessment.short}
-                      </span>
-
-                      <span className="mt-1 text-xs leading-4 text-slate-400">
-                        {assessment.label}
-                      </span>
-
-                      <span className="mt-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600">
-                        {assessment.value}
-                      </span>
+              <div className="grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:p-6">
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="text-sm font-bold text-slate-700">
+                      Jawaban Siswa
                     </label>
-                  ))}
+
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                      Jawaban
+                    </span>
+                  </div>
+
+                  <Textarea
+                    disabled
+                    value={dataAnswer[item.id] || ""}
+                    className="min-h-40 resize-none rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+                  />
                 </div>
 
-                <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
-                    Keterangan Penilaian
-                  </p>
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold text-slate-700">
+                      Beri Penilaian
+                    </h3>
 
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-amber-800">
-                    <div>
-                      <span className="font-bold">100</span> — Sangat Benar
-                    </div>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Pilih tingkat kebenaran jawaban siswa.
+                    </p>
+                  </div>
 
-                    <div>
-                      <span className="font-bold">75</span> — Benar
-                    </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {assessmentOptions.map((assessment) => (
+                      <label
+                        key={`${item.id}-${assessment.value}`}
+                        className="group flex cursor-pointer flex-col items-center rounded-xl border border-slate-200 bg-white p-3 text-center transition-all hover:border-blue-200 hover:bg-blue-50"
+                      >
+                        <Input
+                          type="radio"
+                          name={item.id}
+                          value={assessment.value}
+                          onChange={(e) => handleChooseAssesment(e)}
+                          className="mb-3 size-5 cursor-pointer accent-blue-600"
+                        />
 
-                    <div>
-                      <span className="font-bold">50</span> — Setengah Benar
-                    </div>
+                        <span className="text-sm font-bold text-slate-800">
+                          {assessment.short}
+                        </span>
 
-                    <div>
-                      <span className="font-bold">0</span> — Salah
+                        <span className="mt-1 text-xs leading-4 text-slate-400">
+                          {assessment.label}
+                        </span>
+
+                        <span className="mt-2 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600">
+                          {assessment.value}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                      Keterangan Penilaian
+                    </p>
+
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-amber-800">
+                      <div>
+                        <span className="font-bold">100</span> — Sangat Benar
+                      </div>
+
+                      <div>
+                        <span className="font-bold">75</span> — Benar
+                      </div>
+
+                      <div>
+                        <span className="font-bold">50</span> — Setengah Benar
+                      </div>
+
+                      <div>
+                        <span className="font-bold">0</span> — Salah
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
+
+        {pagination && pagination.total_pages > 1 && (
+          <PaginationUi
+            currentPage={page}
+            totalPage={pagination.total_pages}
+            onPageChange={setPage}
+            isLoading={loading}
+          />
+        )}
       </section>
 
       {/* ================= ACTION ================= */}
