@@ -89,44 +89,6 @@ export default function ProfileTeacherClient({
     };
   }, [page]);
 
-  //   async function handleEditProfileTeacher(
-  //     event: React.FormEvent<HTMLFormElement>,
-  //   ) {
-  //     event.preventDefault();
-  //     const fieldNames = [
-  //       "fullName",
-  //       "pengajarMapel",
-  //       "noTlp",
-  //       "email",
-  //       "password",
-  //     ];
-  //     const payloadString = fieldNames.map(
-  //       (id: string) => event.currentTarget[id].value || "",
-  //     );
-  //     const payload = fieldNames.reduce((acc: any, key: string, i: number) => {
-  //       const val = payloadString[i];
-  //       if (val !== "") {
-  //         acc[key] = val;
-  //       }
-  //       return acc;
-  //     }, {});
-
-  //     // const { error } = await supabase
-  //     //   .from("account_teacher")
-  //     //   .update(payload)
-  //     //   .eq("id_teacher", getidTeacher);
-
-  //     // if (error) {
-  //     //   toast("Gagal ❌", {
-  //     //     description: "Edit Profil Gagal",
-  //     //   });
-  //     // } else {
-  //     //   toast("Berhasil ✅", {
-  //     //     description: "Edit Profil Berhasil Di Update",
-  //     //   });
-  //     // }
-  //   }
-
   function resultNilaiRataRata(hasil_ujian: (string | null)[]) {
     const hasilUjianValid = hasil_ujian.filter(
       (fil): fil is string => fil !== null,
@@ -175,6 +137,44 @@ export default function ProfileTeacherClient({
     return nilaiRataRata;
   }
 
+  //   async function handleEditProfileTeacher(
+  //     event: React.FormEvent<HTMLFormElement>,
+  //   ) {
+  //     event.preventDefault();
+  //     const fieldNames = [
+  //       "fullName",
+  //       "pengajarMapel",
+  //       "noTlp",
+  //       "email",
+  //       "password",
+  //     ];
+  //     const payloadString = fieldNames.map(
+  //       (id: string) => event.currentTarget[id].value || "",
+  //     );
+  //     const payload = fieldNames.reduce((acc: any, key: string, i: number) => {
+  //       const val = payloadString[i];
+  //       if (val !== "") {
+  //         acc[key] = val;
+  //       }
+  //       return acc;
+  //     }, {});
+
+  //     // const { error } = await supabase
+  //     //   .from("account_teacher")
+  //     //   .update(payload)
+  //     //   .eq("id_teacher", getidTeacher);
+
+  //     // if (error) {
+  //     //   toast("Gagal ❌", {
+  //     //     description: "Edit Profil Gagal",
+  //     //   });
+  //     // } else {
+  //     //   toast("Berhasil ✅", {
+  //     //     description: "Edit Profil Berhasil Di Update",
+  //     //   });
+  //     // }
+  //   }
+
   return (
     <>
       <div className="flex justify-between items-center mb-3">
@@ -205,7 +205,7 @@ export default function ProfileTeacherClient({
           </div>
 
           <Dialog>
-            <DialogTrigger className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
+            <DialogTrigger className="rounded-md text-sm border border-white/20 bg-white px-5 py-2 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
               Edit Profil
             </DialogTrigger>
 
@@ -308,7 +308,7 @@ export default function ProfileTeacherClient({
               </div>
 
               {/* Total Exam */}
-              <div className="ml-13 w-fit rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 sm:ml-0">
+              <div className="ml-13 w-fit rounded-md bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 sm:ml-0">
                 {totalData} Ujian
               </div>
             </div>
@@ -323,23 +323,23 @@ export default function ProfileTeacherClient({
                     No
                   </TableHead>
 
-                  <TableHead className="min-w-[220px] font-semibold text-slate-600">
+                  <TableHead className="min-w-55 font-semibold text-slate-600">
                     Nama Ujian
                   </TableHead>
 
-                  <TableHead className="min-w-[130px] text-center font-semibold text-slate-600">
+                  <TableHead className="min-w-32.5 text-center font-semibold text-slate-600">
                     Jumlah Siswa
                   </TableHead>
 
-                  <TableHead className="min-w-[150px] text-center font-semibold text-slate-600">
+                  <TableHead className="min-w-37.5 text-center font-semibold text-slate-600">
                     Nilai Rata-Rata
                   </TableHead>
 
-                  <TableHead className="min-w-[120px] text-center font-semibold text-slate-600">
+                  <TableHead className="min-w-30 text-center font-semibold text-slate-600">
                     Kelas
                   </TableHead>
 
-                  <TableHead className="min-w-[150px] text-center font-semibold text-slate-600">
+                  <TableHead className="min-w-37.5 text-center font-semibold text-slate-600">
                     Tanggal
                   </TableHead>
                 </TableRow>
