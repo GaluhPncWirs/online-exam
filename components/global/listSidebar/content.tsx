@@ -32,7 +32,7 @@ export default function ListSidebar() {
           dataUser?.role.includes("student")
             ? "/Student/Dashboard"
             : dataUser?.role.includes("teacher")
-              ? "/Teacher/dashboard"
+              ? "/Teacher/Dashboard"
               : "/"
         }
       >
@@ -54,11 +54,11 @@ export default function ListSidebar() {
               dataUser?.role.includes("student")
                 ? "/Student/Dashboard"
                 : dataUser?.role.includes("teacher")
-                  ? "/Teacher/dashboard"
+                  ? "/Teacher/Dashboard"
                   : "/"
             }
             className={`group flex items-center gap-3 p-1.5 rounded-xl text-sm font-semibold transition-all ${
-              pathName.includes("Dashboard") || pathName.includes("dashboard")
+              pathName.includes("Dashboard")
                 ? "bg-blue-50 text-blue-600"
                 : "text-slate-600 hover:bg-slate-50 hover:text-blue-600"
             }`}
