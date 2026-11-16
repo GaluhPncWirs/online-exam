@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PAGE_SIZE } from "@/src/lib/constants";
-import { ExamQuestion } from "@/src/types/dataExam";
 import {
   DataCorrectionEssayType,
   Pagination,
@@ -75,10 +73,6 @@ export default function CorrectionEssayClient({
   const [pagination, setPagination] = useState<Pagination | null>(
     initialPagination,
   );
-  // const from = (page - 1) * limit;
-  // const to = from + limit - 1;
-
-  // const totalPages = pagination?.total_pages ?? 0;
 
   const [loading, setLoading] = useState(false);
 
@@ -170,49 +164,47 @@ export default function CorrectionEssayClient({
     return Math.round((totalScore / maxScore) * 100);
   }, [giveAssesmentExams]);
 
-  //   async function giveAssesment() {
-  //     if (!idExam || !idStudent) {
-  //       toast("Gagal ❌", {
-  //         description: "Data ujian atau siswa tidak ditemukan.",
-  //       });
+  async function giveAssesment() {
+    const scores = Object.values(giveAssesmentExams);
 
-  //       return;
-  //     }
+    if (scores.length === 0) {
+      toast("Gagal ❌", {
+        description: "Belum ada nilai yang diberikan.",
+      });
 
-  //     const scores = Object.values(giveAssesmentExams);
+      return;
+    }
 
-  //     if (scores.length === 0) {
-  //       toast("Gagal ❌", {
-  //         description: "Belum ada nilai yang diberikan.",
-  //       });
+    try {
+      const req = await fetch("/api/teacher/PATCH/giveAsesment", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resultAsesment: scores,
+          idSubject,
+          idStudent,
+        }),
+      });
 
-  //       return;
-  //     }
+      const res = await req.json();
 
-  //     // const { error } = await supabase
-  //     //   .from("history-exam-student")
-  //     //   .update({
-  //     //     hasil_ujian: finalResultAssesment,
-  //     //   })
-  //     //   .eq("exam_id", Number(idExam))
-  //     //   .eq("student_id", idStudent);
+      if (!res.success) {
+        toast.error("Error", {
+          description: res.message,
+        });
 
-  //     // if (error) {
-  //     //   console.error("Assessment error:", error);
+        return;
+      }
 
-  //     //   toast("Gagal ❌", {
-  //     //     description: "Gagal menilai soal.",
-  //     //   });
-
-  //     //   return;
-  //     // }
-
-  //     toast("Berhasil ✅", {
-  //       description: `Nilai akhir: ${finalResultAssesment}/100`,
-  //     });
-
-  //     setOpenConfirmDialog(false);
-  //   }
+      toast.success("Berhasil", {
+        description: res.message,
+      });
+    } catch (error) {
+      console.error("Error fetch API", error);
+    } finally {
+      setOpenConfirmDialog(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -389,10 +381,10 @@ export default function CorrectionEssayClient({
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="space-x-3">
             <Link
               href="/Teacher/Dashboard"
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex h-11 items-center justify-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               Kembali
             </Link>
@@ -402,7 +394,7 @@ export default function CorrectionEssayClient({
               onOpenChange={setOpenConfirmDialog}
             >
               <DialogTrigger
-                className="h-11 rounded-xl bg-blue-600 px-6 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700"
+                className="h-11 rounded-md bg-blue-500 text-slate-100 px-6 hover:bg-blue-500/80"
                 disabled={Object.keys(giveAssesmentExams).length === 0}
               >
                 Simpan Penilaian
@@ -422,13 +414,11 @@ export default function CorrectionEssayClient({
                 </DialogHeader>
 
                 <DialogFooter className="space-x-2">
-                  <DialogClose onClick={() => setOpenConfirmDialog(false)}>
-                    Periksa Lagi
-                  </DialogClose>
+                  <DialogClose>Periksa Lagi</DialogClose>
 
                   <Button
                     type="button"
-                    // onClick={giveAssesment}
+                    onClick={giveAssesment}
                     className="rounded-xl bg-blue-600 hover:bg-blue-700"
                   >
                     Ya, Simpan
