@@ -31,9 +31,11 @@ import ListSidebar from "@/components/global/listSidebar/content";
 import { History } from "lucide-react";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { DataTeacher } from "@/src/types/dataUser";
-import { ManageExamItem } from "@/src/types/teacher/dataExam";
+import { TeacherExamHistoryItem } from "@/src/types/teacher/dataExam";
+import { getTeacherExamHistoryAction } from "@/src/actions/dataExams";
+import PaginationUi from "@/components/global/pagination/content";
 import { PAGE_SIZE } from "@/src/lib/constants";
-import { getManageExamsAction } from "@/src/actions/dataExams";
+import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 
 type DataProfileTeacher = {
   dataTeacher: DataTeacher;
@@ -42,113 +44,50 @@ type DataProfileTeacher = {
 export default function ProfileTeacherClient({
   dataTeacher,
 }: DataProfileTeacher) {
-  const [dataHistoryExams, setDataHistoryExams] = useState<ManageExamItem[]>(
-    [],
-  );
+  const [dataHistoryExams, setDataHistoryExams] = useState<
+    TeacherExamHistoryItem[]
+  >([]);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
   const [totalData, setTotalData] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function getDataManageExams() {
+    async function getTeacherExamHistory() {
       setIsLoading(true);
       try {
-        const result = await getManageExamsAction(page);
+        const result = await getTeacherExamHistoryAction(page);
         if (!isMounted) return;
 
         if (!result.success) {
-          console.error(result.message);
+          toast("Gagal ❌", {
+            description: result.message,
+          });
           return;
         }
 
-        setDataHistoryExams(result.data as ManageExamItem[]);
+        setDataHistoryExams(result.data);
         setTotalData(result.total);
       } catch (error) {
-        console.error("Gagal mengambil data manage exams:", error);
+        console.error("Gagal mengambil riwayat ujian:", error);
+        if (isMounted) {
+          toast("Gagal ❌", {
+            description: "Riwayat ujian gagal dimuat",
+          });
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
     }
 
-    getDataManageExams();
+    getTeacherExamHistory();
 
     return () => {
       isMounted = false;
     };
   }, [page]);
-
-  console.log(dataHistoryExams);
-
-  // useEffect(() => {
-  //   if (!getidTeacher) return;
-  //   async function historyExams() {
-  //     const [
-  //       { data: dataManageExams, error: errorDataManageExams },
-  //       { data: dataHistoryExams, error: errorDataHistoryExams },
-  //     ]: any = await Promise.all([
-  //       supabase
-  //         .from("managed_exams")
-  //         .select("kelas,dibuat_tgl,id_Teacher,idExams")
-  //         .eq("id_Teacher", getidTeacher),
-  //       supabase
-  //         .from("history-exam-student")
-  //         .select(
-  //           "exam_id,hasil_ujian,student_id,kelas,exams(nama_ujian,tipeUjian,idTeacher)",
-  //         )
-  //         .eq("exams.idTeacher", getidTeacher),
-  //     ]);
-
-  //     if (errorDataManageExams || errorDataHistoryExams) {
-  //       toast("Gagal ❌", {
-  //         description: "Data Error Ditampilkan",
-  //       });
-  //     }
-
-  //     const fillterNotNull = dataHistoryExams.filter(
-  //       (data: any) => data.exams !== null,
-  //     );
-
-  //     const result = fillterNotNull?.reduce((acc: any, cur: any) => {
-  //       const found = acc.find(
-  //         (item: any) =>
-  //           item.kelas === cur.kelas && item.exam_id === cur.exam_id,
-  //       );
-  //       if (!found) {
-  //         acc.push({
-  //           kelas: cur.kelas,
-  //           exam_id: cur.exam_id,
-  //           nama_ujian: cur.exams.nama_ujian,
-  //           tipeUjian: cur.exams.tipeUjian,
-  //           hasil_ujian: [cur.hasil_ujian],
-  //           student_id: [cur.student_id],
-  //         });
-  //       } else {
-  //         found.hasil_ujian.push(cur.hasil_ujian);
-  //         found.student_id.push(cur.student_id);
-  //       }
-  //       return acc;
-  //     }, []);
-
-  //     const mergedData = result?.map(
-  //       (item: { kelas: string; exam_id: number }) => {
-  //         const findDetail = dataManageExams.find(
-  //           (f: { kelas: string; idExams: number }) =>
-  //             f.kelas === item.kelas && f.idExams === item.exam_id,
-  //         );
-  //         return {
-  //           ...item,
-  //           ...findDetail,
-  //         };
-  //       },
-  //     );
-
-  //     setGetHistoryExams(mergedData);
-  //   }
-  //   historyExams();
-  // }, [getidTeacher]);
 
   //   async function handleEditProfileTeacher(
   //     event: React.FormEvent<HTMLFormElement>,
@@ -188,52 +127,53 @@ export default function ProfileTeacherClient({
   //     // }
   //   }
 
-  //   function resultNilaiRataRata(data: { hasil_ujian: string[] }) {
-  //     const hasilUjian = data.hasil_ujian;
+  function resultNilaiRataRata(hasil_ujian: (string | null)[]) {
+    const hasilUjianValid = hasil_ujian.filter(
+      (fil): fil is string => fil !== null,
+    );
+    const nilaiUjian = hasilUjianValid
+      .filter((fil) => fil !== "pending" && fil !== "telat")
+      .map(Number);
+    const nilaiPending = hasilUjianValid.filter((fil) => fil === "pending");
+    const nilaiTelat = hasilUjianValid.filter((fil) => fil === "telat");
 
-  //     const nilaiUjian = hasilUjian
-  //       .filter((fil: any) => fil !== "pending" && fil !== "telat")
-  //       .map(Number);
-  //     const nilaiPending = hasilUjian.filter((fil: string) => fil === "pending");
-  //     const nilaiTelat = hasilUjian.filter((fil: string) => fil === "telat");
+    const nilaiYangPendingAtauTelat =
+      nilaiPending.length > 0 || nilaiTelat.length > 0;
 
-  //     const nilaiYangPendingAtauTelat =
-  //       nilaiPending.length > 0 || nilaiTelat.length > 0;
+    const nilaiRataRata =
+      nilaiUjian.length > 0
+        ? Math.round(
+            nilaiUjian.reduce((acc: number, cur: number) => acc + cur, 0) /
+              nilaiUjian.length,
+          )
+        : 0;
 
-  //     const nilaiRataRata =
-  //       nilaiUjian.length > 0
-  //         ? Math.round(
-  //             nilaiUjian.reduce((acc: number, cur: number) => acc + cur, 0) /
-  //               nilaiUjian.length,
-  //           )
-  //         : 0;
+    const getMessage = () => {
+      if (nilaiPending.length > 0 && nilaiTelat.length > 0) {
+        return `Ada ${nilaiTelat.length} siswa telat dan ${nilaiPending.length} belum dinilai`;
+      }
 
-  //     function getMessage() {
-  //       if (nilaiPending.length > 0 && nilaiTelat.length > 0) {
-  //         return `Ada ${nilaiTelat.length} siswa telat dan ${nilaiPending.length} belum dinilai`;
-  //       }
+      if (nilaiTelat.length > 0) {
+        return `Ada ${nilaiTelat.length} Siswa Yang Telat Mengerjakan`;
+      }
 
-  //       if (nilaiTelat.length > 0) {
-  //         return `Ada ${nilaiTelat.length} Siswa Yang Telat Mengerjakan`;
-  //       }
+      return `Ada ${nilaiPending.length} siswa yang belum dinilai`;
+    };
 
-  //       return `Ada ${nilaiPending.length} siswa yang belum dinilai`;
-  //     }
-
-  //     if (nilaiYangPendingAtauTelat) {
-  //       return (
-  //         <Popover>
-  //           <PopoverTrigger>
-  //             <h1>{nilaiRataRata}</h1>
-  //           </PopoverTrigger>
-  //           <PopoverContent className="w-fit p-2">
-  //             <h1 className="font-semibold text-xs">{getMessage()}</h1>
-  //           </PopoverContent>
-  //         </Popover>
-  //       );
-  //     }
-  //     return nilaiRataRata;
-  //   }
+    if (nilaiYangPendingAtauTelat) {
+      return (
+        <Popover>
+          <PopoverTrigger>
+            <p>{nilaiRataRata}</p>
+          </PopoverTrigger>
+          <PopoverContent className="w-fit p-2">
+            <p className="font-semibold text-xs">{getMessage()}</p>
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    return nilaiRataRata;
+  }
 
   return (
     <>
@@ -265,10 +205,8 @@ export default function ProfileTeacherClient({
           </div>
 
           <Dialog>
-            <DialogTrigger>
-              <Button className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
-                Edit Profil
-              </Button>
+            <DialogTrigger className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
+              Edit Profil
             </DialogTrigger>
 
             <DialogContent className="rounded-2xl sm:max-w-lg">
@@ -277,9 +215,7 @@ export default function ProfileTeacherClient({
                 // onSubmit={(event) => handleEditProfileTeacher(event)}
               >
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold">
-                    Edit Profil
-                  </DialogTitle>
+                  <DialogTitle>Edit Profil</DialogTitle>
 
                   <DialogDescription>
                     Perbarui informasi akun yang ingin Anda ubah.
@@ -332,12 +268,8 @@ export default function ProfileTeacherClient({
                   Kosongkan field yang tidak ingin diubah.
                 </p>
 
-                <DialogFooter className="gap-2">
-                  <DialogClose>
-                    <Button variant="outline" className="rounded-xl">
-                      Batal
-                    </Button>
-                  </DialogClose>
+                <DialogFooter className="space-x-2">
+                  <DialogClose>Batal</DialogClose>
 
                   <Button
                     type="submit"
@@ -377,7 +309,7 @@ export default function ProfileTeacherClient({
 
               {/* Total Exam */}
               <div className="ml-13 w-fit rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 sm:ml-0">
-                {dataHistoryExams.length || 0} Ujian
+                {totalData} Ujian
               </div>
             </div>
           </div>
@@ -417,12 +349,15 @@ export default function ProfileTeacherClient({
                 {dataHistoryExams.length > 0 ? (
                   dataHistoryExams.map((item, i: number) => (
                     <TableRow
-                      key={item.id_subject}
+                      key={`${item.class_id}-${item.id_subject}`}
                       className="transition-colors hover:bg-slate-50"
                     >
                       {/* No */}
                       <TableCell className="font-semibold text-slate-400">
-                        {String(i + 1).padStart(2, "0")}
+                        {String((page - 1) * PAGE_SIZE + i + 1).padStart(
+                          2,
+                          "0",
+                        )}
                       </TableCell>
 
                       {/* Exam */}
@@ -441,14 +376,14 @@ export default function ProfileTeacherClient({
                       {/* Student Count */}
                       <TableCell className="text-center">
                         <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600">
-                          {/* {item.?.length || 0}  */}0 Siswa
+                          {item.student_id.length} Siswa
                         </span>
                       </TableCell>
 
                       {/* Average Score */}
                       <TableCell className="text-center">
                         <span className="inline-flex min-w-16 items-center justify-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-600">
-                          {/* {resultNilaiRataRata(item.hasil_ujian) || 0} */} 0
+                          {resultNilaiRataRata(item.hasil_ujian) || 0}
                         </span>
                       </TableCell>
 
@@ -461,7 +396,9 @@ export default function ProfileTeacherClient({
 
                       {/* Date */}
                       <TableCell className="text-center text-sm font-medium text-slate-500">
-                        {/* {item.exam_date || "-"} */} 0
+                        {item.exam_date
+                          ? formatDateToYYYYMMDD(item.exam_date)
+                          : "-"}
                       </TableCell>
                     </TableRow>
                   ))
@@ -484,6 +421,15 @@ export default function ProfileTeacherClient({
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="border-t border-slate-200 px-5 py-3 sm:px-7">
+            <PaginationUi
+              currentPage={page}
+              totalPage={totalPages}
+              onPageChange={setPage}
+              isLoading={isLoading}
+            />
           </div>
         </section>
       </div>

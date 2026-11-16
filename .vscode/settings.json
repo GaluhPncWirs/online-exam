@@ -121,7 +121,8 @@
         "selesai mengerjakan halaman untuk koreksi ujian type essay",
         "memperbaiki masalah routing kembali ke dashboard yang salah penamaan url",
         "membuat fungsi untuk proses penyimpanan nilai yang telah di koreksi dan juga membuat api nya",
-        "selesai mengerjakan halaman koreksi soal ujian type essay, dengan fungsi yang sudah bisa digunakan"
+        "selesai mengerjakan halaman koreksi soal ujian type essay, dengan fungsi yang sudah bisa digunakan",
+        "sedang memperbaiki bagian halaman profile teacher"
     ],
     "sqltools.connections": [
         {

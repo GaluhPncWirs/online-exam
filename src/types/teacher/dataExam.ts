@@ -27,6 +27,23 @@ export type ManageExamItem = {
   is_manage_exam: boolean;
 };
 
+export type TeacherExamHistoryItem = {
+  class: string;
+  class_id: number;
+  id_subject: string;
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
+  hasil_ujian: (string | null)[];
+  student_id: string[];
+  id_manage_exam?: string;
+  id_teacher?: string;
+  created_at?: Date;
+  exam_date?: Date;
+  exam_start_at?: string;
+  exam_end_at?: string;
+  is_manage_exam?: boolean;
+};
+
 export type StatisticStudent = {
   jumlahSiswa: number;
   averageValueExam: number;

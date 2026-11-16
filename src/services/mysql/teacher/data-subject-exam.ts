@@ -1103,3 +1103,238 @@ export async function handleSaveAsesmentExam({
     };
   }
 }
+
+// halaman profile guru
+type TeacherHistoryExamRow = RowDataPacket & {
+  class: string;
+  class_id: number;
+  id_subject: string;
+  name_exam: string;
+  type_exam: "PG" | "ESSAY";
+  id_student: string;
+  result_exam: string | null;
+};
+
+type TeacherHistoryExamPageRow = RowDataPacket & {
+  class_id: number;
+  id_subject: string;
+};
+
+type TeacherManagedExamRow = RowDataPacket & {
+  class: string;
+  class_id: number;
+  id_subject: string;
+  id_manage_exam: string;
+  id_teacher: string;
+  created_at: Date;
+  exam_date: Date;
+  exam_start_at: string;
+  exam_end_at: string;
+  is_manage_exam: boolean;
+};
+
+export async function handleGetTeacherExamHistory(
+  id_teacher: string,
+  page: number,
+  limit: number,
+) {
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit) || 10));
+  const offset = (safePage - 1) * safeLimit;
+
+  const queryCount = `
+    SELECT COUNT(*) AS total
+    FROM (
+      SELECT h.class_id, h.id_subject
+      FROM history_exams AS h
+      INNER JOIN subject_exam AS se
+        ON se.id_subject = h.id_subject
+      WHERE se.id_teacher = ?
+      GROUP BY h.class_id, h.id_subject
+    ) AS history_groups
+  `;
+
+  const queryHistoryExamPage = `
+    SELECT
+      h.class_id,
+      h.id_subject,
+      COALESCE(MAX(me.created_at), MAX(h.created_at)) AS sort_at
+    FROM history_exams AS h
+    INNER JOIN subject_exam AS se
+      ON se.id_subject = h.id_subject
+    LEFT JOIN manage_exams AS me
+      ON me.class_id = h.class_id
+      AND me.id_subject = h.id_subject
+      AND me.id_teacher = se.id_teacher
+    WHERE se.id_teacher = ?
+    GROUP BY h.class_id, h.id_subject
+    ORDER BY sort_at DESC, h.class_id ASC, h.id_subject ASC
+    LIMIT ? OFFSET ?
+  `;
+
+  try {
+    const [countRows, pagedHistoryGroups] = await Promise.all([
+      queryRows<CountRow[]>(queryCount, [id_teacher]),
+      queryRows<TeacherHistoryExamPageRow[]>(queryHistoryExamPage, [
+        id_teacher,
+        safeLimit,
+        offset,
+      ]),
+    ]);
+    const total = Number(countRows[0]?.total ?? 0);
+
+    if (!pagedHistoryGroups.length) {
+      return {
+        success: true,
+        data: [],
+        total,
+        pagination: {
+          page: safePage,
+          limit: safeLimit,
+          total_items: total,
+          total_pages: Math.ceil(total / safeLimit),
+          has_next: false,
+          has_prev: safePage > 1,
+        },
+      };
+    }
+
+    const historyPairConditions = pagedHistoryGroups
+      .map(() => "(h.class_id = ? AND h.id_subject = ?)")
+      .join(" OR ");
+    const managedExamPairConditions = pagedHistoryGroups
+      .map(() => "(me.class_id = ? AND me.id_subject = ?)")
+      .join(" OR ");
+    const pairParams = pagedHistoryGroups.flatMap((group) => [
+      group.class_id,
+      group.id_subject,
+    ]);
+
+    const queryHistoryExams = `
+      SELECT
+        c.name AS class,
+        h.class_id,
+        h.id_subject,
+        se.name_exam,
+        se.type_exam,
+        h.id_student,
+        h.result_exam
+      FROM history_exams AS h
+      INNER JOIN subject_exam AS se
+        ON se.id_subject = h.id_subject
+      INNER JOIN classes AS c
+        ON c.id = h.class_id
+      WHERE se.id_teacher = ?
+        AND (${historyPairConditions})
+    `;
+
+    const queryManagedExams = `
+      SELECT
+        c.name AS class,
+        me.class_id,
+        me.id_subject,
+        me.id_manage_exam,
+        me.id_teacher,
+        me.created_at,
+        me.exam_date,
+        me.exam_start_at,
+        me.exam_end_at,
+        me.is_manage_exam
+      FROM manage_exams AS me
+      INNER JOIN classes AS c
+        ON c.id = me.class_id
+      WHERE me.id_teacher = ?
+        AND (${managedExamPairConditions})
+      ORDER BY me.created_at DESC
+    `;
+
+    const [historyRows, managedExamRows] = await Promise.all([
+      queryRows<TeacherHistoryExamRow[]>(queryHistoryExams, [
+        id_teacher,
+        ...pairParams,
+      ]),
+      queryRows<TeacherManagedExamRow[]>(queryManagedExams, [
+        id_teacher,
+        ...pairParams,
+      ]),
+    ]);
+
+    const managedExamsByClassAndSubject = new Map<
+      string,
+      TeacherManagedExamRow
+    >();
+    managedExamRows.forEach((exam) => {
+      const key = JSON.stringify([exam.class_id, exam.id_subject]);
+      if (!managedExamsByClassAndSubject.has(key)) {
+        managedExamsByClassAndSubject.set(key, exam);
+      }
+    });
+    const historyByClassAndSubject = new Map<
+      string,
+      TeacherHistoryExamRow & {
+        hasil_ujian: (string | null)[];
+        student_id: string[];
+      }
+    >();
+
+    historyRows.forEach((history) => {
+      const key = JSON.stringify([history.class_id, history.id_subject]);
+      const existing = historyByClassAndSubject.get(key);
+
+      if (existing) {
+        existing.hasil_ujian.push(history.result_exam);
+        existing.student_id.push(history.id_student);
+        return;
+      }
+
+      historyByClassAndSubject.set(key, {
+        ...history,
+        hasil_ujian: [history.result_exam],
+        student_id: [history.id_student],
+      });
+    });
+
+    const data = pagedHistoryGroups.flatMap((group) => {
+      const key = JSON.stringify([group.class_id, group.id_subject]);
+      const history = historyByClassAndSubject.get(key);
+      if (!history) return [];
+
+      const managedExam = managedExamsByClassAndSubject.get(key);
+      return [
+        {
+          class: history.class,
+          class_id: history.class_id,
+          id_subject: history.id_subject,
+          name_exam: history.name_exam,
+          type_exam: history.type_exam,
+          hasil_ujian: history.hasil_ujian,
+          student_id: history.student_id,
+          ...(managedExam ?? {}),
+        },
+      ];
+    });
+    const totalPages = Math.ceil(total / safeLimit);
+
+    return {
+      success: true,
+      data,
+      total,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total_items: total,
+        total_pages: totalPages,
+        has_next: safePage < totalPages,
+        has_prev: safePage > 1,
+      },
+    };
+  } catch (error) {
+    console.error("Gagal mengambil riwayat ujian guru:", error);
+    return {
+      success: false,
+      message: "Gagal mengambil riwayat ujian",
+      data: [],
+      total: 0,
+    };
+  }
+}

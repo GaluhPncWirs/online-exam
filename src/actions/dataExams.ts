@@ -4,7 +4,37 @@ import { PAGE_SIZE } from "../lib/constants";
 import {
   handleGetDataExam,
   handleGetDataManageExams,
+  handleGetTeacherExamHistory,
 } from "../services/mysql/teacher/data-subject-exam";
+
+export async function getTeacherExamHistoryAction(page: number) {
+  const session = await getAuthenticatedUser();
+
+  if (!session.success) {
+    return {
+      success: false,
+      message: session.message,
+      data: [],
+      total: 0,
+    };
+  }
+
+  if (session.data.role !== "teacher") {
+    return {
+      success: false,
+      message: "Khusus role guru",
+      data: [],
+      total: 0,
+    };
+  }
+
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  return handleGetTeacherExamHistory(
+    session.data.id_teacher,
+    safePage,
+    PAGE_SIZE,
+  );
+}
 
 export async function getManageExamsAction(page: number) {
   const session = await getAuthenticatedUser();
