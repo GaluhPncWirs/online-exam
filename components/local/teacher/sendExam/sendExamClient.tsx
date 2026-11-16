@@ -40,7 +40,7 @@ import {
   isScheduleConfigured,
   sendExamToStudentSchema,
   SendExamToStudentSchemaType,
-} from "@/src/schemas/manageDataExam";
+} from "@/src/schemas/teacher/manageDataExam";
 import { DataTeacher } from "@/src/types/dataUser";
 import { DataPureExams, ManageExamItem } from "@/src/types/teacher/dataExam";
 import { zodResolver } from "@hookform/resolvers/zod";

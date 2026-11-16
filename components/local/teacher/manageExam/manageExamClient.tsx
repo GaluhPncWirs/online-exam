@@ -32,14 +32,14 @@ import { ClipboardList, PenLine, Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ExamQuestionType,
-  SchemaExamQuestion,
-} from "@/src/schemas/addDataExam";
 import { Choice, ExamQuestion } from "@/src/types/dataExam";
 import { toast } from "sonner";
 import PaginationUi from "@/components/global/pagination/content";
 import { Pagination } from "@/src/types/teacher/dataExam";
+import {
+  ExamQuestionType,
+  SchemaExamQuestion,
+} from "@/src/schemas/teacher/addDataExam";
 
 type DataExamQuestion = {
   examQuestion: ExamQuestion;

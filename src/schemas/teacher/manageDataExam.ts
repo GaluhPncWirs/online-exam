@@ -1,5 +1,5 @@
+import { todayWIB } from "@/src/lib/utils/convertDate";
 import { z } from "zod";
-import { todayWIB } from "../lib/utils/convertDate";
 
 const WIB_OFFSET = "+07:00";
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/; // HH:mm

@@ -1,5 +1,5 @@
-import ProfileSkeletonTeacher from "@/components/local/teacher/profile/teacherProfile/skeleton";
-import ProfileTeacherClient from "@/components/local/teacher/profile/teacherProfile/teacherProfileClient";
+import ProfileSkeletonTeacher from "@/components/local/teacher/teacherProfile/skeleton";
+import ProfileTeacherClient from "@/components/local/teacher/teacherProfile/teacherProfileClient";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { Suspense } from "react";

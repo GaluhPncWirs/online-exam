@@ -124,7 +124,8 @@
         "selesai mengerjakan halaman koreksi soal ujian type essay, dengan fungsi yang sudah bisa digunakan",
         "sedang memperbaiki bagian halaman profile teacher",
         "selesai mengerjakan halaman profile guru dengan menampilkan data riwayat ujian dan tidak error, nex tinggal buat untuk proses edit profil data guru",
-        "selesai membuat fungsi untuk edit data profil guru dan juga apinya"
+        "selesai membuat fungsi untuk edit data profil guru dan juga apinya",
+        "selesai untuk refaktor code di halaman profile guru"
     ],
     "sqltools.connections": [
         {

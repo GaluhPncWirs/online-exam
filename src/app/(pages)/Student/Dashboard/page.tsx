@@ -3,7 +3,6 @@ import DashboardSkeletonStudent from "@/components/local/student/dashboard/skele
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
-
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { Suspense } from "react";
 

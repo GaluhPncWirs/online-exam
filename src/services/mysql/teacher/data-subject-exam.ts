@@ -1,13 +1,9 @@
 "server-only";
 import { pool } from "@/src/lib/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { ExamSchema, SchemaExamQuestion } from "@/src/schemas/addDataExam";
 import { getMysqlErrorCode } from "@/src/lib/utils/errorMysql";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
-import {
-  ExamScheduleListParsed,
-  examScheduleListSchema,
-} from "@/src/schemas/manageDataExam";
+
 import {
   findConflict,
   lockClasses,
@@ -16,6 +12,14 @@ import {
 import { withTransaction } from "@/src/repositories/transaction";
 import { queryRows } from "@/src/lib/utils/queryPool";
 import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
+import {
+  ExamSchema,
+  SchemaExamQuestion,
+} from "@/src/schemas/teacher/addDataExam";
+import {
+  ExamScheduleListParsed,
+  examScheduleListSchema,
+} from "@/src/schemas/teacher/manageDataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
