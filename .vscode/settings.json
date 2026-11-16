@@ -123,7 +123,8 @@
         "membuat fungsi untuk proses penyimpanan nilai yang telah di koreksi dan juga membuat api nya",
         "selesai mengerjakan halaman koreksi soal ujian type essay, dengan fungsi yang sudah bisa digunakan",
         "sedang memperbaiki bagian halaman profile teacher",
-        "selesai mengerjakan halaman profile guru dengan menampilkan data riwayat ujian dan tidak error, nex tinggal buat untuk proses edit profil data guru"
+        "selesai mengerjakan halaman profile guru dengan menampilkan data riwayat ujian dan tidak error, nex tinggal buat untuk proses edit profil data guru",
+        "selesai membuat fungsi untuk edit data profil guru dan juga apinya"
     ],
     "sqltools.connections": [
         {

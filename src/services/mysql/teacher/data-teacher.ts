@@ -1,4 +1,5 @@
 import { pool } from "@/src/lib/db";
+import { InputUpdateDataTeacherSchema } from "@/src/schemas/teacher/updateProfileTeacher";
 
 type FieldInputUpdateDataTeacher = {
   idTeacher: string;
@@ -16,19 +17,28 @@ export async function handleEditProfileTeacher({
   const fields: string[] = [];
   const values: string[] = [];
 
-  if (fieldInput?.teachRole !== undefined) {
+  const parsed = InputUpdateDataTeacherSchema.safeParse(fieldInput);
+  if (!parsed.success) {
+    return {
+      success: false,
+      status: 400,
+      message: "Data yang diberikan tidak valid.",
+    };
+  }
+
+  if (parsed.data.teachRole !== undefined) {
     fields.push("teach_role = ?");
-    values.push(fieldInput.teachRole);
+    values.push(parsed.data.teachRole);
   }
 
-  if (fieldInput?.password !== undefined) {
+  if (parsed.data.password !== undefined) {
     fields.push("password = ?");
-    values.push(fieldInput.password);
+    values.push(parsed.data.password);
   }
 
-  if (fieldInput?.noTlp !== undefined) {
+  if (parsed.data.noTlp !== undefined) {
     fields.push("no_tlp = ?");
-    values.push(fieldInput.noTlp);
+    values.push(parsed.data.noTlp);
   }
 
   if (fields.length === 0) {

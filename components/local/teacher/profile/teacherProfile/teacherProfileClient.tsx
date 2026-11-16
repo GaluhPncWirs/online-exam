@@ -36,6 +36,12 @@ import { getTeacherExamHistoryAction } from "@/src/actions/dataExams";
 import PaginationUi from "@/components/global/pagination/content";
 import { PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
+import { useForm } from "react-hook-form";
+import {
+  InputUpdateDataTeacher,
+  InputUpdateDataTeacherSchema,
+} from "@/src/schemas/teacher/updateProfileTeacher";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type DataProfileTeacher = {
   dataTeacher: DataTeacher;
@@ -51,6 +57,19 @@ export default function ProfileTeacherClient({
   const [totalData, setTotalData] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const totalPages = Math.ceil(totalData / PAGE_SIZE);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<InputUpdateDataTeacher>({
+    resolver: zodResolver(InputUpdateDataTeacherSchema),
+    defaultValues: {
+      teachRole: "",
+      noTlp: "",
+      password: "",
+    },
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -137,43 +156,45 @@ export default function ProfileTeacherClient({
     return nilaiRataRata;
   }
 
-  //   async function handleEditProfileTeacher(
-  //     event: React.FormEvent<HTMLFormElement>,
-  //   ) {
-  //     event.preventDefault();
-  //     const fieldNames = [
-  //       "fullName",
-  //       "pengajarMapel",
-  //       "noTlp",
-  //       "email",
-  //       "password",
-  //     ];
-  //     const payloadString = fieldNames.map(
-  //       (id: string) => event.currentTarget[id].value || "",
-  //     );
-  //     const payload = fieldNames.reduce((acc: any, key: string, i: number) => {
-  //       const val = payloadString[i];
-  //       if (val !== "") {
-  //         acc[key] = val;
-  //       }
-  //       return acc;
-  //     }, {});
+  async function onSubmit(data: InputUpdateDataTeacher) {
+    const dataPayload = {
+      teachRole: data.teachRole,
+      password: data.password,
+      noTlp: data.noTlp,
+    };
 
-  //     // const { error } = await supabase
-  //     //   .from("account_teacher")
-  //     //   .update(payload)
-  //     //   .eq("id_teacher", getidTeacher);
+    const filteredPayload = Object.fromEntries(
+      Object.entries(dataPayload).filter(
+        ([_, value]) => value !== undefined && value !== "",
+      ),
+    );
 
-  //     // if (error) {
-  //     //   toast("Gagal ❌", {
-  //     //     description: "Edit Profil Gagal",
-  //     //   });
-  //     // } else {
-  //     //   toast("Berhasil ✅", {
-  //     //     description: "Edit Profil Berhasil Di Update",
-  //     //   });
-  //     // }
-  //   }
+    try {
+      const request = await fetch("/api/teacher/PATCH/editProfileTeacher", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(filteredPayload),
+      });
+
+      const response = await request.json();
+
+      if (!response.success) {
+        toast.error("Gagal", {
+          description: response.message,
+        });
+        return;
+      }
+
+      toast.success("Berhasil", {
+        description: response.message,
+      });
+      return;
+    } catch {
+      toast.error("Gagal", {
+        description: "Error fetch api",
+      });
+    }
+  }
 
   return (
     <>
@@ -189,16 +210,16 @@ export default function ProfileTeacherClient({
         <HeaderProfile>
           {/* Identity */}
           <div className="flex-1 space-y-3">
-            <h2 className="text-3xl font-extrabold capitalize">
+            <h2 className="text-3xl font-bold capitalize">
               {dataTeacher?.fullname || ""}
             </h2>
 
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
+              <span className="rounded-full bg-white/80 px-3 py-1 font-medium text-xs backdrop-blur-sm shadow-sm">
                 NISN. {dataTeacher?.nisn || ""}
               </span>
 
-              <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
+              <span className="rounded-full bg-white/80 px-3 py-1 font-medium text-xs backdrop-blur-sm shadow-sm">
                 {dataTeacher?.teach_role || ""}
               </span>
             </div>
@@ -211,8 +232,9 @@ export default function ProfileTeacherClient({
 
             <DialogContent className="rounded-2xl sm:max-w-lg">
               <form
-                className="grid gap-5"
-                // onSubmit={(event) => handleEditProfileTeacher(event)}
+                className="space-y-4"
+                onSubmit={handleSubmit(onSubmit)}
+                id="submit-edit-profile"
               >
                 <DialogHeader>
                   <DialogTitle>Edit Profil</DialogTitle>
@@ -221,19 +243,13 @@ export default function ProfileTeacherClient({
                     Perbarui informasi akun yang ingin Anda ubah.
                   </DialogDescription>
                 </DialogHeader>
-
-                <div>
-                  <label htmlFor="fullName" className="mb-2 block">
-                    Nama
-                  </label>
-                  <Input id="fullName" placeholder="Jhon Doe" />
-                </div>
                 <div>
                   <label htmlFor="pengajarMapel" className="mb-2 block">
                     Ubah Pengajar Mata Pelajaran
                   </label>
                   <Input
                     id="pengajarMapel"
+                    {...register("teachRole")}
                     placeholder="Matematika - Bahasa Indonesia - dst"
                   />
                 </div>
@@ -241,24 +257,20 @@ export default function ProfileTeacherClient({
                   <label htmlFor="noTlp" className="mb-2 block">
                     Ubah No Telepon
                   </label>
-                  <Input id="noTlp" placeholder="089276361434" />
-                </div>
-                <div>
-                  <label htmlFor="email" className="mb-2 block">
-                    Email
-                  </label>
                   <Input
-                    type="email"
-                    id="email"
-                    placeholder="jhondoe56@gmail.com"
+                    id="noTlp"
+                    {...register("noTlp")}
+                    placeholder="089276361434"
                   />
                 </div>
+
                 <div>
                   <label htmlFor="password" className="mb-2 block">
                     Ubah Password
                   </label>
                   <Input
                     type="password"
+                    {...register("password")}
                     id="password"
                     placeholder="**********"
                   />
@@ -273,7 +285,8 @@ export default function ProfileTeacherClient({
 
                   <Button
                     type="submit"
-                    className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                    form="submit-edit-profile"
+                    className="rounded-md bg-blue-500 hover:bg-blue-500/80"
                   >
                     Simpan Perubahan
                   </Button>

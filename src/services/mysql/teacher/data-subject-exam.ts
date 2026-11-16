@@ -7,8 +7,6 @@ import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import {
   ExamScheduleListParsed,
   examScheduleListSchema,
-  ExamScheduleParsed,
-  examScheduleSchema,
 } from "@/src/schemas/manageDataExam";
 import {
   findConflict,
@@ -17,12 +15,7 @@ import {
 } from "@/src/repositories/findConfictExam";
 import { withTransaction } from "@/src/repositories/transaction";
 import { queryRows } from "@/src/lib/utils/queryPool";
-import {
-  Choice,
-  EssayQuestion,
-  MultipleChoiceQuestion,
-} from "@/src/types/dataExam";
-import { success } from "zod";
+import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
 
 export async function handleGetDataResultExamsPending(id_teacher: string) {
   const query = `
