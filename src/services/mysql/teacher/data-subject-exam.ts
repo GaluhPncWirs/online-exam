@@ -1053,3 +1053,53 @@ export async function handleGetDataExamEssayForCorrection(
     return { success: false, message: "Gagal ambil data ujian" };
   }
 }
+
+type PayloadAsesmentExam = {
+  resultAsesment: string;
+  idSubject: string;
+  idStudent: string;
+};
+
+export async function handleSaveAsesmentExam({
+  resultAsesment,
+  idSubject,
+  idStudent,
+}: PayloadAsesmentExam) {
+  const query = `
+    UPDATE history_exams 
+    SET 
+      result_exam = ?, 
+      status_exam = ?
+    WHERE id_subject = ? AND id_student = ?
+  `;
+
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      resultAsesment,
+      true,
+      idSubject,
+      idStudent,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "Soal ujian tidak ditemukan",
+        status: 404,
+      };
+    }
+
+    return {
+      success: true,
+      message: "Berhasil memberikan nilai ujian",
+      status: 200,
+    };
+  } catch (error) {
+    console.error("Gagal memberikan nilai ujian:", error);
+    return {
+      success: false,
+      message: "Gagal memperbarui soal ujian",
+      status: 500,
+    };
+  }
+}

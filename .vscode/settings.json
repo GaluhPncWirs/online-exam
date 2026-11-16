@@ -118,7 +118,8 @@
         "menghapus folder yang tidak diperlukan dan juga sudah memperbaiki masalah error ketika masuk ke halaman koreksi ujian",
         "memperbaiki error pada saat proses ambil data hasil jawaban siswa karena masalah pemanggilan API",
         "sudah selesai untuk bisa menampilkan ui dengan data pertanyaannya, tinggal di selaraskan pertanyaan dengan jawaban siswa",
-        "selesai mengerjakan halaman untuk koreksi ujian type essay"
+        "selesai mengerjakan halaman untuk koreksi ujian type essay",
+        "memperbaiki masalah routing kembali ke dashboard yang salah penamaan url"
     ],
     "sqltools.connections": [
         {
