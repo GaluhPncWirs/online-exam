@@ -126,7 +126,8 @@
         "selesai mengerjakan halaman profile guru dengan menampilkan data riwayat ujian dan tidak error, nex tinggal buat untuk proses edit profil data guru",
         "selesai membuat fungsi untuk edit data profil guru dan juga apinya",
         "selesai untuk refaktor code di halaman profile guru",
-        "memperbaiki struktur folder"
+        "memperbaiki struktur folder",
+        "menambahkan hooks useUpComingExam() yang sebelumnya terhapus"
     ],
     "sqltools.connections": [
         {

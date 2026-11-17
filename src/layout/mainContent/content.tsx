@@ -1,24 +1,23 @@
-"use client";
 import React, { useEffect } from "react";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { toast } from "sonner";
 import { useShallow } from "zustand/shallow";
+import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
-  const getDataUser = useGetDataUser((state) => state.setGetDataUsers);
-  const { isSuccess, message } = useGetDataUser(
-    useShallow((state) => ({
-      isSuccess: state.isSuccess,
-      message: state.message,
-    })),
-  );
-
+  const getDataUser = useGetDataUser((state) => state.setGetDataUser);
   useEffect(() => {
     getDataUser();
   }, []);
 
-  const dataUser = useGetDataUser((state) => state.dataUser);
+  const { dataUser, isSuccess, message } = useGetDataUser(
+    useShallow((state) => ({
+      dataUser: state.dataUser,
+      isSuccess: state.isSuccess,
+      message: state.message,
+    })),
+  );
 
   if (!isSuccess) {
     toast.error("Error", {
