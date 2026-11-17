@@ -1,3 +1,4 @@
+import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 import DashboardClientStudent from "@/components/local/student/dashboard/dashboardClient";
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
@@ -15,14 +16,10 @@ export default function Loader() {
 }
 
 async function DashboardStudent() {
-  const dataStudent = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser("student");
 
   if (!dataStudent.success) {
     return <h3>{dataStudent.message}</h3>;
-  }
-
-  if (dataStudent.data.role !== "student") {
-    return <h3>Halaman ini hanya untuk siswa</h3>;
   }
 
   const dataExams = await handleGetDataSubjectExams(
@@ -50,6 +47,7 @@ async function DashboardStudent() {
 
   return (
     <MainContent>
+      {/* <DialogFormAddDataUser idUsers={dataStudent.data.id_student} /> */}
       <DashboardClientStudent
         dataExams={dataExams.data as ScheduleExams[]}
         dataStudent={dataStudent.data}

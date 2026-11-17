@@ -4,8 +4,10 @@ import { cookies } from "next/headers";
 
 export type AuthenticatedUser = DataStudent | DataTeacher;
 
-export type AuthResult =
-  | { success: true; data: AuthenticatedUser }
+type UserRole = AuthenticatedUser["role"];
+
+export type AuthResult<T extends AuthenticatedUser = AuthenticatedUser> =
+  | { success: true; data: T }
   | { success: false; message: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -97,7 +99,13 @@ function parseAuthenticatedUser(payload: unknown): AuthenticatedUser | null {
   }
 }
 
-export async function getAuthenticatedUser(): Promise<AuthResult> {
+export async function getAuthenticatedUser(): Promise<AuthResult>;
+export async function getAuthenticatedUser<R extends UserRole>(
+  expectedRole: R,
+): Promise<AuthResult<Extract<AuthenticatedUser, { role: R }>>>;
+export async function getAuthenticatedUser(
+  expectedRole?: UserRole,
+): Promise<AuthResult> {
   const cookieStore = await cookies();
   const token = cookieStore.get("loginSession")?.value;
 
@@ -114,9 +122,26 @@ export async function getAuthenticatedUser(): Promise<AuthResult> {
       return { success: false, message: session.message };
     }
 
+    if (
+      expectedRole &&
+      session.role !== (expectedRole === "student" ? "siswa" : "guru")
+    ) {
+      return {
+        success: false,
+        message:
+          expectedRole === "student"
+            ? "Halaman ini hanya untuk siswa"
+            : "Halaman ini hanya untuk guru",
+      };
+    }
+
     const user = parseAuthenticatedUser(session.data);
 
     if (!user) {
+      return { success: false, message: "Sesi login tidak valid" };
+    }
+
+    if (expectedRole && user.role !== expectedRole) {
       return { success: false, message: "Sesi login tidak valid" };
     }
 

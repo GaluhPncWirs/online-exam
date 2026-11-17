@@ -10,7 +10,12 @@ type ScheduleExamsRow = RowDataPacket & ScheduleExams;
 export async function handleGetDataSubjectExams(
   className: string,
   idStudent: string,
+  // from: number,
+  // to: number,
 ) {
+  // const limit = to - from + 1;
+  // const offset = from;
+
   const query = `
     SELECT
       me.id_manage_exam,
@@ -40,14 +45,26 @@ export async function handleGetDataSubjectExams(
       AND he.class_id = me.class_id
       AND he.id_student = ?
     WHERE c.name = ?
-  `;
+    ORDER BY me.created_at DESC
+    `;
+  // LIMIT ? OFFSET ?
 
   try {
     const data = await queryRows<ScheduleExamsRow[]>(query, [
       idStudent,
       idStudent,
       className,
+      // limit,
+      // offset,
     ]);
+
+    if (data.length === 0) {
+      return {
+        data: [],
+        success: false,
+        message: "Data ujian tidak di temukan",
+      };
+    }
 
     return {
       data,
@@ -55,7 +72,7 @@ export async function handleGetDataSubjectExams(
       message: "Berhasil mengambil data ujian",
     };
   } catch (error) {
-    console.error("Error handleGetDataSubjectExams:", error);
+    console.error("Error:", error);
     return {
       data: [],
       success: false,

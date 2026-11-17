@@ -127,6 +127,7 @@ export default function DashboardClientStudent({
     },
     [dataStudent, route],
   );
+
   useEffect(() => {
     const saveExpiredExams = () => {
       const expiredExams = dataExams.filter(

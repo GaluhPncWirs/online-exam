@@ -7,22 +7,13 @@ import {
   handleGetTeacherExamHistory,
 } from "../services/mysql/teacher/data-subject-exam";
 
-export async function getTeacherExamHistoryAction(page: number) {
-  const session = await getAuthenticatedUser();
+const session = await getAuthenticatedUser("teacher");
 
+export async function getTeacherExamHistoryAction(page: number) {
   if (!session.success) {
     return {
       success: false,
       message: session.message,
-      data: [],
-      total: 0,
-    };
-  }
-
-  if (session.data.role !== "teacher") {
-    return {
-      success: false,
-      message: "Khusus role guru",
       data: [],
       total: 0,
     };
@@ -37,14 +28,8 @@ export async function getTeacherExamHistoryAction(page: number) {
 }
 
 export async function getManageExamsAction(page: number) {
-  const session = await getAuthenticatedUser();
-
   if (!session.success) {
     return { success: false, message: "Error ambil data", data: [], total: 0 };
-  }
-
-  if (session.data.role !== "teacher") {
-    return { success: false, message: "Khusus role guru", data: [], total: 0 };
   }
 
   if (!session?.data.id_teacher) {
@@ -59,14 +44,8 @@ export async function getManageExamsAction(page: number) {
 }
 
 export async function getDataExams() {
-  const session = await getAuthenticatedUser();
-
   if (!session.success) {
     return { success: false, message: "Error ambil data", data: [], total: 0 };
-  }
-
-  if (session.data.role !== "teacher") {
-    return { success: false, message: "Khusus role guru", data: [], total: 0 };
   }
 
   if (!session?.data.id_teacher) {

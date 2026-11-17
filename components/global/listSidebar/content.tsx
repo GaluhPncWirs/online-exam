@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Home, LayoutDashboard, LogOut, User2 } from "lucide-react";
@@ -13,18 +14,35 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useHandleLogout } from "@/hooks/useHandleLogout";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { useEffect } from "react";
-import { useHandleLogout } from "@/hooks/useHandleLogout";
+import { useShallow } from "zustand/shallow";
+import { toast } from "sonner";
 
 export default function ListSidebar() {
-  const setDataUser = useGetDataUser((state) => state.setGetDataUsers);
-  useEffect(() => {
-    setDataUser();
-  }, []);
-  const dataUser = useGetDataUser((state) => state.dataUser);
-
   const pathName = usePathname();
+  const getDataUser = useGetDataUser((state) => state.setGetDataUser);
+  useEffect(() => {
+    getDataUser();
+  }, []);
+
+  const { dataUser, isSuccess, message } = useGetDataUser(
+    useShallow((state) => ({
+      dataUser: state.dataUser,
+      isSuccess: state.isSuccess,
+      message: state.message,
+    })),
+  );
+  const handleLogout = useHandleLogout();
+
+  if (!isSuccess) {
+    toast.error("Error", {
+      description: message,
+    });
+    return;
+  }
+
   return (
     <div className="flex flex-1 flex-col px-4 py-7">
       <Link
@@ -125,7 +143,7 @@ export default function ListSidebar() {
               <Button
                 type="button"
                 variant="destructive"
-                onClick={useHandleLogout()}
+                onClick={handleLogout}
               >
                 Logout
               </Button>

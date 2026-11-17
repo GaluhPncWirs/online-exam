@@ -18,14 +18,10 @@ export default function Loader() {
 }
 
 async function DashboardTeacher() {
-  const dataTeacher = await getAuthenticatedUser();
+  const dataTeacher = await getAuthenticatedUser("teacher");
 
   if (!dataTeacher.success) {
     return <h3>{dataTeacher.message}</h3>;
-  }
-
-  if (dataTeacher.data.role !== "teacher") {
-    return <h3>Halaman ini hanya untuk guru</h3>;
   }
 
   const dataResultExamPending = await handleGetDataResultExamsPending(

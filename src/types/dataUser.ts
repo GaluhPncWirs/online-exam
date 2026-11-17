@@ -20,3 +20,5 @@ export type DataTeacher = BaseUser & {
   nisn: string;
   id_teacher: string;
 };
+
+export type AuthenticatedUser = DataStudent | DataTeacher;

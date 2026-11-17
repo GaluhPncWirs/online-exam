@@ -127,7 +127,8 @@
         "selesai membuat fungsi untuk edit data profil guru dan juga apinya",
         "selesai untuk refaktor code di halaman profile guru",
         "memperbaiki struktur folder",
-        "menambahkan hooks useUpComingExam() yang sebelumnya terhapus"
+        "menambahkan hooks useUpComingExam() yang sebelumnya terhapus",
+        "memperbaiki code state management untuk ambil data user dari token jwt"
     ],
     "sqltools.connections": [
         {

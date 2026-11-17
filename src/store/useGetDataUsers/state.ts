@@ -1,7 +1,5 @@
-import type { DataStudent, DataTeacher } from "@/src/types/dataUser";
+import type { AuthenticatedUser } from "@/src/types/dataUser";
 import { create } from "zustand";
-
-type AuthenticatedUser = DataStudent | DataTeacher;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
