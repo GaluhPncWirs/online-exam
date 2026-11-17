@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getUpComingExam } from "@/hooks/getUpComingExam";
+import { useUpComingExam } from "@/hooks/useUpComingExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { toast } from "sonner";
 import { getExamStatus } from "@/src/lib/utils/statusExam";
@@ -55,7 +55,7 @@ export default function DashboardClientStudent({
   const savedLateExamIds = useRef<Set<string>>(new Set());
   const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
 
-  const upcomingExam = getUpComingExam(dataExams);
+  const upcomingExam = useUpComingExam(dataExams);
 
   const getAverageScore = (dataExams: ScheduleExams[]): number => {
     const scores = dataExams

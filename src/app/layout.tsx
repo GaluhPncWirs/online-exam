@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 import { Open_Sans, Inter } from "next/font/google";
 import { cn } from "../lib/util";
+import React from "react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -12,11 +13,11 @@ const fontStyle = Open_Sans({
   weight: ["400"],
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+type RootLayoutAppProps = {
   children: React.ReactNode;
-}>) {
+};
+
+export default function RootLayout({ children }: RootLayoutAppProps) {
   return (
     <html
       lang="en"

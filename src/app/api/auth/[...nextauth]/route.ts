@@ -1,4 +1,3 @@
-import { generateRandomId } from "@/src/lib/utils/getRandomId";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 

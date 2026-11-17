@@ -38,10 +38,6 @@ export function getDateKey(date: DateInput): string | null {
   return `${year}-${month}-${day}`;
 }
 
-/**
- * Mengambil waktu sekarang dalam menit
- * berdasarkan zona waktu Asia/Jakarta.
- */
 export function getCurrentTimeInMinutes(): number {
   const now = getCurrentDate();
 
@@ -109,3 +105,14 @@ export function formatDateToYYYYMMDD(
 
   return selectedPart.map(getPart).join("-");
 }
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+export const toDateString = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+export const fromDateString = (s?: string | null): Date | undefined => {
+  if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return undefined;
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
