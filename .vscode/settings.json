@@ -129,7 +129,8 @@
         "memperbaiki struktur folder",
         "menambahkan hooks useUpComingExam() yang sebelumnya terhapus",
         "memperbaiki code state management untuk ambil data user dari token jwt",
-        "sedang mengerjakan proses pengambilan data ujian menggunakan pagination di halaman dashboard siswa"
+        "sedang mengerjakan proses pengambilan data ujian menggunakan pagination di halaman dashboard siswa",
+        "update nextjs ke versi 16.4.6"
     ],
     "sqltools.connections": [
         {

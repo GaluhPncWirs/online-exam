@@ -26,7 +26,7 @@ import {
   StatisticStudent,
 } from "@/src/types/teacher/dataExam";
 import { getManageExamsAction } from "@/src/actions/dataExams";
-import { PAGE_SIZE } from "@/src/lib/constants";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
 import CreateNewQuestions from "../createExam/createExamClient";
@@ -78,7 +78,7 @@ export default function DashboardClientTeacher({
   const [totalData, setTotalData] = useState(0);
   const [dataManageExams, setDataManageExams] = useState<ManageExamItem[]>([]);
 
-  const totalPages = Math.ceil(totalData / PAGE_SIZE);
+  const totalPages = Math.ceil(totalData / MAX_PAGE_SIZE);
 
   function handleClickItem(event: string) {
     setDashboardButton({
@@ -346,7 +346,7 @@ export default function DashboardClientTeacher({
                             className="transition-colors hover:bg-slate-50"
                           >
                             <TableCell className="font-medium text-slate-500">
-                              {(page - 1) * PAGE_SIZE + i + 1}
+                              {(page - 1) * MAX_PAGE_SIZE + i + 1}
                             </TableCell>
 
                             <TableCell className="font-semibold text-slate-800">

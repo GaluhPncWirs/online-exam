@@ -3,6 +3,7 @@ import DashboardClientStudent from "@/components/local/student/dashboard/dashboa
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
+import { getDataPagination } from "@/src/lib/utils/getDataPagination";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { Suspense } from "react";
@@ -49,7 +50,7 @@ async function DashboardStudent() {
     <MainContent>
       {/* <DialogFormAddDataUser idUsers={dataStudent.data.id_student} /> */}
       <DashboardClientStudent
-        dataExams={dataExams.data as ScheduleExams[]}
+        initialDataExams={dataExams.data as ScheduleExams[]}
         dataStudent={dataStudent.data}
       />
     </MainContent>

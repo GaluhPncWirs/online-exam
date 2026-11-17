@@ -33,17 +33,27 @@ import {
 } from "@/components/ui/hover-card";
 import HeaderDasboard from "../../forDasboard/content";
 import { DataStudent } from "@/src/types/dataUser";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
+import { getDataPagination } from "@/src/lib/utils/getDataPagination";
+import { handleGetDataManageExams } from "@/src/services/mysql/teacher/data-subject-exam";
+import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
+import { getDataExamsPagination } from "@/src/actions/dataExams";
 
 type DataDashboardStudent = {
-  dataExams: ScheduleExams[];
+  initialDataExams: ScheduleExams[];
   dataStudent: DataStudent;
 };
 
 export default function DashboardClientStudent({
-  dataExams,
+  initialDataExams,
   dataStudent,
 }: DataDashboardStudent) {
   const route = useRouter();
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataExams, setDataExams] = useState<ScheduleExams[]>(initialDataExams);
+  const totalPages = Math.ceil(dataExams.length / MAX_PAGE_SIZE);
+
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<
     Record<string, boolean>
@@ -54,6 +64,37 @@ export default function DashboardClientStudent({
 
   const savedLateExamIds = useRef<Set<string>>(new Set());
   const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
+
+  console.log(dataExams);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getDataExamsPagination(page);
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataExams(result.data);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
 
   const upcomingExam = useUpComingExam(dataExams);
 

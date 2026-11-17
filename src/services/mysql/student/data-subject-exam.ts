@@ -1,4 +1,5 @@
 "server-only";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import { queryRows } from "@/src/lib/utils/queryPool";
@@ -10,18 +11,21 @@ type ScheduleExamsRow = RowDataPacket & ScheduleExams;
 export async function handleGetDataSubjectExams(
   className: string,
   idStudent: string,
-  // from: number,
-  // to: number,
+  from: number = 0,
+  to: number = 9,
 ) {
-  // const limit = to - from + 1;
-  // const offset = from;
+  const offset = Number.isFinite(from) ? Math.max(0, Math.floor(from)) : 0;
+  const lastIndex = Number.isFinite(to)
+    ? Math.max(offset, Math.floor(to))
+    : offset + 9;
+  const limit = Math.min(lastIndex - offset + 1, MAX_PAGE_SIZE);
 
   const query = `
     SELECT
       me.id_manage_exam,
       me.id_teacher,
       me.id_subject,
-      me.exam_date AS exam_date,
+      me.exam_date,
       JSON_OBJECT(
         'start', me.exam_start_at,
         'end', me.exam_end_at
@@ -41,21 +45,27 @@ export async function handleGetDataSubjectExams(
     JOIN classes AS c
       ON c.id = me.class_id
     LEFT JOIN history_exams AS he
-      ON he.id_subject = me.id_subject
-      AND he.class_id = me.class_id
-      AND he.id_student = ?
+      ON he.id_history_exam = (
+        SELECT h2.id_history_exam
+        FROM history_exams AS h2
+        WHERE h2.id_subject = me.id_subject
+          AND h2.class_id = me.class_id
+          AND h2.id_student = ?
+        ORDER BY h2.created_at DESC, h2.id_history_exam DESC
+        LIMIT 1
+      )
     WHERE c.name = ?
-    ORDER BY me.created_at DESC
-    `;
-  // LIMIT ? OFFSET ?
+    ORDER BY me.created_at DESC, me.id_manage_exam DESC
+    LIMIT ? OFFSET ?
+  `;
 
   try {
     const data = await queryRows<ScheduleExamsRow[]>(query, [
       idStudent,
       idStudent,
       className,
-      // limit,
-      // offset,
+      limit,
+      offset,
     ]);
 
     if (data.length === 0) {

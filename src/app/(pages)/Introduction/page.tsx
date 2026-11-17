@@ -24,9 +24,16 @@ import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 import AlurUjian from "@/components/local/beranda/alurUjian/content";
 import Homepage from "@/src/layout/homepage/content";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
+import { useEffect } from "react";
 
 export default function Introduction() {
+  const getDataUser = useGetDataUser((state) => state.setGetDataUser);
+  useEffect(() => {
+    getDataUser();
+  }, []);
+
   const dataUser = useGetDataUser((state) => state.dataUser);
+
   return (
     <Homepage>
       <header className="relative flex items-center overflow-hidden">
