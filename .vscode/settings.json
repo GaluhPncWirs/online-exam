@@ -128,7 +128,8 @@
         "selesai untuk refaktor code di halaman profile guru",
         "memperbaiki struktur folder",
         "menambahkan hooks useUpComingExam() yang sebelumnya terhapus",
-        "memperbaiki code state management untuk ambil data user dari token jwt"
+        "memperbaiki code state management untuk ambil data user dari token jwt",
+        "sedang mengerjakan proses pengambilan data ujian menggunakan pagination di halaman dashboard siswa"
     ],
     "sqltools.connections": [
         {
