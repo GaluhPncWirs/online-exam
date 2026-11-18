@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
     const idSubject = searchParams.get("idSubject") || "";
 
     const result = await handleGetDataResultExam(
-      idStudent,
       idSubject,
+      idStudent,
       page,
       limit,
     );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
 import { DataResultExam } from "@/src/types/student/dataExams";
+import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
 import { useEffect, useState } from "react";
 import { Pagination } from "@/src/types/dataExam";
 import { toast } from "sonner";
@@ -24,9 +25,9 @@ export default function ResultExamClient({
   const [dataAnswer, setDataAnswer] = useState<Record<string, string>>(
     initialDataResultExam.answer_student,
   );
-  const [dataQuestions, setDataQuestions] = useState(
-    initialDataResultExam.exam_questions,
-  );
+  const [dataQuestions, setDataQuestions] = useState<
+    Array<MultipleChoiceQuestion | EssayQuestion>
+  >(initialDataResultExam.exam_questions);
 
   const [page, setPage] = useState(initialPagination?.page ?? 1);
   const [limit, setLimit] = useState(initialPagination?.limit ?? 10);
@@ -73,7 +74,7 @@ export default function ResultExamClient({
           throw new Error("Data jawaban dari server tidak lengkap.");
         }
 
-        setDataAnswer(res.data.exam_answer);
+        setDataAnswer(res.data.answer_student);
         setDataQuestions(res.data.exam_questions);
         setPagination(res.pagination);
       } catch (error) {
@@ -95,12 +96,6 @@ export default function ResultExamClient({
     fetchResultExam();
     return () => controller.abort();
   }, [page, limit, idStudent, idSubject]);
-
-  function correctAnswer(questionsId: string, pg: string) {
-    if (!dataAnswer) return null;
-    const studentAnswer = dataAnswer?.[questionsId];
-    return studentAnswer === pg && "bg-blue-200 rounded-sm py-1 font-semibold";
-  }
 
   return (
     <div className="space-y-8">
@@ -157,94 +152,108 @@ export default function ResultExamClient({
         </div>
         {initialDataResultExam.type_exam === "PG" ? (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {dataQuestions.map((item, i: number) => (
-              <div
-                key={item.id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
-              >
-                {/* Question Header */}
-                <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                  <div className="flex items-start gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+            {dataQuestions.map((item, i: number) => {
+              if (!("multipleChoice" in item)) return null;
+              const questionNumber = (page - 1) * limit + i + 1;
 
-                    <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
-                      {item.questions}
-                    </h3>
+              return (
+                <div
+                  key={item.id}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
+                >
+                  {/* Question Header */}
+                  <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                        {String(questionNumber).padStart(2, "0")}
+                      </span>
+
+                      <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
+                        {item.questions}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Answers */}
+                  <div className="p-5">
+                    <ul className="flex flex-col gap-3">
+                      {["a", "b", "c", "d", "e"].map((opt) => {
+                        const choiceKey = `choice_${opt}` as
+                          | "choice_a"
+                          | "choice_b"
+                          | "choice_c"
+                          | "choice_d"
+                          | "choice_e";
+                        const choiceText = item.multipleChoice[choiceKey];
+
+                        return (
+                          <li
+                            key={opt}
+                            className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                              dataAnswer[item.id] === choiceText
+                                ? "bg-blue-200 rounded-sm py-1 font-semibold"
+                                : ""
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs font-bold">
+                                {opt.toUpperCase()}
+                              </span>
+
+                              <span className="leading-6">{choiceText}</span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
                 </div>
-
-                {/* Answers */}
-                <div className="p-5">
-                  <ul className="flex flex-col gap-3">
-                    {["a", "b", "c", "d", "e"].map((opt) => {
-                      const choiceKey = `choice_${opt}`;
-                      const choiceText = item.multipleChoice[choiceKey];
-
-                      return (
-                        <li
-                          key={opt}
-                          className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${correctAnswer(
-                            item.id,
-                            choiceText,
-                          )}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs font-bold">
-                              {opt.toUpperCase()}
-                            </span>
-
-                            <span className="leading-6">{choiceText}</span>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {dataQuestions.map((item, i: number) => (
-              <div
-                key={item.id}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-              >
-                {/* Question */}
-                <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-                  <div className="flex items-start gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+            {dataQuestions.map((item, i: number) => {
+              const questionNumber = (page - 1) * limit + i + 1;
+              return (
+                <div
+                  key={item.id}
+                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                >
+                  {/* Question */}
+                  <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+                        {String(questionNumber).padStart(2, "0")}
+                      </span>
 
-                    <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
-                      {item.questions}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Student Answer */}
-                <div className="p-5">
-                  <div className="mb-2 flex items-center justify-between">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Jawaban Anda
-                    </label>
-
-                    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
-                      Essay
-                    </span>
+                      <h3 className="pt-1 text-base font-bold leading-6 text-slate-900">
+                        {item.questions}
+                      </h3>
+                    </div>
                   </div>
 
-                  <Textarea
-                    disabled
-                    value={dataAnswer.answer_student?.[item.id] || ""}
-                    className="min-h-32 resize-none rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700"
-                  />
+                  {/* Student Answer */}
+                  <div className="p-5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="text-sm font-semibold text-slate-700">
+                        Jawaban Anda
+                      </label>
+
+                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+                        Essay
+                      </span>
+                    </div>
+
+                    <Textarea
+                      disabled
+                      value={dataAnswer[item.id] || ""}
+                      className="min-h-32 resize-none rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {pagination && pagination.total_pages > 1 && (

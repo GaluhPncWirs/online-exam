@@ -1,4 +1,8 @@
-import { ExamQuestion } from "../dataExam";
+import {
+  EssayQuestion,
+  ExamQuestion,
+  MultipleChoiceQuestion,
+} from "../dataExam";
 
 export type ScheduleExams = {
   exam_date: Date;
@@ -35,7 +39,7 @@ export type Exam = {
 
 export type DataResultExam = {
   answer_student: Record<string, string>;
-  exam_questions: ExamQuestion;
+  exam_questions: Array<MultipleChoiceQuestion | EssayQuestion>;
   name_exam: string;
   type_exam: "PG" | "ESSAY";
 };

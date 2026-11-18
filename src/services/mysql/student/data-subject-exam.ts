@@ -4,7 +4,10 @@ import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import { parseJsonColumn } from "@/src/lib/utils/parseJSONColumn";
 import { queryRows } from "@/src/lib/utils/queryPool";
-import { ExamQuestion } from "@/src/types/dataExam";
+import {
+  EssayQuestion,
+  MultipleChoiceQuestion,
+} from "@/src/types/dataExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -245,7 +248,7 @@ export async function handleGetDataResultExam(
   const query = `
     SELECT 
       se.name_exam, se.type_exam, se.exam_questions, JSON_EXTRACT(se.exam_questions, ?) AS exam_questions,
-      he.answer_student, JSON_LENGTH(he.answer_student) AS total_questions, JSON_EXTRACT(he.answer_student, ?) AS answer_student
+      he.answer_student, JSON_LENGTH(se.exam_questions) AS total_questions
     FROM subject_exam AS se
     JOIN history_exams AS he
       ON se.id_subject = he.id_subject
@@ -256,7 +259,6 @@ export async function handleGetDataResultExam(
 
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(query, [
-      jsonPath,
       jsonPath,
       id_subject,
       id_student,
@@ -281,9 +283,11 @@ export async function handleGetDataResultExam(
       data: {
         name_exam: row.name_exam,
         type_exam: row.type_exam,
-        exam_questions: parseJsonColumn<ExamQuestion[]>(row.exam_questions, []),
+        exam_questions: parseJsonColumn<
+          Array<MultipleChoiceQuestion | EssayQuestion>
+        >(row.exam_questions, []),
         answer_student: parseJsonColumn<Record<string, string>>(
-          row.answer_student[0],
+          row.answer_student,
           {},
         ),
       },
