@@ -34,19 +34,32 @@ import {
   shuffle,
   writeStorage,
 } from "@/src/lib/utils/dataAnswerExam";
-import { TypeExamQuestions } from "@/src/types/dataExam";
+import {
+  EssayQuestion,
+  MultipleChoiceQuestion,
+  Pagination,
+} from "@/src/types/dataExam";
+import PaginationUi from "@/components/global/pagination/content";
 
 type BeginExamProps = {
-  dataExam: Exam;
+  initialDataExam: Exam;
+  initialPagination: Pagination;
+  idSubject: string;
 };
 
-export default function BeginExam({ dataExam }: BeginExamProps) {
+export default function BeginExam({
+  initialDataExam,
+  initialPagination,
+  idSubject,
+}: BeginExamProps) {
   const router = useRouter();
   const [clickedAnswerPg, setClickedAnswerPg] = useState<{
     [questions: string]: string;
   }>({});
   const [isClosedContent, setIsClosedContent] = useState<boolean>(false);
-  const [dataUjianRandom, setDataUjianRandom] = useState<TypeExamQuestions>([]);
+  const [dataUjianRandom, setDataUjianRandom] = useState<
+    Array<MultipleChoiceQuestion | EssayQuestion>
+  >([]);
   const isSizeMobile = useIsMobile(1024);
   const [time, setTime] = useState<number>(0);
   const [answerEssayExams, setAnswerEssayExams] = useState<{
@@ -55,6 +68,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const [markQuestions, setMarkQuestions] = useState<Record<string, boolean>>(
     {},
   );
+  const [submitting, setSubmitting] = useState(false);
   const [timeOutDone, setTimeOutDone] = useState<boolean>(false);
   const [showInformationExam, setShowInformationExam] = useState<boolean>(true);
   const clickedOutsideCheked = useRef<HTMLInputElement | null>(null);
@@ -62,11 +76,99 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   const clickedMarkQuestions = useRef<HTMLButtonElement | null>(null);
   const clickedAnswerQuestions = useRef<HTMLInputElement | null>(null);
 
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hydrateExamId = useRef<string | null>(null);
+  const firstPageRequest = useRef(true);
+  const [dataExam] = useState<Exam>(initialDataExam);
+  const [page, setPage] = useState(initialPagination.page);
+  const limit = initialPagination.limit;
+  const [pagination, setPagination] = useState<Pagination | null>(
+    initialPagination,
+  );
+
+  const [loading, setLoading] = useState(false);
+
   const examId = dataExam?.id_subject;
   const typeExam = dataExam.type_exam;
 
-  const [isHydrated, setIsHydrated] = useState(false);
-  const hydrateExamId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    if (firstPageRequest.current && page === initialPagination.page) {
+      firstPageRequest.current = false;
+      return;
+    }
+    firstPageRequest.current = false;
+
+    const controller = new AbortController();
+
+    async function fetchExamPage() {
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+          idSubject,
+        });
+
+        const response = await fetch(
+          `/api/student/GET/dataExam?${params.toString()}`,
+          { signal: controller.signal },
+        );
+        const result = await response.json();
+        if (!response.ok || !result.success || !result.data) {
+          throw new Error(result.message || "Gagal mengambil soal ujian.");
+        }
+
+        const savedPages = readStorage(
+          examKey(examId, "random-pages"),
+        ) as Record<
+          string,
+          Array<MultipleChoiceQuestion | EssayQuestion>
+        > | null;
+        const savedPage = savedPages?.[String(page)];
+        const questions = Array.isArray(savedPage)
+          ? savedPage
+          : shuffle(
+              result.data.exam_questions as Array<
+                MultipleChoiceQuestion | EssayQuestion
+              >,
+            );
+
+        setDataUjianRandom(questions);
+        setPagination(result.pagination);
+
+        if (!savedPage) {
+          writeStorage(examKey(examId, "random-pages"), {
+            ...savedPages,
+            [page]: questions,
+          });
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        console.error("Error fetching exam page:", error);
+        toast.error("Gagal mengambil soal ujian", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Terjadi kesalahan saat mengambil soal ujian",
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchExamPage();
+    return () => controller.abort();
+  }, [page, limit, idSubject, examId, isHydrated, initialPagination.page]);
+
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage === page) return;
+    setLoading(true);
+    setDataUjianRandom([]);
+    setPage(nextPage);
+  };
 
   // 1) HYDRATE: baca semua data dari localStorage, sekali per ujian
   useEffect(() => {
@@ -90,13 +192,28 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     }
 
     // urutan soal acak
-    const saveOrder = readStorage(key("random"));
-    if (saveOrder?.length) {
-      setDataUjianRandom(saveOrder);
+    const savedPages = readStorage(key("random-pages")) as Record<
+      string,
+      Array<MultipleChoiceQuestion | EssayQuestion>
+    > | null;
+    const savedPage = savedPages?.[String(initialPagination.page)];
+    const legacyOrder =
+      initialPagination.page === 1 ? readStorage(key("random")) : null;
+    if (Array.isArray(savedPage)) {
+      setDataUjianRandom(savedPage);
+    } else if (Array.isArray(legacyOrder) && legacyOrder.length) {
+      setDataUjianRandom(legacyOrder);
+      writeStorage(key("random-pages"), {
+        ...savedPages,
+        [initialPagination.page]: legacyOrder,
+      });
     } else {
       const shuffled = shuffle(dataExam.exam_questions ?? []);
       setDataUjianRandom(shuffled);
-      if (shuffled.length) writeStorage(key("random"), shuffled);
+      writeStorage(key("random-pages"), {
+        ...savedPages,
+        [initialPagination.page]: shuffled,
+      });
     }
 
     // timer
@@ -104,7 +221,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     setTime(typeof savedTime === "number" ? savedTime : dataExam.duration);
 
     setIsHydrated(true);
-  }, [dataExam]);
+  }, [dataExam, initialPagination.page]);
 
   // 2) SAVE jawaban & tanda soal (hanya setelah hydrate)
   useEffect(() => {
@@ -142,6 +259,13 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
     if (!isHydrated || examId == null || time == null) return;
     writeStorage(examKey(examId, "timer"), time);
   }, [isHydrated, examId, time]);
+
+  useEffect(() => {
+    if (isHydrated && time === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTimeOutDone(true);
+    }
+  }, [isHydrated, time]);
 
   const minute = Math.floor(time! / 60);
   const second = time! % 60;
@@ -198,7 +322,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
         clickedAnswerQuestions.current,
       ];
       const isOutside = refs.every(
-        (ref) => ref && !ref.contains(e.target as Node),
+        (ref) => !ref || !ref.contains(e.target as Node),
       );
       if (isOutside) {
         setIsClosedContent(true);
@@ -225,30 +349,31 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
   };
 
   const handleAnswerEmpty = () => {
-    const idSoalYangSudah = Object.keys(clickedAnswerPg);
-    const dataUjian = dataUjianRandom.filter(
-      (data) => !idSoalYangSudah.includes(data.id),
-    );
-    return dataUjian.length === 0;
+    const totalQuestions =
+      pagination?.total_items ?? dataExam.exam_questions.length;
+
+    if (dataExam.type_exam === "ESSAY") {
+      const answeredCount = Object.values(answerEssayExams).filter(
+        (answer) => typeof answer === "string" && answer.trim().length > 0,
+      ).length;
+      return answeredCount >= totalQuestions;
+    }
+
+    const answeredCount = Object.values(clickedAnswerPg).filter(
+      (answer) => typeof answer === "string" && answer.length > 0,
+    ).length;
+    return answeredCount >= totalQuestions;
   };
 
   const handleSendExam = async () => {
-    const pilihanSiswa = Object.values(clickedAnswerPg);
-    const jawabanYangBenar = dataExam?.exam_questions
-      .flatMap((item) => item.correctAnswer)
-      .filter((jawabanBenar) => pilihanSiswa.includes(jawabanBenar));
-    const resultExam = Math.round(
-      (jawabanYangBenar.length / (dataExam?.exam_questions?.length ?? 0)) * 100,
-    );
+    if (submitting) return;
+    setSubmitting(true);
 
     const payload = {
-      // id_student: getIdStudent,
       id_subject: dataExam.id_subject,
       answer_student:
         dataExam?.type_exam === "PG" ? clickedAnswerPg : answerEssayExams,
-      result_exam: dataExam?.type_exam === "PG" ? resultExam : "pending",
       status_exam: true,
-      // className: dataStudent?.classes,
     };
 
     try {
@@ -276,6 +401,9 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
       router.push("/Student/Dashboard");
     } catch (error) {
       console.error("Error, gagal terhubung ke dalam api", error);
+      toast.error("Gagal menyimpan jawaban ujian");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -360,7 +488,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                   </h3>
 
                   <span className="text-xs text-slate-300">
-                    {dataUjianRandom.length} soal
+                    {pagination?.total_items ?? dataUjianRandom.length} soal
                   </span>
                 </div>
 
@@ -379,6 +507,14 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                       <button
                         type="button"
                         key={item.id}
+                        onClick={() =>
+                          document
+                            .getElementById(`question-${item.id}`)
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "center",
+                            })
+                        }
                         className={`relative aspect-square shadow-md shadow-slate-500 min-w-0 rounded-lg text-xs font-bold sm:rounded-xl sm:text-sm ${
                           isAnswered
                             ? "bg-emerald-500 text-white hover:bg-emerald-400"
@@ -392,7 +528,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                             <Flag className="absolute left-1 top-1 size-2.5 text-amber-300 sm:size-3" />
                           )}
 
-                        {i + 1}
+                        {(page - 1) * limit + i + 1}
                       </button>
                     );
                   })}
@@ -455,21 +591,28 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
             </section>
 
             {/* ================= QUESTIONS ================= */}
+            {loading && dataUjianRandom.length === 0 && (
+              <p className="rounded-xl bg-white p-5 text-center text-sm text-slate-500">
+                Memuat soal...
+              </p>
+            )}
+
             <div className="space-y-4 sm:space-y-5">
               {dataUjianRandom.map((item, i: number) => (
                 <section
                   key={item.id}
+                  id={`question-${item.id}`}
                   className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6 lg:p-7"
                 >
                   {/* Question Header */}
                   <div className="flex items-start gap-3 sm:gap-4">
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-extrabold text-white sm:size-10 sm:rounded-xl sm:text-sm">
-                      {String(i + 1).padStart(2, "0")}
+                      {String((page - 1) * limit + i + 1).padStart(2, "0")}
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:text-xs">
-                        Pertanyaan {i + 1}
+                        Pertanyaan {(page - 1) * limit + i + 1}
                       </p>
 
                       <h2 className="mt-1 wrap-break-word text-base font-bold leading-6 text-slate-900 sm:text-lg sm:leading-7 lg:text-xl">
@@ -483,7 +626,12 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                     <div className="mt-5 space-y-2.5 sm:mt-6 sm:space-y-3">
                       {["a", "b", "c", "d", "e"].map((opt) => {
                         const choiceKey = `choice_${opt}`;
-                        const choiceText = item.multipleChoice[choiceKey];
+                        const choiceText =
+                          "multipleChoice" in item
+                            ? item.multipleChoice[
+                                choiceKey as keyof typeof item.multipleChoice
+                              ]
+                            : "";
                         const isSelected =
                           clickedAnswerPg[item.id] === choiceText;
 
@@ -570,6 +718,17 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
               ))}
             </div>
 
+            {pagination && pagination.total_pages > 1 && (
+              <div className="mt-5">
+                <PaginationUi
+                  currentPage={page}
+                  totalPage={pagination.total_pages}
+                  onPageChange={handlePageChange}
+                  isLoading={loading}
+                />
+              </div>
+            )}
+
             {/* ================= SUBMIT ================= */}
             <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:mt-6 sm:rounded-2xl sm:p-5 lg:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -584,8 +743,11 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                 </div>
 
                 <Dialog>
-                  <DialogTrigger className="rounded-lg bg-blue-500 px-6 text-slate-50 py-3 font-medium text-sm hover:bg-blue-500/80">
-                    Selesai Ujian
+                  <DialogTrigger
+                    disabled={submitting}
+                    className="rounded-lg bg-blue-500 px-6 text-slate-50 py-3 font-medium text-sm hover:bg-blue-500/80 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {submitting ? "Menyimpan..." : "Selesai Ujian"}
                   </DialogTrigger>
 
                   <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
@@ -627,6 +789,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
                       <DialogClose>
                         <Button
                           onClick={handleSendExam}
+                          disabled={submitting}
                           className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 sm:w-auto"
                         >
                           Akhiri Ujian
@@ -659,6 +822,7 @@ export default function BeginExam({ dataExam }: BeginExamProps) {
             <AlertDialogAction
               className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 sm:w-auto"
               onClick={handleSendExam}
+              disabled={submitting}
             >
               Oke
             </AlertDialogAction>

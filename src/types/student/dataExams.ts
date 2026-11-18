@@ -1,6 +1,5 @@
 import {
   EssayQuestion,
-  ExamQuestion,
   MultipleChoiceQuestion,
 } from "../dataExam";
 
@@ -31,7 +30,7 @@ export type ExamResult = {
 
 export type Exam = {
   id_subject: string;
-  exam_questions: ExamQuestion;
+  exam_questions: Array<MultipleChoiceQuestion | EssayQuestion>;
   name_exam: string;
   type_exam: "PG" | "ESSAY";
   duration: number;

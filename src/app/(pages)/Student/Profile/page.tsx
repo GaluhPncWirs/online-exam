@@ -1,3 +1,4 @@
+"use server";
 import MainContent from "@/src/layout/mainContent/content";
 import { Suspense } from "react";
 import SkeletonProfil from "@/components/local/student/profil/skeleton";
@@ -9,7 +10,7 @@ import {
 import ProfilClient from "@/components/local/student/profil/profilClient";
 import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
 
-export default function Loader() {
+export default async function Loader() {
   return (
     <Suspense fallback={<SkeletonProfil />}>
       <Profil />

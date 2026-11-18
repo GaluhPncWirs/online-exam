@@ -28,7 +28,12 @@ export function shuffle<T>(arr: T[]): T[] {
 }
 
 export function clearExamStorage(examId: string) {
-  ["mark", "answer-pg", "answer-essay", "random", "timer"].forEach((name) =>
-    localStorage.removeItem(examKey(examId, name)),
-  );
+  [
+    "mark",
+    "answer-pg",
+    "answer-essay",
+    "random",
+    "random-pages",
+    "timer",
+  ].forEach((name) => localStorage.removeItem(examKey(examId, name)));
 }

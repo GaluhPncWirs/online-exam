@@ -135,7 +135,8 @@
         "memperbaiki error ketika ambil data ujian karena fungsi getAuthenticatedUser(), mendekarasikannya di luar jadi tidak mempunyai context",
         "memperbaiki pengmbilan data hasil ujian menggunakan pagination di halaman hasil ujian",
         "memperbaiki error ketika menampilkan data hasil ujian selesai",
-        "selesai mengerjakan untuk menampilkan data hasil ujian menggunakan pagination di halaman lihat hasil ujian"
+        "selesai mengerjakan untuk menampilkan data hasil ujian menggunakan pagination di halaman lihat hasil ujian",
+        "selesai membuat agar data riwayat ujian dan kelola ujian menggunakan pagination di halaman profil"
     ],
     "sqltools.connections": [
         {

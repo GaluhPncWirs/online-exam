@@ -330,13 +330,26 @@ export async function handleGetDataResultExam(
   }
 }
 
-export async function handleGetExams(id_subject: string, className: string) {
+export async function handleGetExams(
+  id_subject: string,
+  className: string,
+  page: number = 1,
+  limit: number = 10,
+) {
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit) || 10));
+
+  const start = (safePage - 1) * safeLimit;
+  const end = start + safeLimit - 1;
+  const jsonPath = `$[${start} to ${end}]`;
+
   const query = `
     SELECT
       me.duration_exam,
       me.id_subject,
       c.name AS class,
-      se.exam_questions,
+      JSON_LENGTH(se.exam_questions) AS total_questions,
+      JSON_EXTRACT(se.exam_questions, ?) AS exam_questions,
       se.name_exam,
       se.type_exam
     FROM manage_exams AS me
@@ -358,12 +371,44 @@ export async function handleGetExams(id_subject: string, className: string) {
 
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      jsonPath,
       id_subject,
       className,
     ]);
 
+    if (rows.length === 0) {
+      return { success: false, message: "Ujian tidak ditemukan" };
+    }
+
+    const row = rows[0];
+    const totalItems = Number(row.total_questions ?? 0);
+    const totalPages = Math.ceil(totalItems / safeLimit);
+
+    if (totalPages > 0 && safePage > totalPages) {
+      return {
+        success: false,
+        message: "Data tidak ditemukan",
+      };
+    }
+
     return {
-      data: rows[0],
+      data: {
+        id_subject: row.id_subject,
+        name_exam: row.name_exam,
+        type_exam: row.type_exam,
+        duration: row.duration_exam,
+        exam_questions: parseJsonColumn<
+          Array<MultipleChoiceQuestion | EssayQuestion>
+        >(row.exam_questions, []),
+      },
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total_items: totalItems,
+        total_pages: totalPages,
+        has_next: safePage < totalPages,
+        has_prev: safePage > 1,
+      },
       success: true,
       message: "Berhasil mengambil data ujian",
     };
@@ -372,6 +417,49 @@ export async function handleGetExams(id_subject: string, className: string) {
       success: false,
       message: "Gagal mengambil data ujian",
     };
+  }
+}
+
+export async function handleGetAllExamQuestions(
+  id_subject: string,
+  className: string,
+) {
+  const query = `
+    SELECT se.type_exam, se.exam_questions
+    FROM manage_exams AS me
+    JOIN subject_exam AS se
+      ON me.id_subject = se.id_subject
+    JOIN classes AS c
+      ON c.id = me.class_id
+    WHERE me.id_subject = ? AND c.name = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      id_subject,
+      className,
+    ]);
+
+    if (rows.length === 0) {
+      return { success: false as const, message: "Ujian tidak ditemukan" };
+    }
+
+    const typeExam = rows[0].type_exam;
+    if (typeExam !== "PG" && typeExam !== "ESSAY") {
+      return { success: false as const, message: "Tipe ujian tidak valid" };
+    }
+
+    return {
+      success: true as const,
+      type_exam: typeExam,
+      exam_questions: parseJsonColumn<
+        Array<MultipleChoiceQuestion | EssayQuestion>
+      >(rows[0].exam_questions, []),
+    };
+  } catch (error) {
+    console.error("Error mengambil kunci jawaban ujian:", error);
+    return { success: false as const, message: "Gagal mengambil data ujian" };
   }
 }
 
