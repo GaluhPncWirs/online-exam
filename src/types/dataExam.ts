@@ -29,3 +29,12 @@ export type ExamQuestion =
       type_exam: "ESSAY";
       exam_questions: EssayQuestion[];
     };
+
+export type Pagination = {
+  page: number;
+  limit: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};

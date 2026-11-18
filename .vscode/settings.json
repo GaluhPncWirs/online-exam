@@ -131,7 +131,8 @@
         "memperbaiki code state management untuk ambil data user dari token jwt",
         "sedang mengerjakan proses pengambilan data ujian menggunakan pagination di halaman dashboard siswa",
         "update nextjs ke versi 16.4.6",
-        "sedang mengerjakan refaktor code untuk proses pengambilan data ujian "
+        "sedang mengerjakan refaktor code untuk proses pengambilan data ujian ",
+        "memperbaiki error ketika ambil data ujian karena fungsi getAuthenticatedUser(), mendekarasikannya di luar jadi tidak mempunyai context"
     ],
     "sqltools.connections": [
         {

@@ -2,23 +2,103 @@
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
-import {
-  DataResultExam,
-  Essay,
-  MultipleChoice,
-} from "@/src/types/student/dataExams";
+import { DataResultExam } from "@/src/types/student/dataExams";
+import { useEffect, useState } from "react";
+import { Pagination } from "@/src/types/dataExam";
+import { toast } from "sonner";
+import PaginationUi from "@/components/global/pagination/content";
 
 type DataResultExamDetail = {
-  dataResultExam: DataResultExam;
+  initialDataResultExam: DataResultExam;
+  initialPagination: Pagination;
+  idSubject: string;
+  idStudent: string;
 };
 
 export default function ResultExamClient({
-  dataResultExam,
+  initialDataResultExam,
+  initialPagination,
+  idSubject,
+  idStudent,
 }: DataResultExamDetail) {
+  const [dataAnswer, setDataAnswer] = useState<Record<string, string>>(
+    initialDataResultExam.answer_student,
+  );
+  const [dataQuestions, setDataQuestions] = useState(
+    initialDataResultExam.exam_questions,
+  );
+
+  const [page, setPage] = useState(initialPagination?.page ?? 1);
+  const [limit, setLimit] = useState(initialPagination?.limit ?? 10);
+  const [pagination, setPagination] = useState<Pagination | null>(
+    initialPagination,
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchResultExam() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+          idStudent,
+          idSubject,
+        });
+
+        const response = await fetch(
+          `/api/student/GET/dataResultExam?${params.toString()}`,
+          {
+            method: "GET",
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data jawaban.");
+        }
+
+        const res = await response.json();
+
+        if (!res.success) {
+          throw new Error(
+            res.message || "Terjadi kesalahan saat mengambil data jawaban.",
+          );
+        }
+
+        if (!res.data) {
+          throw new Error("Data jawaban dari server tidak lengkap.");
+        }
+
+        setDataAnswer(res.data.exam_answer);
+        setDataQuestions(res.data.exam_questions);
+        setPagination(res.pagination);
+      } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") return;
+        console.error("Error fetching questions:", error);
+        toast.error("Gagal mengambil data jawaban", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Terjadi kesalahan saat mengambil data jawaban",
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchResultExam();
+    return () => controller.abort();
+  }, [page, limit, idStudent, idSubject]);
+
   function correctAnswer(questionsId: string, pg: string) {
-    if (!dataResultExam) return null;
-    const answerStudentObj = dataResultExam?.answer_student;
-    const studentAnswer = answerStudentObj[questionsId];
+    if (!dataAnswer) return null;
+    const studentAnswer = dataAnswer?.[questionsId];
     return studentAnswer === pg && "bg-blue-200 rounded-sm py-1 font-semibold";
   }
 
@@ -48,11 +128,13 @@ export default function ResultExamClient({
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <h2 className="text-lg font-semibold text-white sm:text-xl">
-              {dataResultExam.name_exam}
+              {initialDataResultExam.name_exam}
             </h2>
 
             <span className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
-              {dataResultExam.type_exam === "PG" ? "Pilihan Ganda" : "Essay"}
+              {initialDataResultExam.type_exam === "PG"
+                ? "Pilihan Ganda"
+                : "Essay"}
             </span>
           </div>
         </div>
@@ -73,9 +155,9 @@ export default function ResultExamClient({
             Periksa kembali jawaban yang telah Anda berikan pada setiap soal.
           </p>
         </div>
-        {dataResultExam.type_exam === "PG" ? (
+        {initialDataResultExam.type_exam === "PG" ? (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {dataResultExam.exam_questions.map((item, i: number) => (
+            {dataQuestions.map((item, i: number) => (
               <div
                 key={item.id}
                 className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md"
@@ -105,7 +187,7 @@ export default function ResultExamClient({
                           key={opt}
                           className={`rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${correctAnswer(
                             item.id,
-                            String(choiceText),
+                            choiceText,
                           )}`}
                         >
                           <div className="flex items-start gap-3">
@@ -113,9 +195,7 @@ export default function ResultExamClient({
                               {opt.toUpperCase()}
                             </span>
 
-                            <span className="leading-6">
-                              {String(choiceText ?? "")}
-                            </span>
+                            <span className="leading-6">{choiceText}</span>
                           </div>
                         </li>
                       );
@@ -127,9 +207,9 @@ export default function ResultExamClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {dataResultExam.exam_questions.map((item: Essay, i: number) => (
+            {dataQuestions.map((item, i: number) => (
               <div
-                key={item.id ?? i}
+                key={item.id}
                 className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
               >
                 {/* Question */}
@@ -159,13 +239,21 @@ export default function ResultExamClient({
 
                   <Textarea
                     disabled
-                    value={dataResultExam.answer_student?.[item.id] || ""}
+                    value={dataAnswer.answer_student?.[item.id] || ""}
                     className="min-h-32 resize-none rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700"
                   />
                 </div>
               </div>
             ))}
           </div>
+        )}
+        {pagination && pagination.total_pages > 1 && (
+          <PaginationUi
+            currentPage={page}
+            totalPage={pagination.total_pages}
+            onPageChange={setPage}
+            isLoading={loading}
+          />
         )}
       </section>
     </div>

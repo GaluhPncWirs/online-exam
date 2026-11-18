@@ -2,7 +2,9 @@
 import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
+import { parseJsonColumn } from "@/src/lib/utils/parseJSONColumn";
 import { queryRows } from "@/src/lib/utils/queryPool";
+import { ExamQuestion } from "@/src/types/dataExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -230,26 +232,69 @@ export async function handleLateExam({
 export async function handleGetDataResultExam(
   id_subject: string,
   id_student: string,
+  page: number = 1,
+  limit: number = 10,
 ) {
+  const safePage = Math.max(1, Math.floor(page) || 1);
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit) || 10));
+
+  const start = (safePage - 1) * safeLimit;
+  const end = start + safeLimit - 1;
+  const jsonPath = `$[${start} to ${end}]`;
+
   const query = `
     SELECT 
-      history_exams.answer_student, subject_exam.name_exam, subject_exam.type_exam, subject_exam.exam_questions 
-    FROM subject_exam
-    JOIN history_exams
-      ON subject_exam.id_subject = history_exams.id_subject
+      se.name_exam, se.type_exam, se.exam_questions, JSON_EXTRACT(se.exam_questions, ?) AS exam_questions,
+      he.answer_student, JSON_LENGTH(he.answer_student) AS total_questions, JSON_EXTRACT(he.answer_student, ?) AS answer_student
+    FROM subject_exam AS se
+    JOIN history_exams AS he
+      ON se.id_subject = he.id_subject
     WHERE 
-      subject_exam.id_subject = ? AND history_exams.id_student = ?
+      se.id_subject = ? AND he.id_student = ?
+    LIMIT 1
   `;
 
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      jsonPath,
+      jsonPath,
       id_subject,
       id_student,
     ]);
-    const dataResultExam = rows[0];
+
+    if (rows.length === 0) {
+      return { success: false, message: "Ujian tidak ditemukan" };
+    }
+
+    const row = rows[0];
+    const totalItems = Number(row.total_questions ?? 0);
+    const totalPages = Math.ceil(totalItems / safeLimit);
+
+    if (totalPages > 0 && safePage > totalPages) {
+      return {
+        success: false,
+        message: "Halaman tidak ditemukan",
+      };
+    }
 
     return {
-      data: dataResultExam,
+      data: {
+        name_exam: row.name_exam,
+        type_exam: row.type_exam,
+        exam_questions: parseJsonColumn<ExamQuestion[]>(row.exam_questions, []),
+        answer_student: parseJsonColumn<Record<string, string>>(
+          row.answer_student[0],
+          {},
+        ),
+      },
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total_items: totalItems,
+        total_pages: totalPages,
+        has_next: safePage < totalPages,
+        has_prev: safePage > 1,
+      },
       success: true,
       message: "Berhasil mengambil data ujian",
     };
