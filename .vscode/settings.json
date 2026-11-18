@@ -133,7 +133,8 @@
         "update nextjs ke versi 16.4.6",
         "sedang mengerjakan refaktor code untuk proses pengambilan data ujian ",
         "memperbaiki error ketika ambil data ujian karena fungsi getAuthenticatedUser(), mendekarasikannya di luar jadi tidak mempunyai context",
-        "memperbaiki pengmbilan data hasil ujian menggunakan pagination di halaman hasil ujian"
+        "memperbaiki pengmbilan data hasil ujian menggunakan pagination di halaman hasil ujian",
+        "memperbaiki error ketika menampilkan data hasil ujian selesai"
     ],
     "sqltools.connections": [
         {
