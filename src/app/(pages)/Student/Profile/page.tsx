@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import SkeletonProfil from "@/components/local/student/profil/skeleton";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
 import {
-  handleGetDataResultExamPerClass,
+  handleGetDataHistoryResultExamPerClass,
   handleGetDataSubjectExams,
 } from "@/src/services/mysql/student/data-subject-exam";
 import ProfilClient from "@/components/local/student/profil/profilClient";
@@ -18,14 +18,10 @@ export default function Loader() {
 }
 
 async function Profil() {
-  const dataStudent = await getAuthenticatedUser();
+  const dataStudent = await getAuthenticatedUser("student");
 
   if (!dataStudent.success) {
     return <h3>{dataStudent.message}</h3>;
-  }
-
-  if (dataStudent.data.role !== "student") {
-    return <h3>Halaman ini hanya untuk siswa</h3>;
   }
 
   const dataExams = await handleGetDataSubjectExams(
@@ -37,7 +33,7 @@ async function Profil() {
     return <h3>Error mengambil data ujian</h3>;
   }
 
-  const dataResultExam = await handleGetDataResultExamPerClass(
+  const dataResultExam = await handleGetDataHistoryResultExamPerClass(
     dataStudent.data.id_student,
   );
 
@@ -48,8 +44,8 @@ async function Profil() {
   return (
     <MainContent>
       <ProfilClient
-        dataExams={dataExams.data as ScheduleExams[]}
-        dataResultExam={dataResultExam.data as ExamResult[]}
+        initialDataExams={dataExams.data as ScheduleExams[]}
+        initialDataHistoryResultExam={dataResultExam.data as ExamResult[]}
         dataStudent={dataStudent.data}
       />
     </MainContent>

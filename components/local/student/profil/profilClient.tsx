@@ -26,19 +26,26 @@ import ListSidebar from "@/components/global/listSidebar/content";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
 import { useForm } from "react-hook-form";
-import {
-  InputUpdateData,
-  inputUpdateDataSchema,
-} from "@/src/schemas/updateDataStudent";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Loader from "@/components/global/loader/component";
 import { createPortal } from "react-dom";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import { DataStudent } from "@/src/types/dataUser";
+import {
+  InputUpdateData,
+  inputUpdateDataSchema,
+} from "@/src/schemas/student/updateDataStudent";
+import { useEffect, useState } from "react";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
+import {
+  getDataExamsPagination,
+  getDataHistoryExamsPagination,
+} from "@/src/actions/dataExamsStudent";
+import PaginationUi from "@/components/global/pagination/content";
 
 type DataExamsStudent = {
-  dataExams: ScheduleExams[];
-  dataResultExam: ExamResult[];
+  initialDataExams: ScheduleExams[];
+  initialDataHistoryResultExam: ExamResult[];
   dataStudent: DataStudent;
 };
 
@@ -53,16 +60,82 @@ type ClassGroup = {
 };
 
 export default function ProfilClient({
-  dataExams,
-  dataResultExam,
+  initialDataExams,
+  initialDataHistoryResultExam,
   dataStudent,
 }: DataExamsStudent) {
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataExams, setDataExams] = useState<ScheduleExams[]>(initialDataExams);
+  const [dataHistoryExams, setDataHistoryExams] = useState<ExamResult[]>(
+    initialDataHistoryResultExam,
+  );
+  const totalPages = Math.ceil(dataExams.length / MAX_PAGE_SIZE);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataManageExams() {
+      setIsLoading(true);
+      try {
+        const result = await getDataExamsPagination(page);
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataExams(result.data);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataManageExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function getDataHistoryExams() {
+      setIsLoading(true);
+      try {
+        const result = await getDataHistoryExamsPagination(page);
+        if (!isMounted) return;
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        setDataHistoryExams(result.data as ExamResult[]);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    getDataHistoryExams();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page]);
+
   const rankingClasses = () => {
-    if (!dataResultExam?.length || !dataStudent?.class) {
+    if (!dataHistoryExams?.length || !dataStudent?.class) {
       return { ranking: 0, lenStudentPerClass: 0 };
     }
 
-    const normalizedResults = dataResultExam.map((item) => ({
+    const normalizedResults = dataHistoryExams.map((item) => ({
       ...item,
       result_exam:
         item.result_exam !== "telat" && item.result_exam !== "pending"
@@ -446,7 +519,7 @@ export default function ProfilClient({
                       </TableCell>
 
                       <TableCell className="text-sm text-slate-500">
-                        {formatDateToYYYYMMDD(item.created_at) || "-"}
+                        {formatDateToYYYYMMDD(item.history_created_at) || "-"}
                       </TableCell>
 
                       <TableCell>
@@ -487,6 +560,12 @@ export default function ProfilClient({
                 )}
               </TableBody>
             </Table>
+            <PaginationUi
+              currentPage={page}
+              totalPage={totalPages}
+              onPageChange={setPage}
+              isLoading={isLoading}
+            />
           </div>
         </section>
       </div>

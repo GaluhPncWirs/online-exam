@@ -4,10 +4,7 @@ import { pool } from "@/src/lib/db";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
 import { parseJsonColumn } from "@/src/lib/utils/parseJSONColumn";
 import { queryRows } from "@/src/lib/utils/queryPool";
-import {
-  EssayQuestion,
-  MultipleChoiceQuestion,
-} from "@/src/types/dataExam";
+import { EssayQuestion, MultipleChoiceQuestion } from "@/src/types/dataExam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -96,7 +93,17 @@ export async function handleGetDataSubjectExams(
   }
 }
 
-export async function handleGetDataResultExamPerClass(idStudent: string) {
+export async function handleGetDataHistoryResultExamPerClass(
+  idStudent: string,
+  from: number = 0,
+  to: number = 9,
+) {
+  const offset = Number.isFinite(from) ? Math.max(0, Math.floor(from)) : 0;
+  const lastIndex = Number.isFinite(to)
+    ? Math.max(offset, Math.floor(to))
+    : offset + 9;
+  const limit = Math.min(lastIndex - offset + 1, MAX_PAGE_SIZE);
+
   const query = `
     SELECT
       he.id_student,
@@ -107,10 +114,23 @@ export async function handleGetDataResultExamPerClass(idStudent: string) {
     LEFT JOIN classes AS c
       ON c.id = he.class_id
     WHERE he.id_student = ?
+    LIMIT ? OFFSET ?
   `;
 
   try {
-    const [rows] = await pool.execute(query, [idStudent]);
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      idStudent,
+      limit,
+      offset,
+    ]);
+
+    if (rows.length === 0) {
+      return {
+        data: [],
+        success: false,
+        message: "Data ujian tidak di temukan",
+      };
+    }
 
     return {
       data: rows,
