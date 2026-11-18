@@ -1,14 +1,13 @@
-import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
+"use server";
 import DashboardClientStudent from "@/components/local/student/dashboard/dashboardClient";
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import MainContent from "@/src/layout/mainContent/content";
 import { getAuthenticatedUser } from "@/src/lib/auth/getAuthenticatedUser";
-import { getDataPagination } from "@/src/lib/utils/getDataPagination";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
 import { ScheduleExams } from "@/src/types/student/dataExams";
 import { Suspense } from "react";
 
-export default function Loader() {
+export default async function Loader() {
   return (
     <Suspense fallback={<DashboardSkeletonStudent />}>
       <DashboardStudent />

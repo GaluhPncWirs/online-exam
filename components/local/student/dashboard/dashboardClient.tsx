@@ -37,7 +37,8 @@ import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { getDataPagination } from "@/src/lib/utils/getDataPagination";
 import { handleGetDataManageExams } from "@/src/services/mysql/teacher/data-subject-exam";
 import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
-import { getDataExamsPagination } from "@/src/actions/dataExams";
+import { getDataExamsPagination } from "@/src/actions/dataExamsStudent";
+import PaginationUi from "@/components/global/pagination/content";
 
 type DataDashboardStudent = {
   initialDataExams: ScheduleExams[];
@@ -64,8 +65,6 @@ export default function DashboardClientStudent({
 
   const savedLateExamIds = useRef<Set<string>>(new Set());
   const isExamAvaible = dataExams.filter((exam) => exam.status_exam === 0);
-
-  console.log(dataExams);
 
   useEffect(() => {
     let isMounted = true;
@@ -562,6 +561,12 @@ export default function DashboardClientStudent({
                 )}
               </TableBody>
             </Table>
+            <PaginationUi
+              currentPage={page}
+              totalPage={totalPages}
+              onPageChange={setPage}
+              isLoading={isLoading}
+            />
           </div>
         </section>
 
@@ -740,6 +745,12 @@ export default function DashboardClientStudent({
                 )}
               </TableBody>
             </Table>
+            <PaginationUi
+              currentPage={page}
+              totalPage={totalPages}
+              onPageChange={setPage}
+              isLoading={isLoading}
+            />
           </div>
         </section>
       </div>
