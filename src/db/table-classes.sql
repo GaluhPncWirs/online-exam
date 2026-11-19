@@ -11,4 +11,6 @@ SELECT DISTINCT class FROM account_students WHERE role = "student"
 INSERT INTO classes (name) 
   VALUES ('1A'), ('2B'), ('4E'), ('5A'), ('2C')
 
+INSERT INTO classes (name) VALUES ("not filled")
+
 SELECT * FROM classes

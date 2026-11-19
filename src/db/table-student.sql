@@ -6,7 +6,7 @@ CREATE TABLE account_students (
     fullname VARCHAR(100) NOT NULL,
     class VARCHAR(3) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NULL,
     role ENUM('student', 'teacher') DEFAULT 'student',
     nis VARCHAR(5),
     no_tlp VARCHAR(15),
@@ -22,6 +22,8 @@ CREATE INDEX idx_account_student_classes ON account_students (class, id_student)
 
 INSERT INTO account_students (id_student, fullname, class, email, password, nis, no_tlp) VALUES 
 ('STD-aMClguF', 'Galuh panca wirasa', '3A', 'galuhpncwirs22@gmail.com', 'testPelajar123', '79704', '089782648264')
+
+ALTER TABLE account_students MODIFY password VARCHAR(255) NULL AFTER email
 
 SELECT * FROM account_students
 

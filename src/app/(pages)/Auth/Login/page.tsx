@@ -154,7 +154,6 @@ export default function LoginAccount() {
         type="button"
         onClick={() =>
           signIn("google", {
-            redirect: false,
             callbackUrl: "/Student/Dashboard",
           })
         }

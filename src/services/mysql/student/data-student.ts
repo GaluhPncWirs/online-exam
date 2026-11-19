@@ -9,7 +9,11 @@ type PropsUserRegister = {
   fullName: string;
   classes: string;
   email: string;
-  password: string;
+  password?: string;
+  profilImage?: string;
+  role?: "student" | "teacher";
+  type_account?: "default" | "google";
+  id_student?: string;
 };
 
 type ResultUserRegister = {
@@ -22,7 +26,11 @@ export async function handleUserRegister({
   fullName,
   classes,
   email,
+  id_student,
   password,
+  profilImage,
+  role,
+  type_account,
 }: PropsUserRegister): Promise<ResultUserRegister> {
   const idStudent = generateRandomId(7, "STD");
 
@@ -34,7 +42,9 @@ export async function handleUserRegister({
       LIMIT 1
     `;
 
-    const [classRows] = await pool.execute<RowDataPacket[]>(queryClassId, [classes]);
+    const [classRows] = await pool.execute<RowDataPacket[]>(queryClassId, [
+      classes,
+    ]);
 
     if (!classRows.length) {
       return {
@@ -48,11 +58,20 @@ export async function handleUserRegister({
 
     const query = `
       INSERT INTO account_students
-        (id_student, fullname, class_id, email, password)
-      VALUES (?, ?, ?, ?, ?)
+        (id_student, fullname, class_id, email, password, profil_img, type_account, role)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    await pool.execute(query, [idStudent, fullName, classId, email, password]);
+    await pool.execute(query, [
+      id_student ?? idStudent,
+      fullName,
+      classId,
+      email,
+      password ?? null,
+      profilImage ?? null,
+      type_account ?? "default",
+      role ?? "student",
+    ]);
 
     return {
       success: true,
@@ -191,5 +210,29 @@ export async function handleUpdateDataStudent({
       status: 500,
       message: "Error terhubung kedalam database",
     };
+  }
+}
+
+export async function handleExistingUserAccount(email: string) {
+  const query = `
+    SELECT student.id_student, student.email, student.nis, student.no_tlp, student.type_account, student.role, c.name AS class
+    FROM account_students AS student
+    INNER JOIN classes AS c
+      ON student.class_id = c.id
+    WHERE student.email = ?
+    LIMIT 1
+  `;
+
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [email]);
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    return rows[0];
+  } catch (error) {
+    console.error("Gagal mengambil data akun Google", error);
+    throw error;
   }
 }
