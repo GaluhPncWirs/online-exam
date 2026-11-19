@@ -27,21 +27,8 @@ export default function ListSidebar() {
     getDataUser();
   }, []);
 
-  const { dataUser, isSuccess, message } = useGetDataUser(
-    useShallow((state) => ({
-      dataUser: state.dataUser,
-      isSuccess: state.isSuccess,
-      message: state.message,
-    })),
-  );
+  const dataUser = useGetDataUser((state) => state.dataUser);
   const handleLogout = useHandleLogout();
-
-  if (!isSuccess) {
-    toast.error("Error", {
-      description: message,
-    });
-    return;
-  }
 
   return (
     <div className="flex flex-1 flex-col px-4 py-7">

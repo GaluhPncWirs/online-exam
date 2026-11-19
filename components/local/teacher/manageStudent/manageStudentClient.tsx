@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PAGE_SIZE } from "@/src/lib/constants";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { DataTeacher } from "@/src/types/dataUser";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
@@ -45,9 +45,9 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalStudents, setTotalStudents] = useState(0);
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-  const totalPages = Math.ceil(totalStudents / PAGE_SIZE);
+  const from = (page - 1) * MAX_PAGE_SIZE;
+  const to = from + MAX_PAGE_SIZE - 1;
+  const totalPages = Math.ceil(totalStudents / MAX_PAGE_SIZE);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -327,7 +327,7 @@ export default function ManageStudent({ dataTeacher }: ManageStudentProps) {
           </TableBody>
         </Table>
 
-        {totalStudents > PAGE_SIZE && (
+        {totalStudents > MAX_PAGE_SIZE && (
           <PaginationUi
             currentPage={page}
             totalPage={totalPages}

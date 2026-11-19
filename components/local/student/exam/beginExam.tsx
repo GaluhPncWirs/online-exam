@@ -271,35 +271,35 @@ export default function BeginExam({
   const second = time! % 60;
   const formatedTime = `${minute}:${String(second).padStart(2, "0")}`;
 
-  // useEffect(() => {
-  //   const handleSelectStart = (e: Event) => {
-  //     e.preventDefault();
-  //     return false;
-  //   };
+  useEffect(() => {
+    const handleSelectStart = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
 
-  //   const handleContextMenu = (e: Event) => {
-  //     e.preventDefault();
-  //     return false;
-  //   };
+    const handleContextMenu = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
 
-  //   const handleDragStart = (e: Event) => {
-  //     e.preventDefault();
-  //     return false;
-  //   };
+    const handleDragStart = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
 
-  //   document.addEventListener("selectstart", handleSelectStart);
-  //   document.addEventListener("contextmenu", handleContextMenu);
-  //   document.addEventListener("dragstart", handleDragStart);
+    document.addEventListener("selectstart", handleSelectStart);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("dragstart", handleDragStart);
 
-  //   document.body.classList.add("no-select");
+    document.body.classList.add("no-select");
 
-  //   return () => {
-  //     document.removeEventListener("selectstart", handleSelectStart);
-  //     document.removeEventListener("contextmenu", handleContextMenu);
-  //     document.removeEventListener("dragstart", handleDragStart);
-  //     document.body.classList.remove("no-select");
-  //   };
-  // }, []);
+    return () => {
+      document.removeEventListener("selectstart", handleSelectStart);
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("dragstart", handleDragStart);
+      document.body.classList.remove("no-select");
+    };
+  }, []);
 
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
@@ -377,7 +377,7 @@ export default function BeginExam({
     };
 
     try {
-      const response = await fetch("/api/student/saveResultExam", {
+      const response = await fetch("/api/student/POST/saveResultExam", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

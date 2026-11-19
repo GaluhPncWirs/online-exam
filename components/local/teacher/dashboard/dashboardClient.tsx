@@ -25,13 +25,13 @@ import {
   ManageExamItem,
   StatisticStudent,
 } from "@/src/types/teacher/dataExam";
-import { getManageExamsAction } from "@/src/actions/dataExams";
 import { MAX_PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import PaginationUi from "@/components/global/pagination/content";
 import CreateNewQuestions from "../createExam/createExamClient";
 import SendExamToStudent from "../sendExam/sendExamClient";
 import ManageStudent from "../manageStudent/manageStudentClient";
+import { getManageExamsAction } from "@/src/actions/dataExamsTeacher";
 
 type DataDashboardTeacher = {
   dataExamsPending: DataExamsPending[];

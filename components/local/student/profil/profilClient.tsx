@@ -247,7 +247,7 @@ export default function ProfilClient({
     );
 
     try {
-      const request = await fetch("/api/student/updateData", {
+      const request = await fetch("/api/student/PATCH/updateData", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

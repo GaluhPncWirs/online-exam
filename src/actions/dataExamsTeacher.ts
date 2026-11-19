@@ -8,9 +8,8 @@ import {
   handleGetTeacherExamHistory,
 } from "../services/mysql/teacher/data-subject-exam";
 
-const session = await getAuthenticatedUser("teacher");
-
 export async function getTeacherExamHistoryAction(page: number) {
+  const session = await getAuthenticatedUser("teacher");
   if (!session.success) {
     return {
       success: false,
@@ -29,6 +28,7 @@ export async function getTeacherExamHistoryAction(page: number) {
 }
 
 export async function getManageExamsAction(page: number) {
+  const session = await getAuthenticatedUser("teacher");
   if (!session.success) {
     return { success: false, message: "Error ambil data", data: [], total: 0 };
   }
@@ -39,6 +39,7 @@ export async function getManageExamsAction(page: number) {
 }
 
 export async function getDataExams() {
+  const session = await getAuthenticatedUser("teacher");
   if (!session.success) {
     return { success: false, message: "Error ambil data", data: [], total: 0 };
   }

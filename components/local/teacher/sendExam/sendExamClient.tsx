@@ -33,9 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getDataExams } from "@/src/actions/dataExams";
-import { PAGE_SIZE } from "@/src/lib/constants";
-import { fromDateString, toDateString } from "@/src/lib/utils/date";
+import { getDataExams } from "@/src/actions/dataExamsTeacher";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
+import { fromDateString, toDateString } from "@/src/lib/utils/convertDate";
 import {
   isScheduleConfigured,
   sendExamToStudentSchema,
@@ -139,7 +139,7 @@ export default function SendExamToStudent({
     });
   }, [dataManageExams, setValue]);
 
-  const totalPages = Math.ceil(totalData / PAGE_SIZE);
+  const totalPages = Math.ceil(totalData / MAX_PAGE_SIZE);
   const [selectedExam, setSelectedExam] = useState<ActionsExam | null>(null);
   const [openDialog, setOpenDialog] = useState({
     sendExam: false,

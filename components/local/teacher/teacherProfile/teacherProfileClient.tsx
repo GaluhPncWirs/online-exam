@@ -32,9 +32,7 @@ import { History } from "lucide-react";
 import HeaderProfile from "@/src/layout/headerProfile/content";
 import { DataTeacher } from "@/src/types/dataUser";
 import { TeacherExamHistoryItem } from "@/src/types/teacher/dataExam";
-import { getTeacherExamHistoryAction } from "@/src/actions/dataExams";
 import PaginationUi from "@/components/global/pagination/content";
-import { PAGE_SIZE } from "@/src/lib/constants";
 import { formatDateToYYYYMMDD } from "@/src/lib/utils/convertDate";
 import { useForm } from "react-hook-form";
 import {
@@ -42,6 +40,8 @@ import {
   InputUpdateDataTeacherSchema,
 } from "@/src/schemas/teacher/updateProfileTeacher";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MAX_PAGE_SIZE } from "@/src/lib/constants";
+import { getTeacherExamHistoryAction } from "@/src/actions/dataExamsTeacher";
 
 type DataProfileTeacher = {
   dataTeacher: DataTeacher;
@@ -56,7 +56,7 @@ export default function ProfileTeacherClient({
   const [page, setPage] = useState(1);
   const [totalData, setTotalData] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const totalPages = Math.ceil(totalData / PAGE_SIZE);
+  const totalPages = Math.ceil(totalData / MAX_PAGE_SIZE);
 
   const {
     register,
@@ -367,7 +367,7 @@ export default function ProfileTeacherClient({
                     >
                       {/* No */}
                       <TableCell className="font-semibold text-slate-400">
-                        {String((page - 1) * PAGE_SIZE + i + 1).padStart(
+                        {String((page - 1) * MAX_PAGE_SIZE + i + 1).padStart(
                           2,
                           "0",
                         )}

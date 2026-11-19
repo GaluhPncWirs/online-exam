@@ -130,7 +130,7 @@ export default function DashboardClientStudent({
           id_subject: idUjian,
         };
 
-        const request = await fetch("/api/student/lateExam", {
+        const request = await fetch("/api/student/POST/lateExam", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

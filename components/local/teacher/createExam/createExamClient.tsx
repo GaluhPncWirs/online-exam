@@ -24,12 +24,12 @@ import { Controller, useForm } from "react-hook-form";
 import { DataTeacher } from "@/src/types/dataUser";
 import { toast } from "sonner";
 import { generateRandomId } from "@/src/lib/utils/generateRandomId";
-import { getDataExams } from "@/src/actions/dataExams";
 import { DataPureExams } from "@/src/types/teacher/dataExam";
 import {
   createExamSchema,
   CreateExamSchemaType,
 } from "@/src/schemas/teacher/addDataExam";
+import { getDataExams } from "@/src/actions/dataExamsTeacher";
 
 const OPTION_LABELS = ["a", "b", "c", "d", "e"] as const;
 type ExamOption = (typeof OPTION_LABELS)[number];
