@@ -214,8 +214,31 @@ export async function handleUpdateDataStudent({
 }
 
 export async function handleExistingUserAccount(email: string) {
+  type ExistingUserAccount = RowDataPacket & {
+    id_student: string;
+    email: string;
+    nis: string | null;
+    no_tlp: string | null;
+    type_account: "default" | "google";
+    role: "student" | "teacher";
+    class: string;
+    created_at: Date;
+    fullname: string;
+    profil_img: string | null;
+  };
+
   const query = `
-    SELECT student.id_student, student.email, student.nis, student.no_tlp, student.type_account, student.role, c.name AS class
+    SELECT
+      student.id_student,
+      student.email,
+      student.nis,
+      student.no_tlp,
+      student.type_account,
+      student.role,
+      student.fullname,
+      student.created_at,
+      student.profil_img,
+      c.name AS class
     FROM account_students AS student
     INNER JOIN classes AS c
       ON student.class_id = c.id
@@ -224,7 +247,7 @@ export async function handleExistingUserAccount(email: string) {
   `;
 
   try {
-    const [rows] = await pool.execute<RowDataPacket[]>(query, [email]);
+    const [rows] = await pool.execute<ExistingUserAccount[]>(query, [email]);
 
     if (rows.length === 0) {
       return null;

@@ -10,7 +10,8 @@ const ROUTES = {
 } as const;
 
 const COOKIES = {
-  token: "loginSession",
+  // token: "loginSession",
+  token: "next-auth.session-token",
   startExam: "startExam",
   examId: "examId",
 } as const;

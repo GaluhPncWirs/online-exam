@@ -5,27 +5,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function toStringOrNull(v: unknown): string | null {
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "bigint") return String(v);
+  return null;
+}
+
+function toDate(v: unknown): Date | null {
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
+  if (typeof v === "string" || typeof v === "number") {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+}
+
 function parseAuthenticatedUser(value: unknown): AuthenticatedUser | null {
   if (!isRecord(value)) {
     return null;
   }
 
-  const createdAt =
-    value.created_at instanceof Date
-      ? value.created_at
-      : typeof value.created_at === "string"
-        ? new Date(value.created_at)
-        : null;
-  const { fullname, email, no_tlp, profil_img } = value;
+  const fullname = toStringOrNull(value.fullname) ?? toStringOrNull(value.name);
+  const email = toStringOrNull(value.email);
+  const createdAt = toDate(value.created_at) ?? toDate(value.createdAt);
 
-  if (
-    !createdAt ||
-    Number.isNaN(createdAt.getTime()) ||
-    typeof fullname !== "string" ||
-    typeof email !== "string" ||
-    typeof no_tlp !== "string" ||
-    (profil_img !== null && typeof profil_img !== "string")
-  ) {
+  if (!fullname || !email || !createdAt) {
     return null;
   }
 
@@ -33,40 +37,45 @@ function parseAuthenticatedUser(value: unknown): AuthenticatedUser | null {
     created_at: createdAt,
     fullname,
     email,
-    no_tlp,
-    profil_img,
+    no_tlp: toStringOrNull(value.no_tlp) ?? toStringOrNull(value.noTlp) ?? "",
+    profil_img:
+      toStringOrNull(value.profil_img) ??
+      toStringOrNull(value.image) ??
+      toStringOrNull(value.profileImage) ??
+      toStringOrNull(value.picture),
   };
 
-  if (
-    value.role === "student" &&
-    typeof value.class === "string" &&
-    (value.type_account === "default" || value.type_account === "google") &&
-    typeof value.nis === "string" &&
-    typeof value.id_student === "string"
-  ) {
-    return {
-      ...baseUser,
-      role: "student",
-      class: value.class,
-      type_account: value.type_account,
-      nis: value.nis,
-      id_student: value.id_student,
-    };
+  if (value.role === "student") {
+    const idStudent =
+      toStringOrNull(value.id_student) ?? toStringOrNull(value.idStudent);
+    const typeAccount = value.type_account ?? value.typeAccount;
+
+    if (idStudent && (typeAccount === "default" || typeAccount === "google")) {
+      return {
+        ...baseUser,
+        role: "student",
+        class: toStringOrNull(value.class) ?? toStringOrNull(value.classes) ?? "",
+        type_account: typeAccount,
+        nis: toStringOrNull(value.nis) ?? "",
+        id_student: idStudent,
+      };
+    }
   }
 
-  if (
-    value.role === "teacher" &&
-    typeof value.teach_role === "string" &&
-    typeof value.nisn === "string" &&
-    typeof value.id_teacher === "string"
-  ) {
-    return {
-      ...baseUser,
-      role: "teacher",
-      teach_role: value.teach_role,
-      nisn: value.nisn,
-      id_teacher: value.id_teacher,
-    };
+  if (value.role === "teacher") {
+    const idTeacher =
+      toStringOrNull(value.id_teacher) ?? toStringOrNull(value.idTeacher);
+
+    if (idTeacher) {
+      return {
+        ...baseUser,
+        role: "teacher",
+        teach_role:
+          toStringOrNull(value.teach_role) ?? toStringOrNull(value.teachRole) ?? "",
+        nisn: toStringOrNull(value.nisn) ?? "",
+        id_teacher: idTeacher,
+      };
+    }
   }
 
   return null;

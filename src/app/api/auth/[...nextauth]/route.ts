@@ -15,6 +15,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
     }),
   ],
+  session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user, account }) {
       if (account?.provider === "google" && user) {
@@ -27,6 +28,7 @@ export const authOptions: NextAuthOptions = {
 
         const existingUser = await handleExistingUserAccount(user.email);
         if (existingUser) {
+          token.created_at = existingUser.created_at;
           token.idStudent = existingUser.id_student;
           token.role = existingUser.role;
           token.typeAccount = existingUser.type_account;
@@ -50,6 +52,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           token.idStudent = idStudent;
+          token.created_at = new Date();
           token.role = "student";
           token.typeAccount = "google";
           token.classes = "not filled";
