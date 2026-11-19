@@ -75,6 +75,7 @@ export default function DashboardClientStudent({
         const result = await getDataExamsPagination(page);
         if (!isMounted) return;
 
+        // bermasalah
         if (!result.success) {
           console.error(result.message);
           return;

@@ -1,4 +1,5 @@
 import { jwtVerify } from "jose";
+import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { handleValidateStartExam } from "./services/mysql/student/data-subject-exam";
 
@@ -10,8 +11,7 @@ const ROUTES = {
 } as const;
 
 const COOKIES = {
-  // token: "loginSession",
-  token: "next-auth.session-token",
+  token: "loginSession",
   startExam: "startExam",
   examId: "examId",
 } as const;
@@ -39,6 +39,26 @@ const redirectTo = (req: NextRequest, path: string) =>
 
 // Verifikasi token sekali saja; token tidak valid/expired dianggap belum login.
 async function getSession(req: NextRequest): Promise<Session | null> {
+  const nextAuthToken = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+
+  if (nextAuthToken) {
+    const role =
+      nextAuthToken.role === "student"
+        ? "siswa"
+        : nextAuthToken.role === "teacher"
+          ? "guru"
+          : undefined;
+    const idUser = nextAuthToken.idStudent ?? nextAuthToken.idTeacher;
+
+    return {
+      role,
+      idUser: typeof idUser === "string" ? idUser : undefined,
+    };
+  }
+
   const token = req.cookies.get(COOKIES.token)?.value;
   if (!token) return null;
 
