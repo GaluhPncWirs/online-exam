@@ -22,11 +22,10 @@ import {
   InputDataLoginUseGoogle,
   inputDataLoginUseGoogleSchema,
 } from "@/src/schemas/student/updateDataStudent";
-import { DataStudent } from "@/src/types/dataUser";
+import type { DataStudent } from "@/src/types/dataUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { toast } from "sonner";
 
 const idClass = [
@@ -59,16 +58,18 @@ const idClass = [
 export default function DialogFormAddDataUser({
   dataStudent,
 }: {
-  dataStudent: DataStudent;
+  dataStudent: Pick<
+    DataStudent,
+    "id_student" | "type_account" | "class" | "nis" | "no_tlp"
+  >;
 }) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(
+  const isProfileIncomplete =
     dataStudent.type_account === "google" &&
-      (!dataStudent.class ||
-        dataStudent.class === "not filled" ||
-        !dataStudent.nis ||
-        !dataStudent.no_tlp),
-  );
+    (!dataStudent.class ||
+      dataStudent.class === "not filled" ||
+      !dataStudent.nis ||
+      !dataStudent.no_tlp);
   const {
     control,
     register,
@@ -120,7 +121,6 @@ export default function DialogFormAddDataUser({
       toast.success("Berhasil", {
         description: response.message,
       });
-      setIsOpen(false);
       router.refresh();
     } catch {
       toast.error("Gagal", {
@@ -130,8 +130,8 @@ export default function DialogFormAddDataUser({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent>
+    <Dialog open={isProfileIncomplete}>
+      <DialogContent showCloseButton={false}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Terindikasi Login Menggunakan Google</DialogTitle>
@@ -140,76 +140,78 @@ export default function DialogFormAddDataUser({
               itu anda harus menambahkan kelas, NIS, dan No Hp pada akun anda
               ini untuk bisa menggunakan sistem ini.
             </DialogDescription>
-            <div>
-              <label htmlFor="classes" className="mb-2 block">
-                Kelas
-              </label>
-              <Controller
-                control={control}
-                name="kelas"
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger
-                      id="classes"
-                      className="w-full border-slate-200 bg-slate-50 px-4 shadow-none text-sm transition-all focus:border-blue-500 focus:ring-blue-500"
-                    >
-                      <SelectValue placeholder="Pilih kelas" />
-                    </SelectTrigger>
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="classes" className="mb-2 block">
+                  Kelas
+                </label>
+                <Controller
+                  control={control}
+                  name="kelas"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger
+                        id="classes"
+                        className="w-full border-slate-200 bg-slate-50 px-4 shadow-none text-sm transition-all focus:border-blue-500 focus:ring-blue-500"
+                      >
+                        <SelectValue placeholder="Pilih kelas" />
+                      </SelectTrigger>
 
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="1A">1A</SelectItem>
-                        <SelectItem value="2B">2B</SelectItem>
-                        <SelectItem value="3A">3A</SelectItem>
-                        <SelectItem value="4E">4E</SelectItem>
-                        <SelectItem value="5A">5A</SelectItem>
-                        <SelectItem value="2C">2C</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="1A">1A</SelectItem>
+                          <SelectItem value="2B">2B</SelectItem>
+                          <SelectItem value="3A">3A</SelectItem>
+                          <SelectItem value="4E">4E</SelectItem>
+                          <SelectItem value="5A">5A</SelectItem>
+                          <SelectItem value="2C">2C</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.kelas && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.kelas.message}
+                  </p>
                 )}
-              />
-              {errors.kelas && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.kelas.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="nis" className="mb-2 block">
-                NIS
-              </label>
-              <Input
-                {...register("nis")}
-                type="text"
-                id="nis"
-                name="nis"
-                inputMode="numeric"
-                aria-invalid={Boolean(errors.nis)}
-              />
-              {errors.nis && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.nis.message}
-                </p>
-              )}
-            </div>
-            <div>
-              <label htmlFor="noHp" className="mb-2 block">
-                No Hp
-              </label>
-              <Input
-                {...register("noTlp")}
-                type="tel"
-                id="noHp"
-                name="noTlp"
-                inputMode="numeric"
-                aria-invalid={Boolean(errors.noTlp)}
-              />
-              {errors.noTlp && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.noTlp.message}
-                </p>
-              )}
+              </div>
+              <div>
+                <label htmlFor="nis" className="mb-2 block">
+                  NIS
+                </label>
+                <Input
+                  {...register("nis")}
+                  type="text"
+                  id="nis"
+                  name="nis"
+                  inputMode="numeric"
+                  aria-invalid={Boolean(errors.nis)}
+                />
+                {errors.nis && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.nis.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="noHp" className="mb-2 block">
+                  No Hp
+                </label>
+                <Input
+                  {...register("noTlp")}
+                  type="tel"
+                  id="noHp"
+                  name="noTlp"
+                  inputMode="numeric"
+                  aria-invalid={Boolean(errors.noTlp)}
+                />
+                {errors.noTlp && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.noTlp.message}
+                  </p>
+                )}
+              </div>
             </div>
           </DialogHeader>
           <DialogFooter>

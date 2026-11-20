@@ -1,5 +1,4 @@
 "use server";
-import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 import DashboardClientStudent from "@/components/local/student/dashboard/dashboardClient";
 import DashboardSkeletonStudent from "@/components/local/student/dashboard/skeleton";
 import { authOptions } from "@/src/app/api/auth/[...nextauth]/route";
@@ -71,9 +70,6 @@ async function DashboardStudent() {
 
   return (
     <MainContent>
-      {studentData.type_account === "google" && (
-        <DialogFormAddDataUser dataStudent={studentData} />
-      )}
       <DashboardClientStudent
         initialDataExams={initialDataExams}
         dataStudent={studentData}

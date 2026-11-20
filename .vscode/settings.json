@@ -143,7 +143,8 @@
         "memperbaiki masalah data menghilang ketika login menggunakan akun google",
         "selesai memperbaiki masalah pada middleware yang tidak bisa masuk ke dalam dashboard siswa ketika menggunakan akun google",
         "memperbaiki error menampilkan data ujian, ketika menggunakan akun google",
-        "memperbaiki error pada proses pengmbilan data yang ada di halaman profile ketika menggunakan akun google"
+        "memperbaiki error pada proses pengmbilan data yang ada di halaman profile ketika menggunakan akun google",
+        "selesai memperbaiki untuk menghandle data yang tidak lengkap khususnya login yang menggunakan akun google maka akan ada form input yang mengharuskan isi data yang kurang tersebut"
     ],
     "sqltools.connections": [
         {
