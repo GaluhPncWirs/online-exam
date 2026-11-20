@@ -9,6 +9,10 @@ import {
 } from "@/src/services/mysql/student/data-subject-exam";
 import ProfilClient from "@/components/local/student/profil/profilClient";
 import { ExamResult, ScheduleExams } from "@/src/types/student/dataExams";
+import { DataStudent } from "@/src/types/dataUser";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/src/app/api/auth/[...nextauth]/route";
+import { handleExistingUserAccount } from "@/src/services/mysql/student/data-student";
 
 export default async function Loader() {
   return (
@@ -19,15 +23,40 @@ export default async function Loader() {
 }
 
 async function Profil() {
-  const dataStudent = await getAuthenticatedUser("student");
+  const session = await getServerSession(authOptions);
 
-  if (!dataStudent.success) {
-    return <h3>{dataStudent.message}</h3>;
+  let studentData: DataStudent;
+
+  if (session?.user?.email) {
+    const googleUser = await handleExistingUserAccount(session?.user?.email);
+
+    if (!googleUser || googleUser.role !== "student") {
+      return <h3>Data akun siswa tidak ditemukan</h3>;
+    }
+
+    studentData = {
+      id_student: googleUser.id_student,
+      created_at: googleUser.created_at,
+      fullname: googleUser.fullname,
+      class: googleUser.class,
+      email: googleUser.email,
+      type_account: googleUser.type_account,
+      role: "student",
+      nis: googleUser.nis ?? "",
+      no_tlp: googleUser.no_tlp ?? "",
+      profil_img: googleUser.profil_img,
+    };
+  } else {
+    const dataStudent = await getAuthenticatedUser("student");
+    if (!dataStudent.success) {
+      return <h3>{dataStudent.message}</h3>;
+    }
+    studentData = dataStudent.data;
   }
 
   const dataExams = await handleGetDataSubjectExams(
-    dataStudent.data.class,
-    dataStudent.data.id_student,
+    studentData.class,
+    studentData.id_student,
   );
 
   if (!dataExams.success) {
@@ -35,7 +64,7 @@ async function Profil() {
   }
 
   const dataResultExam = await handleGetDataHistoryResultExamPerClass(
-    dataStudent.data.id_student,
+    studentData.id_student,
   );
 
   if (!dataResultExam.success) {
@@ -47,7 +76,7 @@ async function Profil() {
       <ProfilClient
         initialDataExams={dataExams.data as ScheduleExams[]}
         initialDataHistoryResultExam={dataResultExam.data as ExamResult[]}
-        dataStudent={dataStudent.data}
+        dataStudent={studentData}
       />
     </MainContent>
   );

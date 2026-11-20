@@ -124,13 +124,13 @@ export async function handleGetDataHistoryResultExamPerClass(
       offset,
     ]);
 
-    if (rows.length === 0) {
-      return {
-        data: [],
-        success: false,
-        message: "Data ujian tidak di temukan",
-      };
-    }
+    // if (rows.length === 0) {
+    //   return {
+    //     data: [],
+    //     success: false,
+    //     message: "Data ujian tidak di temukan",
+    //   };
+    // }
 
     return {
       data: rows,

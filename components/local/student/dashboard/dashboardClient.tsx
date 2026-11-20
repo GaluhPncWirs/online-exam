@@ -34,9 +34,6 @@ import {
 import HeaderDasboard from "../../forDasboard/content";
 import { DataStudent } from "@/src/types/dataUser";
 import { MAX_PAGE_SIZE } from "@/src/lib/constants";
-import { getDataPagination } from "@/src/lib/utils/getDataPagination";
-import { handleGetDataManageExams } from "@/src/services/mysql/teacher/data-subject-exam";
-import { handleGetDataSubjectExams } from "@/src/services/mysql/student/data-subject-exam";
 import { getDataExamsPagination } from "@/src/actions/dataExamsStudent";
 import PaginationUi from "@/components/global/pagination/content";
 
@@ -78,13 +75,10 @@ export default function DashboardClientStudent({
         );
         if (!isMounted) return;
 
-        // bermasalah
         if (!result.success) {
           console.error(result.message);
           return;
         }
-
-        console.log(result);
 
         setDataExams(result.data);
       } catch (error) {

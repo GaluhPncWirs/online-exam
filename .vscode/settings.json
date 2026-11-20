@@ -141,7 +141,8 @@
         "memperbaiki error import dan di semua halaman di type role guru dan memperbaiki folder api khususnya bagian role student agar rapih",
         "selesai mengerjakan fungsi untuk login menggunakan akun google tetapi masih belum bisa masuk ke dalam dashboardnya",
         "memperbaiki masalah data menghilang ketika login menggunakan akun google",
-        "selesai memperbaiki masalah pada middleware yang tidak bisa masuk ke dalam dashboard siswa ketika menggunakan akun google"
+        "selesai memperbaiki masalah pada middleware yang tidak bisa masuk ke dalam dashboard siswa ketika menggunakan akun google",
+        "memperbaiki error menampilkan data ujian, ketika menggunakan akun google"
     ],
     "sqltools.connections": [
         {

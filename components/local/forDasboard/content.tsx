@@ -68,9 +68,9 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
         </div>
 
         {/* Welcome */}
-        <div className="mt-7 flex flex-col gap-5 sm:flex-row sm:items-center">
+        <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
           {/* Profile Image */}
-          <div className="rounded-full size-20 sm:size-28 border-3 border-white/30 bg-white/10 p-0.5 backdrop-blur-sm">
+          <div className="rounded-full size-24 sm:size-28 lg:border-3 lg:border-white/30 lg:bg-white/10 p-0.5 backdrop-blur-sm">
             <Image
               src="/images/global/userProfile.png"
               alt="Foto profil siswa"

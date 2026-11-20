@@ -61,18 +61,48 @@ export async function getDataExamsPagination(
   );
 }
 
-export async function getDataHistoryExamsPagination(page: number) {
-  const session = await getAuthenticatedUser("student");
-  if (!session.success) {
-    return {
-      success: false,
-      message: session.message,
-      data: [],
-      total: 0,
-    };
+export async function getDataHistoryExamsPagination(
+  page: number,
+  typeAccount: "default" | "google",
+) {
+  let studentData: { id_student: string };
+
+  if (typeAccount === "default") {
+    const session = await getAuthenticatedUser("student");
+    if (!session.success) {
+      return {
+        success: false,
+        message: session.message,
+        data: [],
+        total: 0,
+      };
+    }
+    studentData = session.data;
+  } else {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        message: "Silakan login terlebih dahulu",
+        data: [],
+        total: 0,
+      };
+    }
+
+    const googleUser = await handleExistingUserAccount(session.user.email);
+    if (!googleUser || googleUser.role !== "student") {
+      return {
+        success: false,
+        message: "Data akun siswa tidak ditemukan",
+        data: [],
+        total: 0,
+      };
+    }
+
+    studentData = googleUser;
   }
 
   return getDataPagination(page, async (from: number, to: number) =>
-    handleGetDataHistoryResultExamPerClass(session.data.id_student, from, to),
+    handleGetDataHistoryResultExamPerClass(studentData.id_student, from, to),
   );
 }

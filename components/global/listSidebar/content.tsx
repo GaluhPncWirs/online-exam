@@ -17,8 +17,6 @@ import {
 import { useHandleLogout } from "@/hooks/useHandleLogout";
 import { useGetDataUser } from "@/src/store/useGetDataUsers/state";
 import { useEffect } from "react";
-import { useShallow } from "zustand/shallow";
-import { toast } from "sonner";
 
 export default function ListSidebar() {
   const pathName = usePathname();

@@ -110,7 +110,10 @@ export default function ProfilClient({
     async function getDataHistoryExams() {
       setIsLoading(true);
       try {
-        const result = await getDataHistoryExamsPagination(page);
+        const result = await getDataHistoryExamsPagination(
+          page,
+          dataStudent.type_account,
+        );
         if (!isMounted) return;
 
         if (!result.success) {
