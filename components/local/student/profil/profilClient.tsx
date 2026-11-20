@@ -78,7 +78,10 @@ export default function ProfilClient({
     async function getDataManageExams() {
       setIsLoading(true);
       try {
-        const result = await getDataExamsPagination(page);
+        const result = await getDataExamsPagination(
+          page,
+          dataStudent.type_account,
+        );
         if (!isMounted) return;
 
         if (!result.success) {

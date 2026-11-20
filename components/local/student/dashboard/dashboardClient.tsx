@@ -72,7 +72,10 @@ export default function DashboardClientStudent({
     async function getDataManageExams() {
       setIsLoading(true);
       try {
-        const result = await getDataExamsPagination(page);
+        const result = await getDataExamsPagination(
+          page,
+          dataStudent.type_account,
+        );
         if (!isMounted) return;
 
         // bermasalah
@@ -80,6 +83,8 @@ export default function DashboardClientStudent({
           console.error(result.message);
           return;
         }
+
+        console.log(result);
 
         setDataExams(result.data);
       } catch (error) {

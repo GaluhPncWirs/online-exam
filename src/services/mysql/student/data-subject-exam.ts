@@ -70,13 +70,13 @@ export async function handleGetDataSubjectExams(
       offset,
     ]);
 
-    if (data.length === 0) {
-      return {
-        data: [],
-        success: false,
-        message: "Data ujian tidak di temukan",
-      };
-    }
+    // if (data.length === 0) {
+    //   return {
+    //     data: [],
+    //     success: false,
+    //     message: "Data ujian tidak di temukan",
+    //   };
+    // }
 
     return {
       data,
