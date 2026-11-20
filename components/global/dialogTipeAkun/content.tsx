@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,58 +18,121 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetIdUsers } from "@/src/store/useGetIdUsers/state";
-import { useEffect, useState } from "react";
+import {
+  InputDataLoginUseGoogle,
+  inputDataLoginUseGoogleSchema,
+} from "@/src/schemas/student/updateDataStudent";
+import { DataStudent } from "@/src/types/dataUser";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
+const idClass = [
+  {
+    id: 4,
+    name: "1A",
+  },
+  {
+    id: 5,
+    name: "2B",
+  },
+  {
+    id: 8,
+    name: "2C",
+  },
+  {
+    id: 1,
+    name: "3A",
+  },
+  {
+    id: 6,
+    name: "4E",
+  },
+  {
+    id: 7,
+    name: "5A",
+  },
+] as const;
+
 export default function DialogFormAddDataUser({
-  idUsers,
+  dataStudent,
 }: {
-  idUsers: string;
+  dataStudent: DataStudent;
 }) {
-  const typeAccount = useGetIdUsers((state) => state.typeAccount);
-  const hasNotFilled = useGetIdUsers((state) => state.hasNotFilled);
-  const notFill = Object.values(hasNotFilled ?? "").every(
-    (value) => value === undefined,
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(
+    dataStudent.type_account === "google" &&
+      (!dataStudent.class ||
+        dataStudent.class === "not filled" ||
+        !dataStudent.nis ||
+        !dataStudent.no_tlp),
   );
-  const [isTypeAccount, setIsTypeAccount] = useState<boolean>(false);
-  useEffect(() => {
-    const alreadyShown = localStorage.getItem("alreadyShownTypeAccountDialog");
-    if (!alreadyShown && typeAccount === "google" && notFill) {
-      setIsTypeAccount(true);
+  const {
+    control,
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<InputDataLoginUseGoogle>({
+    resolver: zodResolver(inputDataLoginUseGoogleSchema),
+    defaultValues: {
+      kelas: idClass.find((item) => item.name === dataStudent.class)?.name,
+      noTlp: dataStudent.no_tlp,
+      nis: dataStudent.nis,
+    },
+  });
+
+  const onSubmit = async (data: InputDataLoginUseGoogle) => {
+    const filterClassId = idClass.find((fill) => fill.name === data.kelas);
+    if (!filterClassId) {
+      toast.error("Gagal", {
+        description: "Kelas yang dipilih tidak valid",
+      });
+      return;
     }
-  }, [typeAccount]);
 
-  async function handleAddDataUser(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const resultInputPayload = Object.fromEntries(formData.entries());
+    const dataPayload = {
+      kelas: filterClassId.id,
+      noTlp: data.noTlp,
+      nis: data.nis,
+    };
 
-    console.log(resultInputPayload);
+    try {
+      const request = await fetch("/api/student/PATCH/updateData", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idStudent: dataStudent.id_student,
+          fieldInput: dataPayload,
+        }),
+      });
 
-    // const { error } = await supabase
-    //   .from("account-student")
-    //   .update(resultInputPayload)
-    //   .eq("idStudent", idUsers)
-    //   .single();
+      const response = await request.json();
 
-    // if (error) {
-    //   toast("Gagal ❌", {
-    //     description: "Edit Profil Gagal",
-    //   });
-    // } else {
-    //   toast("Berhasil ✅", {
-    //     description: "Edit Profil Berhasil Di Update",
-    //   });
-    // }
+      if (!response.success) {
+        toast.error("Gagal", {
+          description: response.message,
+        });
+        return;
+      }
 
-    // localStorage.setItem("alreadyShownTypeAccountDialog", "true");
-    // setIsTypeAccount(false);
-  }
+      toast.success("Berhasil", {
+        description: response.message,
+      });
+      setIsOpen(false);
+      router.refresh();
+    } catch {
+      toast.error("Gagal", {
+        description: "Error fetch api",
+      });
+    }
+  };
+
   return (
-    <Dialog open={isTypeAccount}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
-        <form onSubmit={(event) => handleAddDataUser(event)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Terindikasi Login Menggunakan Google</DialogTitle>
             <DialogDescription>
@@ -79,35 +144,77 @@ export default function DialogFormAddDataUser({
               <label htmlFor="classes" className="mb-2 block">
                 Kelas
               </label>
-              <Select required name="classes">
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pilih Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="1A">1A</SelectItem>
-                    <SelectItem value="2B">2B</SelectItem>
-                    <SelectItem value="3A">3A</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <Controller
+                control={control}
+                name="kelas"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      id="classes"
+                      className="w-full border-slate-200 bg-slate-50 px-4 shadow-none text-sm transition-all focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <SelectValue placeholder="Pilih kelas" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="1A">1A</SelectItem>
+                        <SelectItem value="2B">2B</SelectItem>
+                        <SelectItem value="3A">3A</SelectItem>
+                        <SelectItem value="4E">4E</SelectItem>
+                        <SelectItem value="5A">5A</SelectItem>
+                        <SelectItem value="2C">2C</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.kelas && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.kelas.message}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="nis" className="mb-2 block">
                 NIS
               </label>
-              <Input type="text" id="nis" name="nis" required />
+              <Input
+                {...register("nis")}
+                type="text"
+                id="nis"
+                name="nis"
+                inputMode="numeric"
+                aria-invalid={Boolean(errors.nis)}
+              />
+              {errors.nis && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.nis.message}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="noHp" className="mb-2 block">
                 No Hp
               </label>
-              <Input type="number" id="noHp" name="noTlp" required />
+              <Input
+                {...register("noTlp")}
+                type="tel"
+                id="noHp"
+                name="noTlp"
+                inputMode="numeric"
+                aria-invalid={Boolean(errors.noTlp)}
+              />
+              {errors.noTlp && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.noTlp.message}
+                </p>
+              )}
             </div>
           </DialogHeader>
           <DialogFooter>
-            <Button type="submit" className="mt-5">
-              Konfirmasi
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Menyimpan..." : "Konfirmasi"}
             </Button>
           </DialogFooter>
         </form>

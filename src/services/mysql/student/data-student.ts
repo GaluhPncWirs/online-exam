@@ -164,6 +164,8 @@ type FieldInputUpdateDataStudent = {
     name?: string;
     password?: string;
     noTlp?: string;
+    kelas?: string;
+    nis?: string;
   };
 };
 
@@ -187,6 +189,16 @@ export async function handleUpdateDataStudent({
   if (fieldInput?.noTlp !== undefined) {
     fields.push("no_tlp = ?");
     values.push(fieldInput.noTlp);
+  }
+
+  if (fieldInput?.kelas !== undefined) {
+    fields.push("class_id = ?");
+    values.push(fieldInput.kelas);
+  }
+
+  if (fieldInput?.nis !== undefined) {
+    fields.push("nis = ?");
+    values.push(fieldInput.nis);
   }
 
   if (fields.length === 0) {

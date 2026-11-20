@@ -13,6 +13,7 @@ import { DataStudent } from "@/src/types/dataUser";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/src/app/api/auth/[...nextauth]/route";
 import { handleExistingUserAccount } from "@/src/services/mysql/student/data-student";
+import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
 
 export default async function Loader() {
   return (
@@ -73,6 +74,7 @@ async function Profil() {
 
   return (
     <MainContent>
+      {/* <DialogFormAddDataUser /> */}
       <ProfilClient
         initialDataExams={dataExams.data as ScheduleExams[]}
         initialDataHistoryResultExam={dataResultExam.data as ExamResult[]}

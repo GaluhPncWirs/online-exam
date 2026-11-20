@@ -525,7 +525,9 @@ export default function ProfilClient({
                       </TableCell>
 
                       <TableCell className="text-sm text-slate-500">
-                        {formatDateToYYYYMMDD(item.history_created_at) || "-"}
+                        {item.history_created_at
+                          ? formatDateToYYYYMMDD(item.history_created_at) || "-"
+                          : "-"}
                       </TableCell>
 
                       <TableCell>
